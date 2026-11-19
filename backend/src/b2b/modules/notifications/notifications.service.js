@@ -6,7 +6,7 @@
  * only what is newer than the cursor (catch-up after a reconnect).
  */
 import { DomainError, ForbiddenError, NotFoundError } from '../../core/errors.js';
-import { CATEGORIES, categoryOf, visibleOrgCategories } from './domain/catalogue.js';
+import { CATEGORIES, categoryOf, CLIENT_VARIANTS, visibleOrgCategories } from './domain/catalogue.js';
 import { InboxRecord } from './models/inbox.model.js';
 import { PreferenceRecord } from './models/preference.model.js';
 
@@ -117,6 +117,8 @@ export function createNotificationsService(deps) {
   };
 }
 
+const VARIANT_KEYS = new Set(Object.values(CLIENT_VARIANTS));
+
 function preferenceFunctions() {
   return {
     /** Every category this person can receive, with their choices; critical ones are locked on. @param {import('../../core/context.js').RequestContext} ctx */
@@ -126,7 +128,8 @@ function preferenceFunctions() {
       const orgCats = new Set(v.orgId ? visibleOrgCategories(v.permissions) : []);
       return {
         data: Object.entries(CATEGORIES)
-          .filter(([key, c]) => c.audience === 'USER' || orgCats.has(key))
+          // client wordings of a notification share its setting, so they are not listed twice
+          .filter(([key, c]) => (c.audience === 'USER' || orgCats.has(key)) && !VARIANT_KEYS.has(key))
           .map(([key, c]) => ({
             category: key,
             label: c.label,

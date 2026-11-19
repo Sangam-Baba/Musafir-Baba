@@ -68,6 +68,25 @@ export function createClientCategoriesService(deps) {
     },
 
     /**
+     * A newly verified client starts as Standard — only when it has no category yet (repeat-safe, never overrides
+     * a category an admin already chose).
+     * @param {string} orgId
+     */
+    async assignDefault(orgId) {
+      if (!/^[a-f0-9]{24}$/.test(orgId)) return { changed: false };
+      const event = newEvent(
+        EVENTS.orgCategoryChanged,
+        { orgId, clientCategory: DEFAULT_CLIENT_CATEGORY, previous: null, by: 'system:on-approval' },
+        deps,
+      );
+      const res = await OrganizationRecord.updateOne(
+        { _id: orgId, type: 'CLIENT', clientCategory: null },
+        { $set: { clientCategory: DEFAULT_CLIENT_CATEGORY, hasPendingEvents: true }, $push: { pendingEvents: event } },
+      );
+      return { changed: res.modifiedCount === 1 };
+    },
+
+    /**
      * Set a client's category (an active one; clients only). Repeat-safe: the same category again changes nothing.
      * @param {string} by
      * @param {string} orgId

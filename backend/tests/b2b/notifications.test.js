@@ -42,7 +42,14 @@ describe('templates and catalogue', () => {
   });
 
   it('org categories follow permissions', () => {
-    expect(visibleOrgCategories(['kyc.application.read'])).toEqual(['kyc.submitted', 'kyc.approved', 'kyc.rejected', 'kyc.reminder']);
+    // the bell includes the B2B client wording of the approval (Stage 10); the settings list shows it once (client-approval.test.js)
+    expect(visibleOrgCategories(['kyc.application.read'])).toEqual([
+      'kyc.submitted',
+      'kyc.approved',
+      'kyc.approved-client',
+      'kyc.rejected',
+      'kyc.reminder',
+    ]);
     expect(visibleOrgCategories([])).toEqual([]);
   });
 });

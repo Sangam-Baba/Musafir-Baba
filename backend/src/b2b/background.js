@@ -47,6 +47,7 @@ import {
   InvitationRecord,
   MemberRecord,
   OrganizationRecord,
+  createClientCategoriesService,
   seedClientCategories,
 } from './modules/organizations/index.js';
 import {
@@ -149,6 +150,16 @@ eventBus.subscribe({
   consumer: 'pricing-cache-evict',
   types: [PRICING_EVENTS.ruleActivated, PRICING_EVENTS.ruleRetired, PRICING_EVENTS.taxRuleActivated],
   handler: () => pricingCacheSignals.handle(),
+});
+
+/** Stage 10: a B2B client was verified (org activated) → it starts in the Standard category (repeat-safe, never overrides). */
+const clientCategories = createClientCategoriesService({ clock: systemClock });
+eventBus.subscribe({
+  consumer: 'organizations-client-default-category',
+  types: [ORG_EVENTS.orgActivated],
+  handler: async (event) => {
+    if (event.payload.type === 'CLIENT') await clientCategories.assignDefault(String(event.payload.orgId));
+  },
 });
 
 /** Stage 06: a listing published / changed / suspended / archived → every process drops its search caches (autocomplete). */

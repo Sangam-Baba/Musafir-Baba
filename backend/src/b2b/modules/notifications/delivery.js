@@ -7,7 +7,7 @@
  * A failed live push is only logged — the bell's catch-up (`GET /notifications?after=`) fills it in.
  */
 import { publish as publishSignal } from '../../core/realtime/signals.js';
-import { ADMIN_QUEUES, categoryOf, EVENT_CATEGORIES } from './domain/catalogue.js';
+import { ADMIN_QUEUES, categoryKeyFor, categoryOf } from './domain/catalogue.js';
 import { renderTemplate } from './domain/templates.js';
 import { InboxRecord } from './models/inbox.model.js';
 import { PreferenceRecord } from './models/preference.model.js';
@@ -111,7 +111,7 @@ export function createDelivery(deps) {
   return async (event) => {
     const queue = ADMIN_QUEUES[event.type];
     if (queue) await push(deps, 'b2b:admin:general', 'queue:changed', { queue });
-    const key = EVENT_CATEGORIES[event.type];
+    const key = categoryKeyFor(event.type, event.payload); // hotels exactly as before; B2B clients get their own wording
     const category = key ? categoryOf(key) : null;
     if (!key || !category) return;
 

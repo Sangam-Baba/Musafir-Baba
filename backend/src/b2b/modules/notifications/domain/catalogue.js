@@ -29,6 +29,15 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/verification',
   },
+  // Stage 10: the same approval for a B2B client — its own wording and link (hotels keep 'kyc.approved')
+  'kyc.approved-client': {
+    audience: 'ORG',
+    permission: 'kyc.application.read',
+    critical: true,
+    label: 'Verification approved',
+    emailTo: 'OWNERS',
+    link: '/business',
+  },
   'kyc.rejected': {
     audience: 'ORG',
     permission: 'kyc.application.read',
@@ -131,4 +140,18 @@ export function visibleOrgCategories(permissions) {
   return Object.entries(CATEGORIES)
     .filter(([, c]) => c.audience === 'ORG' && (c.permission === null || permissions.includes(c.permission)))
     .map(([key]) => key);
+}
+
+/** Notifications worded differently for B2B clients (event payload `orgType: 'CLIENT'`). @type {Readonly<Record<string, string>>} */
+export const CLIENT_VARIANTS = Object.freeze({ 'kyc.approved': 'kyc.approved-client' });
+
+/**
+ * The notification for an event: its category, or the client wording when the event is about a B2B client.
+ * @param {string} eventType
+ * @param {Record<string, unknown>} payload
+ * @returns {string | undefined}
+ */
+export function categoryKeyFor(eventType, payload) {
+  const key = EVENT_CATEGORIES[eventType];
+  return key && payload.orgType === 'CLIENT' ? (CLIENT_VARIANTS[key] ?? key) : key;
 }

@@ -27,6 +27,14 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your business is verified — MusafirBaba Business',
     text: 'Hello,\n\nGood news: {{orgName}} is verified and active on MusafirBaba Business.\n\nOpen your workspace: {{link}}\n\nMusafirBaba Business',
   },
+  'kyc.approved-client': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Verification approved',
+    body: '{{orgName}} is verified. You can now search hotels with your B2B prices and add your team.',
+    subject: 'Your company is verified — MusafirBaba Business',
+    text: 'Hello,\n\nGood news: {{orgName}} is verified and active on MusafirBaba Business. You can now search hotels with your B2B prices, set your own markup and invite your team.\n\nOpen your workspace: {{link}}\n\nMusafirBaba Business',
+  },
   'kyc.rejected': {
     version: 1,
     vars: ['orgName', 'link'],
