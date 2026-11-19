@@ -47,6 +47,7 @@ import {
   InvitationRecord,
   MemberRecord,
   OrganizationRecord,
+  seedClientCategories,
 } from './modules/organizations/index.js';
 import {
   createPricingCacheSignals,
@@ -192,6 +193,7 @@ export const startupTasks = [
   { name: 'pricing: starter GST rates (adds only what is missing)', run: () => seedTaxRules() },
   { name: 'pricing: default margin rules (adds only keys never seeded)', run: (deps) => seedDefaultMarginRules(deps) },
   { name: 'pricing: settings with the owner defaults (only if missing)', run: () => seedPricingSettings() },
+  { name: 'organizations: starter client categories (adds only what is missing)', run: () => seedClientCategories() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;

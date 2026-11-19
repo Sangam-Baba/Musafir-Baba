@@ -18,6 +18,7 @@ import { BRANCHES_COLLECTION, INVITATIONS_COLLECTION, MEMBERS_COLLECTION, ORGS_C
 import { STAGE_02_AND_LATER } from './stage-02-onwards.js';
 import { STAGE_04 } from './stage-04.js';
 import { STAGE_05 } from './stage-05.js';
+import { STAGE_10 } from './stage-10.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
 export const MIGRATIONS = [
@@ -233,4 +234,5 @@ export const MIGRATIONS = [
   ...STAGE_02_AND_LATER,
   ...STAGE_04,
   ...STAGE_05,
+  ...STAGE_10,
 ];

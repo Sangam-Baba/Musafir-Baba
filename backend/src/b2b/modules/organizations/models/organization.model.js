@@ -20,6 +20,7 @@ const schema = new b2bMongoose.Schema(
     displayName: { type: String, required: true, maxlength: 120 },
     status: { type: String, enum: ORG_STATUSES, required: true },
     statusReason: { type: String, default: null, maxlength: 500 },
+    clientCategory: { type: String, default: null }, // Stage 10: B2B clients only — key of org_client_categories
     ...eventFields(b2bMongoose),
   },
   { timestamps: true, versionKey: false },

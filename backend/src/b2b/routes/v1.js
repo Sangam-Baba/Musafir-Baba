@@ -41,6 +41,7 @@ import { calendarImportRoutes } from './hotel-calendar-import.js';
 import { adminCalendarRoutes } from './hotel-calendar-admin.js';
 import { stage05Routes } from './pricing-wiring.js';
 import { followCheck, stage06Routes } from './search-wiring.js';
+import { stage10Routes } from './client-wiring.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -150,6 +151,7 @@ export function createB2BRouter(options = {}) {
   router.use(stage03Routes(env, clock, identity));
   router.use(stage04Routes(clock, identity));
   router.use(stage05Routes(env, clock, identity, log));
+  router.use(stage10Routes(clock));
   router.use('/realtime', realtimeRoutes({ hub, canFollow: options.canFollow ?? followCheck(clock) }));
 
   router.use(notFoundHandler());

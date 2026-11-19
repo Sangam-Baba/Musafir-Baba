@@ -6,6 +6,8 @@ export const EVENTS = /** @type {const} */ ({
   orgSuspended: 'organizations.org.suspended',
   orgReactivated: 'organizations.org.reactivated',
   orgClosed: 'organizations.org.closed',
+  /** a B2B client's category changed (its B2B prices / visible hotels may change) */
+  orgCategoryChanged: 'organizations.org.category-changed',
   memberInvited: 'organizations.member.invited',
   memberJoined: 'organizations.member.joined',
   memberRemoved: 'organizations.member.removed',

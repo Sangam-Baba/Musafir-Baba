@@ -58,11 +58,11 @@ function enforce(res, r) {
 }
 
 /**
- * @param {{ clock: import('../core/clock.js').Clock, orgInfo: (orgId: string) => Promise<{ type: string, status: string } | null>, hooks?: SearchHooks }} deps
+ * @param {{ clock: import('../core/clock.js').Clock, orgInfo: (orgId: string) => Promise<{ type: string, status: string, clientCategory?: string | null } | null>, hooks?: SearchHooks }} deps
  */
 export function createSearchGate(deps) {
   const limits = limitsFor(deps.clock);
-  /** @type {ReturnType<typeof createCache<{ type: string, status: string } | null>>} */
+  /** @type {ReturnType<typeof createCache<{ type: string, status: string, clientCategory?: string | null } | null>>} */
   const orgs = createCache({ max: 2000, ttlMs: 60_000, clock: deps.clock });
   const hooks = deps.hooks ?? {};
 
@@ -101,7 +101,13 @@ export function createSearchGate(deps) {
     if (org.status !== 'ACTIVE') throw new ForbiddenError('ORG_NOT_ACTIVE');
     check(await l.user.consume(actor.userId));
     check(await l.org.consume(actor.orgId));
-    return { channel: 'B2B_PORTAL', catalogChannel: 'B2B', clientOrgId: actor.orgId, clientCategory: null, customerId: null };
+    return {
+      channel: 'B2B_PORTAL',
+      catalogChannel: 'B2B',
+      clientOrgId: actor.orgId,
+      clientCategory: org.clientCategory ?? null,
+      customerId: null,
+    };
   }
 
   /**
