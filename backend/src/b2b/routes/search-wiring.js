@@ -8,6 +8,8 @@ import { createDestinationsService, createOffersService, createSearchService } f
 import { createGstRegistrations } from '../modules/kyc/index.js';
 import { createMarkupService, createPriceTokenService, createQuoteService } from '../modules/pricing/index.js';
 import { createCache } from '../core/cache.js';
+import { createBookingRequestService } from '../modules/hotel-booking/index.js';
+import { bookingRequestRoutes } from './booking-requests.js';
 import { hotelSearchRoutes } from './hotel-search.js';
 import { createSearchGate } from './search-gateway.js';
 
@@ -50,6 +52,29 @@ export function stage06Routes(env, clock, identity) {
   });
   const destinations = createDestinationsService({ clock, source: (q) => catalog.destinationSource(q) });
   router.use(hotelSearchRoutes({ gate, destinations, search, offers }));
+  // D37: booking requests reuse the search price check and the catalogue / inventory names
+  const requests = createBookingRequestService({
+    clock,
+    priceCheck: (caller, token) => offers.priceCheck(caller, token),
+    readToken: (token, buyer) => tokens().read(token, buyer),
+    describeStay: async (st, caller) => {
+      const [p] = await catalog.candidates({
+        channel: caller.catalogChannel,
+        clientCategory: caller.clientCategory,
+        where: { ids: [st.propertyId] },
+      });
+      const plan = (await terms.termsOf([st.ratePlanId])).get(st.ratePlanId);
+      return {
+        propertyRef: p?.publicRef ?? '',
+        propertyName: p?.name ?? 'Hotel',
+        city: p?.cityName ?? null,
+        roomTypeName: p?.roomTypes.find((r) => r.id === st.roomTypeId)?.name ?? 'Room',
+        planName: plan?.name ?? 'Rate plan',
+        mealPlanKey: plan?.mealPlanKey ?? null,
+      };
+    },
+  });
+  router.use(bookingRequestRoutes({ gate, requests }));
   return router;
 }
 

@@ -12,6 +12,7 @@ import { PERMISSION_CATALOGUE as files } from './modules/files/index.js';
 import { PERMISSION_CATALOGUE as hotelCatalog } from './modules/hotel-catalog/index.js';
 import { PERMISSION_CATALOGUE as hotelInventory } from './modules/hotel-inventory/index.js';
 import { PERMISSION_CATALOGUE as hotelSearch } from './modules/hotel-search/index.js';
+import { PERMISSION_CATALOGUE as hotelBooking } from './modules/hotel-booking/index.js';
 import { PERMISSION_CATALOGUE as kyc } from './modules/kyc/index.js';
 import { PERMISSION_CATALOGUE as notifications } from './modules/notifications/index.js';
 import { PERMISSION_CATALOGUE as organizations } from './modules/organizations/index.js';
@@ -29,4 +30,5 @@ export const PERMISSION_CATALOGUE = mergeCatalogues([
   hotelInventory,
   pricing,
   hotelSearch,
+  hotelBooking,
 ]);

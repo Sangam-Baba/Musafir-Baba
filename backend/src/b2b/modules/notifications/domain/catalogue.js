@@ -94,6 +94,23 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'USER',
     link: '/business',
   },
+  // D37: booking requests from B2B clients
+  'booking-request.confirmed': {
+    audience: 'ORG',
+    permission: 'hotel-booking.request.read',
+    critical: false,
+    label: 'Booking request confirmed',
+    emailTo: 'OWNERS',
+    link: '/business/booking-requests',
+  },
+  'booking-request.declined': {
+    audience: 'ORG',
+    permission: 'hotel-booking.request.read',
+    critical: false,
+    label: 'Booking request declined',
+    emailTo: 'OWNERS',
+    link: '/business/booking-requests',
+  },
 });
 
 /** @typedef {keyof typeof CATEGORIES} CategoryKey */
@@ -110,6 +127,8 @@ export const EVENT_CATEGORIES = Object.freeze({
   'hotel-catalog.property.suspended': 'listing.suspended',
   'hotel-catalog.revision.decided': 'listing.revision-decided',
   'organizations.member.roles-changed': 'team.role-changed',
+  'hotel-booking.request.confirmed': 'booking-request.confirmed',
+  'hotel-booking.request.declined': 'booking-request.declined',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */
@@ -126,6 +145,10 @@ export const ADMIN_QUEUES = Object.freeze({
   'hotel-catalog.property.published': 'listings',
   'hotel-catalog.property.changes-requested': 'listings',
   'hotel-catalog.revision.decided': 'listings',
+  'hotel-booking.request.submitted': 'booking-requests',
+  'hotel-booking.request.cancelled': 'booking-requests',
+  'hotel-booking.request.confirmed': 'booking-requests',
+  'hotel-booking.request.declined': 'booking-requests',
 });
 
 /** @param {string} key @returns {Category | null} */
