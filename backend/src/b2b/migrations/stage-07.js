@@ -1,6 +1,11 @@
 // @ts-check
 /** Migrations of Stage 07 (payments & ledger core). Run after 0001–0042; ids never renamed or reused. */
-import { INTENTS_COLLECTION, PAYMENT_INBOX_COLLECTION, RECON_EXCEPTIONS_COLLECTION } from '../modules/payments/index.js';
+import {
+  INTENTS_COLLECTION,
+  PAYMENT_INBOX_COLLECTION,
+  RECON_EXCEPTIONS_COLLECTION,
+  REFUNDS_COLLECTION,
+} from '../modules/payments/index.js';
 import { ACCOUNTS_COLLECTION, BALANCE_SNAPSHOTS_COLLECTION, TRANSACTIONS_COLLECTION } from '../modules/wallet/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -62,6 +67,21 @@ export const STAGE_07 = [
       await ctx.createCollection(RECON_EXCEPTIONS_COLLECTION);
       await ctx.createIndex(RECON_EXCEPTIONS_COLLECTION, { kind: 1, key: 1 }, { name: 'kind_key_unique', unique: true });
       await ctx.createIndex(RECON_EXCEPTIONS_COLLECTION, { status: 1, raisedAt: -1 }, { name: 'open' });
+    },
+  },
+  {
+    id: '0048-pay-refunds',
+    description: 'Refunds: one per refund id; one per payment and key; open ones for the poller; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(REFUNDS_COLLECTION);
+      await ctx.createIndex(REFUNDS_COLLECTION, { refundId: 1 }, { name: 'refund_unique', unique: true });
+      await ctx.createIndex(REFUNDS_COLLECTION, { intentId: 1, key: 1 }, { name: 'intent_key_unique', unique: true });
+      await ctx.createIndex(REFUNDS_COLLECTION, { status: 1, lastCheckedAt: 1 }, { name: 'open' });
+      await ctx.createIndex(
+        REFUNDS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];

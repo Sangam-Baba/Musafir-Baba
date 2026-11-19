@@ -7,4 +7,8 @@ export { merchantFromEnv, paymentUrl, createPayuClient } from './payu-client.js'
 export { INTENTS_COLLECTION, INTENT_STATUSES, INTENT_PURPOSES, IntentRecord } from './models/intent.model.js';
 export { INBOX_COLLECTION as PAYMENT_INBOX_COLLECTION, PaymentInboxRecord } from './models/inbox.model.js';
 export { RECON_EXCEPTIONS_COLLECTION, ReconExceptionRecord } from './models/recon-exception.model.js';
-export { PAYMENT_WINDOW_MINUTES, createPayments, processIntent, postPaymentReceived, raiseException } from './payments.service.js';
+export { PAYMENT_WINDOW_MINUTES, createPayments, processIntent, postPaymentReceived } from './payments.service.js';
+export { raiseException } from './exceptions.js';
+export { REFUNDS_COLLECTION, REFUND_STATUSES, RefundRecord } from './models/refund.model.js';
+export { refundPayment, followRefunds, finishRefund } from './refunds.service.js';
+export { POLL_EVERY_MS, pollPayments } from './poller.js';

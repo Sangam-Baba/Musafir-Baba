@@ -15,8 +15,9 @@ import { EVENTS } from './events.js';
 import { requestHash, responseHashValid, toRupees, TXN_PREFIX } from './domain/payu.js';
 import { PaymentInboxRecord } from './models/inbox.model.js';
 import { IntentRecord } from './models/intent.model.js';
-import { ReconExceptionRecord } from './models/recon-exception.model.js';
+import { raiseException } from './exceptions.js';
 import { paymentUrl } from './payu-client.js';
+import { refundPayment } from './refunds.service.js';
 
 export const PAYMENT_WINDOW_MINUTES = 30;
 const ALPHABET = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -45,20 +46,6 @@ const newTxnId = (purpose) => `${PREFIX[purpose]}${Array.from({ length: 12 }, ()
 function configured(deps) {
   if (!deps.merchant || !deps.payu || !deps.callbackUrl) throw new ServiceUnavailableError('PAYMENTS_NOT_CONFIGURED');
   return { merchant: deps.merchant, payu: deps.payu, callbackUrl: deps.callbackUrl };
-}
-
-/**
- * One exception per kind + key (repeat-safe).
- * @param {PaymentsDeps} deps
- * @param {{ kind: string, key: string, txnId?: string | null, detail: string, amountPaise?: number | null }} e
- */
-export async function raiseException(deps, e) {
-  await ReconExceptionRecord.updateOne(
-    { kind: e.kind, key: e.key },
-    { $setOnInsert: { ...e, txnId: e.txnId ?? null, amountPaise: e.amountPaise ?? null, status: 'OPEN', raisedAt: deps.clock.now() } },
-    { upsert: true },
-  );
-  deps.logger.warn({ kind: e.kind, txnId: e.txnId }, 'payments: reconciliation exception');
 }
 
 /**
@@ -117,6 +104,79 @@ export async function postPaymentReceived(deps, intent) {
 }
 
 /**
+ * A payment we had given up on (window over) turns out paid: the money is recorded, finance is told, and it is
+ * refunded to the source **once** (refund key `late-success`) — the order it was for no longer waits for it.
+ * @param {PaymentsDeps} deps
+ * @param {Record<string, any>} intent
+ * @param {'CALLBACK' | 'POLL'} source
+ */
+async function lateSuccess(deps, intent, source) {
+  const v = await /** @type {NonNullable<PaymentsDeps['payu']>} */ (deps.payu).verify(intent.txnId);
+  await IntentRecord.updateOne({ _id: intent._id }, { $set: { lastVerifiedAt: deps.clock.now() } });
+  if (v.status !== 'SUCCESS' || v.amountPaise !== intent.amountPaise) return 'FAILED';
+  const set = await IntentRecord.updateOne(
+    { _id: intent._id, gatewayPaymentId: null },
+    {
+      $set: { gatewayPaymentId: v.mihpayid, mode: v.mode },
+      $push: { history: { at: deps.clock.now(), status: 'FAILED', source, note: 'paid after the window — refunding' } },
+    },
+  );
+  if (set.modifiedCount === 1 || !intent.journalPosted) await postPaymentReceived(deps, { ...intent, gatewayPaymentId: v.mihpayid });
+  await raiseException(deps, {
+    kind: 'LATE_SUCCESS',
+    key: intent.txnId,
+    txnId: intent.txnId,
+    detail: 'Paid after the payment window — refunded to the source',
+    amountPaise: intent.amountPaise,
+  });
+  await refundPayment(deps, {
+    intentId: String(intent._id),
+    amountPaise: intent.amountPaise,
+    key: 'late-success',
+    reason: 'Paid after the payment window',
+    by: 'system:payments',
+  });
+  return 'FAILED';
+}
+
+/**
+ * PayU confirmed a success: with our amount and txn id → SUCCEEDED + ledger entry; otherwise FAILED + exception.
+ * @param {PaymentsDeps} deps
+ * @param {Record<string, any>} intent
+ * @param {{ v: import('./payu-client.js').Verified, source: 'CALLBACK' | 'POLL', now: Date }} a
+ */
+async function onSuccess(deps, intent, { v, source, now }) {
+  const txnId = intent.txnId;
+  if (v.txnid !== intent.txnId || v.amountPaise !== intent.amountPaise) {
+    await raiseException(deps, {
+      kind: 'AMOUNT_MISMATCH',
+      key: txnId,
+      txnId,
+      detail: `PayU confirmed ${v.amountPaise} paise for an intent of ${intent.amountPaise}`,
+      amountPaise: v.amountPaise,
+    });
+    await moveIntent(deps, intent, {
+      from: ['CREATED', 'PENDING'],
+      to: 'FAILED',
+      source,
+      note: 'amount mismatch — finance to refund',
+      set: { failureReason: 'AMOUNT_MISMATCH', gatewayPaymentId: v.mihpayid, lastVerifiedAt: now },
+      event: EVENTS.intentFailed,
+    });
+    return 'FAILED';
+  }
+  const moved = await moveIntent(deps, intent, {
+    from: ['CREATED', 'PENDING'],
+    to: 'SUCCEEDED',
+    source,
+    set: { gatewayPaymentId: v.mihpayid, mode: v.mode, lastVerifiedAt: now },
+    event: EVENTS.intentSucceeded,
+  });
+  if (moved) await postPaymentReceived(deps, { ...intent, gatewayPaymentId: v.mihpayid });
+  return 'SUCCEEDED';
+}
+
+/**
  * Ask PayU and act on its answer. Repeat-safe; never moves a final status back.
  * @param {PaymentsDeps} deps
  * @param {string} txnId
@@ -125,38 +185,12 @@ export async function postPaymentReceived(deps, intent) {
 export async function processIntent(deps, txnId, source) {
   const { payu } = configured(deps);
   const intent = await IntentRecord.findOne({ txnId }).lean();
+  if (intent?.status === 'FAILED' && intent.failureReason === 'ABANDONED' && !intent.gatewayPaymentId)
+    return lateSuccess(deps, intent, source);
   if (!intent || FINAL.includes(intent.status)) return intent?.status ?? 'NOT_FOUND';
   const v = await payu.verify(txnId); // network — not between database steps
   const now = deps.clock.now();
-  if (v.status === 'SUCCESS') {
-    if (v.txnid !== intent.txnId || v.amountPaise !== intent.amountPaise) {
-      await raiseException(deps, {
-        kind: 'AMOUNT_MISMATCH',
-        key: txnId,
-        txnId,
-        detail: `PayU confirmed ${v.amountPaise} paise for an intent of ${intent.amountPaise}`,
-        amountPaise: v.amountPaise,
-      });
-      await moveIntent(deps, intent, {
-        from: ['CREATED', 'PENDING'],
-        to: 'FAILED',
-        source,
-        note: 'amount mismatch — finance to refund',
-        set: { failureReason: 'AMOUNT_MISMATCH', gatewayPaymentId: v.mihpayid, lastVerifiedAt: now },
-        event: EVENTS.intentFailed,
-      });
-      return 'FAILED';
-    }
-    const moved = await moveIntent(deps, intent, {
-      from: ['CREATED', 'PENDING'],
-      to: 'SUCCEEDED',
-      source,
-      set: { gatewayPaymentId: v.mihpayid, mode: v.mode, lastVerifiedAt: now },
-      event: EVENTS.intentSucceeded,
-    });
-    if (moved) await postPaymentReceived(deps, { ...intent, gatewayPaymentId: v.mihpayid });
-    return 'SUCCEEDED';
-  }
+  if (v.status === 'SUCCESS') return onSuccess(deps, intent, { v, source, now });
   if (v.status === 'FAILURE' || (v.status === 'NOT_FOUND' && now > intent.windowEndsAt)) {
     const reason = v.status === 'FAILURE' ? 'PAYU_FAILURE' : 'ABANDONED';
     await moveIntent(deps, intent, {

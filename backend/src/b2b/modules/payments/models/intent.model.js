@@ -36,6 +36,7 @@ const schema = new b2bMongoose.Schema(
     verifyAttempts: { type: Number, default: 0 },
     journalPosted: { type: Boolean, default: false },
     refundedPaise: { type: Number, default: 0 },
+    refundIds: { type: [String], default: [] }, // refunds that reserved part of this payment (each once)
     createdBy: { type: String, required: true },
     version: { type: Number, default: 1 },
     history: { type: [{ _id: false, at: Date, status: String, source: String, note: { type: String, default: null } }], default: [] },
