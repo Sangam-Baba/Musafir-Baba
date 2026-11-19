@@ -175,8 +175,10 @@ async function confirm(deps, item) {
     await deps.holds.confirmHold(sys(deps, 'confirm rooms'), { holdId: b.holdId, bookingId: String(b._id) });
   } catch (e) {
     const code = /** @type {any} */ (e)?.code;
-    if (code === 'NIGHT_LOST' || code === 'HOLD_NOT_ACTIVE') return { confirmed: /** @type {const} */ (false), reason: code };
-    throw e;
+    if (code !== 'NIGHT_LOST' && code !== 'HOLD_NOT_ACTIVE') throw e;
+    // the hold is gone (expired and given back, or a night lost): the booking waits as EXPIRED — `rehold` may try again
+    await moveBooking(deps, b, { from: 'HELD', to: 'EXPIRED', by: 'system:orders', note: `hold gone (${code})` });
+    return { confirmed: /** @type {const} */ (false), reason: code };
   }
   await moveBooking(deps, b, {
     from: 'HELD',
@@ -207,7 +209,12 @@ async function rehold(deps, order, item) {
       set: { holdId: hold.id, holdIds: [...b.holdIds, hold.id] },
       note: 'paid late — rooms held again',
     });
-    if (!moved) await deps.holds.releaseHold(sys(deps, 'give back a second hold'), hold.id);
+    if (!moved) {
+      // another worker held them at the same moment (same hold key → same hold): keep it if the booking uses it
+      const now = await loadBooking(item.bookingId);
+      if (now.status === 'HELD' && now.holdId === hold.id) return { held: true, holdId: hold.id, holdExpiresAt: new Date(hold.expiresAt) };
+      await deps.holds.releaseHold(sys(deps, 'give back a second hold'), hold.id);
+    }
     return { held: moved, holdId: moved ? hold.id : null, holdExpiresAt: moved ? new Date(hold.expiresAt) : null };
   } catch (e) {
     if (/** @type {any} */ (e)?.code === 'SOLD_OUT') return { held: false, holdId: null, holdExpiresAt: null };

@@ -79,9 +79,9 @@ beforeEach(async () => {
   payments = createPayments(deps);
 });
 
-const intent = () =>
+const intent = (/** @type {'ORDER' | 'TOPUP'} */ purpose = 'ORDER') =>
   payments.createIntent({
-    purpose: 'ORDER',
+    purpose,
     reference: { type: 'order', id: 'MBO-1' },
     amountPaise: 99750,
     productinfo: 'Hotel booking',
@@ -110,8 +110,8 @@ describe('poller', () => {
     expect((await IntentRecord.findOne({ txnId: i.txnId }).lean())?.journalPosted).toBe(true);
   });
 
-  it('paid after its window: the money is recorded, finance told, refunded to the source once', async () => {
-    const i = await intent();
+  it('paid after its window (not an order): the money is recorded, finance told, refunded to the source once', async () => {
+    const i = await intent('TOPUP');
     nowMs += 31 * 60_000;
     await pollPayments(deps); // PayU: not found → abandoned
     expect((await IntentRecord.findOne({ txnId: i.txnId }).lean())?.failureReason).toBe('ABANDONED');
@@ -126,6 +126,33 @@ describe('poller', () => {
     nowMs += 61 * 60_000;
     await pollPayments(deps);
     expect(refundCalls).toHaveLength(1); // never twice
+  });
+
+  it("an order's payment after its window: recorded, and the order decides (event) — no refund here", async () => {
+    const i = await intent('ORDER');
+    nowMs += 31 * 60_000;
+    await pollPayments(deps);
+    verifyAnswers.set(i.txnId, { status: 'SUCCESS', amountPaise: 99750 });
+    nowMs += 61 * 60_000;
+    await pollPayments(deps);
+    const stored = /** @type {any} */ (await IntentRecord.findOne({ txnId: i.txnId }).lean());
+    expect(stored.gatewayPaymentId).toBe(`MIH-${i.txnId}`);
+    expect(stored.pendingEvents.map((/** @type {any} */ e) => e.type)).toContain('payments.intent.paid-late');
+    expect(await entries('payment-received')).toHaveLength(1);
+    expect(await RefundRecord.countDocuments({ txnId: i.txnId })).toBe(0);
+    expect(await ReconExceptionRecord.countDocuments({ key: i.txnId })).toBe(0); // usually confirmed after all; orders flag real problems
+  });
+
+  it('PayU "pending" is told once (orders extend the hold)', async () => {
+    const i = await intent();
+    verifyAnswers.set(i.txnId, { status: 'PENDING' });
+    nowMs += 2 * 60_000;
+    await pollPayments(deps);
+    nowMs += 3 * 60_000;
+    await pollPayments(deps);
+    const stored = /** @type {any} */ (await IntentRecord.findOne({ txnId: i.txnId }).lean());
+    expect(stored.pendingEvents.filter((/** @type {any} */ e) => e.type === 'payments.intent.pending')).toHaveLength(1);
+    expect(stored.status).toBe('PENDING');
   });
 });
 

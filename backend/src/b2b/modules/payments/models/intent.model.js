@@ -34,6 +34,7 @@ const schema = new b2bMongoose.Schema(
     windowEndsAt: { type: Date, required: true }, // after this an unpaid intent is abandoned
     lastVerifiedAt: { type: Date, default: null },
     verifyAttempts: { type: Number, default: 0 },
+    pendingReported: { type: Boolean, default: false }, // PayU said "pending" — told once (orders extend the hold)
     journalPosted: { type: Boolean, default: false },
     refundedPaise: { type: Number, default: 0 },
     refundIds: { type: [String], default: [] }, // refunds that reserved part of this payment (each once)

@@ -32,7 +32,7 @@ export function createGatewayMode(deps) {
     debitAccount: () => deps.ledger.accountId('platform', 'CUSTOMER_ADVANCES'),
     refund: async (_ctx, order, a) => {
       await refundPayment(deps.paymentsDeps, {
-        intentId: order.payment.verifiedIntentId,
+        intentId: a.intentId,
         amountPaise: order.totalPaise,
         key: a.key,
         reason: a.reason,

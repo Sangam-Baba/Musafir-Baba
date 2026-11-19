@@ -81,6 +81,8 @@ describe('every /api/v1 route declares who may use it', () => {
         'POST /registrations/client', // B2B client self-registration (S10-T03): same checks and IP limit as hotels
         'POST /orders', // website booking: guests too (browser session id), Idempotency-Key, per-IP limit, server re-prices the token
         'GET /orders/:ref', // the buyer only (signed-in customer, same guest session, or the order link key); others 404
+        'POST /orders/:ref/payments', // the buyer only (as above); Idempotency-Key; the PayU form for the server's amount
+        'POST /orders/:ref/extend-hold', // the buyer only (as above); once, +10 minutes
         'POST /payments/payu/callback', // PayU browser return: trusted only after the reverse hash AND PayU's verify API
         'POST /registrations/verify-email',
       ].sort(),

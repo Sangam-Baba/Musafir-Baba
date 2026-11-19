@@ -16,6 +16,7 @@ import { createHotelItemHandler } from '../../src/b2b/modules/hotel-booking/inde
 import { createHoldService } from '../../src/b2b/modules/hotel-inventory/index.js';
 import { createItemHandlers, createPaymentModes, orderReconcileRules, OrderRecord } from '../../src/b2b/modules/orders/index.js';
 import { MarginRuleRecord, SigningKeyRecord } from '../../src/b2b/modules/pricing/index.js';
+import { createLedger } from '../../src/b2b/modules/wallet/index.js';
 import { auth, useInventoryApp } from './helpers/inventory-app.js';
 import { clientOwner, seedPricing, sellableHotel } from './helpers/search-setup.js';
 
@@ -209,7 +210,7 @@ describe('safety net', () => {
     const logger = createLogger({ write: () => {} });
     const handlers = createItemHandlers();
     handlers.register('HOTEL', createHotelItemHandler(/** @type {any} */ ({ clock, logger, holds: createHoldService({ clock }) })));
-    const [rule] = orderReconcileRules({ clock, logger, handlers, modes: createPaymentModes() });
+    const [rule] = orderReconcileRules({ clock, logger, handlers, modes: createPaymentModes(), ledger: createLedger({ clock }) });
     await rule?.resume(stuck, { clock, logger });
     await rule?.resume(stuck, { clock, logger });
     expect((await offer(h)).roomsLeft).toBe(o.roomsLeft);

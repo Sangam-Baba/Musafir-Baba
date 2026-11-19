@@ -28,9 +28,10 @@ import { DomainError } from '../../core/errors.js';
  *   view: (item: OrderItem, audience: 'BUYER' | 'ADMIN') => Promise<Record<string, unknown>>,
  * }} ItemHandler
  * @typedef {{
- *   start: (ctx: Ctx, order: Record<string, any>, opts: { windowMinutes: number, returnUrl: string }) => Promise<Record<string, unknown>>,
+ *   start: (ctx: Ctx, order: Record<string, any>, opts: { windowMinutes: number, returnUrl: string }) =>
+ *     Promise<{ intentId: string, txnId: string, action: string, fields: Record<string, string> }>,
  *   debitAccount: (order: Record<string, any>) => Promise<string>,
- *   refund: (ctx: Ctx, order: Record<string, any>, a: { key: string, reason: string }) => Promise<void>,
+ *   refund: (ctx: Ctx, order: Record<string, any>, a: { intentId: string, key: string, reason: string }) => Promise<void>,
  * }} PaymentMode
  */
 

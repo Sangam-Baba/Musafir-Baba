@@ -5,6 +5,8 @@
  *                           {priceToken, rooms: [{leadGuest, guests}], contact, specialRequests, confirmDuplicate}
  *                           → 201 the order (rooms held 15 min) + its private link key
  *   GET  /orders/:ref       the buyer only: signed-in customer, the same guest session, or the link key (`?key=`)
+ *   POST /orders/:ref/payments     the buyer; Idempotency-Key → the PayU form (window ends before the hold)
+ *   POST /orders/:ref/extend-hold  the buyer; once, +10 minutes
  * Both are public routes (guests have no login); the search gateway limits them per IP, and every read is checked
  * against the order's owner — anyone else gets 404. B2B members use booking requests until Stage 12 part B.
  */
@@ -63,16 +65,23 @@ function buyerOf(req, res) {
 }
 
 /**
- * @param {{
- *   gate: ReturnType<typeof import('./search-gateway.js').createSearchGate>,
- *   orders: ReturnType<typeof import('../modules/orders/index.js').createOrderService>,
- *   view: (order: Record<string, any>) => Promise<Record<string, unknown>>,
- *   linkSecret: string,
- *   clock: import('../core/clock.js').Clock,
- * }} deps
+ * The caller as an order viewer (signed-in customer, guest session, or the order link key).
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {string} linkSecret
  */
-export function orderRoutes(deps) {
-  const router = express.Router();
+function viewerOf(req, res, linkSecret) {
+  const { actor } = contextOf(res);
+  return {
+    customerId: actor.type === 'customer' ? actor.customerId : null,
+    guestKey: req.get('x-guest-session') ?? null,
+    accessKey: typeof req.query.key === 'string' ? req.query.key : null,
+    linkSecret,
+  };
+}
+
+/** POST /orders. @param {import('express').Router} router @param {Parameters<typeof orderRoutes>[0]} deps */
+function createRoute(router, deps) {
   const noStore = (/** @type {import('express').Response} */ res) => res.set('Cache-Control', 'private, no-store');
   router.post('/orders', publicRoute(), validate({ body: CreateBody }), deps.gate('hotel.order', 'heavy'), (req, res, next) => {
     (async () => {
@@ -108,17 +117,67 @@ export function orderRoutes(deps) {
       noStore(res).status(r.statusCode).set('Idempotent-Replayed', String(r.replayed)).json(r.body);
     })().catch(next);
   });
+}
+
+/**
+ * @param {{
+ *   gate: ReturnType<typeof import('./search-gateway.js').createSearchGate>,
+ *   orders: ReturnType<typeof import('../modules/orders/index.js').createOrderService>,
+ *   payments: ReturnType<typeof import('../modules/orders/index.js').createOrderPayments>,
+ *   publicUrl: string,
+ *   view: (order: Record<string, any>) => Promise<Record<string, unknown>>,
+ *   linkSecret: string,
+ *   clock: import('../core/clock.js').Clock,
+ * }} deps
+ */
+export function orderRoutes(deps) {
+  const router = express.Router();
+  const noStore = (/** @type {import('express').Response} */ res) => res.set('Cache-Control', 'private, no-store');
+  createRoute(router, deps);
   router.get('/orders/:ref', publicRoute(), validate({ params: Ref, query: LinkQuery }), (req, res, next) => {
     (async () => {
-      const { actor } = contextOf(res);
-      const order = await deps.orders.read(res.locals.input.params.ref, {
-        customerId: actor.type === 'customer' ? actor.customerId : null,
-        guestKey: req.get('x-guest-session') ?? null,
-        accessKey: res.locals.input.query.key ?? null,
-        linkSecret: deps.linkSecret,
-      });
+      const order = await deps.orders.read(res.locals.input.params.ref, viewerOf(req, res, deps.linkSecret));
       noStore(res).json(await deps.view(order));
     })().catch(next);
   });
+  router.post(
+    '/orders/:ref/payments',
+    publicRoute(),
+    validate({ params: Ref, query: LinkQuery, body: z.strictObject({}) }),
+    (req, res, next) => {
+      (async () => {
+        const key = req.get('idempotency-key') ?? '';
+        if (!KEY.test(key)) throw new ValidationError({ problems: [{ field: 'Idempotency-Key', code: 'REQUIRED' }] });
+        const order = await deps.orders.read(res.locals.input.params.ref, viewerOf(req, res, deps.linkSecret));
+        const link = linkKey(deps.linkSecret, order.ref);
+        const r = await withIdempotency(
+          {
+            scope: `order:${order.ref}`,
+            key,
+            requestHash: hashRequest({ method: 'POST', path: `/orders/${order.ref}/payments` }),
+            clock: deps.clock,
+          },
+          async () => ({
+            statusCode: 201,
+            body: await deps.payments.start(contextOf(res), order, {
+              returnUrl: `${deps.publicUrl}/hotels/booking/${order.ref}?key=${link}`,
+            }),
+          }),
+        );
+        noStore(res).status(r.statusCode).json(r.body);
+      })().catch(next);
+    },
+  );
+  router.post(
+    '/orders/:ref/extend-hold',
+    publicRoute(),
+    validate({ params: Ref, query: LinkQuery, body: z.strictObject({}) }),
+    (req, res, next) => {
+      (async () => {
+        const order = await deps.orders.read(res.locals.input.params.ref, viewerOf(req, res, deps.linkSecret));
+        noStore(res).json(await deps.view(await deps.payments.extend(contextOf(res), order)));
+      })().catch(next);
+    },
+  );
   return router;
 }

@@ -7,7 +7,14 @@ import express from 'express';
 
 import { createHotelItemHandler } from '../modules/hotel-booking/index.js';
 import { createHoldService } from '../modules/hotel-inventory/index.js';
-import { createGatewayMode, createItemHandlers, createOrderService, createPaymentModes, orderView } from '../modules/orders/index.js';
+import {
+  createGatewayMode,
+  createItemHandlers,
+  createOrderPayments,
+  createOrderService,
+  createPaymentModes,
+  orderView,
+} from '../modules/orders/index.js';
 import { orderRoutes } from './orders.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
@@ -37,7 +44,7 @@ export function bookingEngine(env, clock, logger, identity) {
   );
   const modes = createPaymentModes();
   modes.register('GATEWAY', createGatewayMode({ payments, paymentsDeps, ledger: paymentsDeps.ledger }));
-  const ordersDeps = { clock, logger, handlers, modes };
+  const ordersDeps = { clock, logger, handlers, modes, ledger: paymentsDeps.ledger };
   return { parts, handlers, modes, payments, paymentsDeps, ordersDeps, orders: createOrderService(ordersDeps) };
 }
 
@@ -54,6 +61,8 @@ export function stage08Routes(env, clock, logger, identity) {
     orderRoutes({
       gate: engine.parts.gate,
       orders: engine.orders,
+      payments: createOrderPayments(engine.ordersDeps),
+      publicUrl: (env.B2B_PUBLIC_URL || 'https://musafirbaba.com').replace(/\/$/, ''),
       view: (o) => orderView(engine.ordersDeps, o, 'BUYER'),
       linkSecret: env.B2B_AUTH_SECRET ?? '',
       clock,

@@ -114,14 +114,32 @@ async function lateSuccess(deps, intent, source) {
   const v = await /** @type {NonNullable<PaymentsDeps['payu']>} */ (deps.payu).verify(intent.txnId);
   await IntentRecord.updateOne({ _id: intent._id }, { $set: { lastVerifiedAt: deps.clock.now() } });
   if (v.status !== 'SUCCESS' || v.amountPaise !== intent.amountPaise) return 'FAILED';
+  const forOrder = intent.purpose === 'ORDER';
+  const payload = {
+    orgId: intent.orgId ?? 'platform',
+    intentId: String(intent._id),
+    txnId: intent.txnId,
+    purpose: intent.purpose,
+    reference: intent.reference,
+    amountPaise: intent.amountPaise,
+  };
   const set = await IntentRecord.updateOne(
     { _id: intent._id, gatewayPaymentId: null },
     {
-      $set: { gatewayPaymentId: v.mihpayid, mode: v.mode },
-      $push: { history: { at: deps.clock.now(), status: 'FAILED', source, note: 'paid after the window — refunding' } },
+      $set: { gatewayPaymentId: v.mihpayid, mode: v.mode, ...(forOrder ? { hasPendingEvents: true } : {}) },
+      $push: {
+        history: {
+          at: deps.clock.now(),
+          status: 'FAILED',
+          source,
+          note: forOrder ? 'paid after the window — the order decides' : 'paid after the window — refunding',
+        },
+        ...(forOrder ? { pendingEvents: newEvent(EVENTS.intentPaidLate, payload, deps) } : {}),
+      },
     },
   );
   if (set.modifiedCount === 1 || !intent.journalPosted) await postPaymentReceived(deps, { ...intent, gatewayPaymentId: v.mihpayid });
+  if (forOrder) return 'FAILED'; // orders hold the rooms again, or refund (key `late-success`) — never lost: alerted if neither
   await raiseException(deps, {
     kind: 'LATE_SUCCESS',
     key: intent.txnId,
@@ -202,11 +220,42 @@ export async function processIntent(deps, txnId, source) {
     });
     return 'FAILED';
   }
+  await stillOpen(deps, intent, { pending: v.status === 'PENDING', now });
+  return intent.status;
+}
+
+/**
+ * Not decided yet: counted for the poller; PayU's first "pending" is told once.
+ * @param {PaymentsDeps} deps
+ * @param {Record<string, any>} intent
+ * @param {{ pending: boolean, now: Date }} a
+ */
+async function stillOpen(deps, intent, a) {
   await IntentRecord.updateOne(
     { _id: intent._id, status: { $in: ['CREATED', 'PENDING'] } },
-    { $set: { lastVerifiedAt: now }, $inc: { verifyAttempts: 1 } },
+    { $set: { lastVerifiedAt: a.now }, $inc: { verifyAttempts: 1 } },
   );
-  return intent.status;
+  if (a.pending && !intent.pendingReported) await reportPending(deps, intent);
+}
+
+/**
+ * PayU says "pending": told once (`payments.intent.pending`) so an order can extend its hold while the poller asks.
+ * @param {PaymentsDeps} deps
+ * @param {Record<string, any>} intent
+ */
+async function reportPending(deps, intent) {
+  const payload = {
+    orgId: intent.orgId ?? 'platform',
+    intentId: String(intent._id),
+    txnId: intent.txnId,
+    purpose: intent.purpose,
+    reference: intent.reference,
+    amountPaise: intent.amountPaise,
+  };
+  await IntentRecord.updateOne(
+    { _id: intent._id, pendingReported: { $ne: true } },
+    { $set: { pendingReported: true, hasPendingEvents: true }, $push: { pendingEvents: newEvent(EVENTS.intentPending, payload, deps) } },
+  );
 }
 
 /**
