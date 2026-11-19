@@ -30,6 +30,7 @@ import {
   TableRow,
   TypePill,
 } from "@/b2b/components/admin/kit";
+import { ClientCategoryPanel } from "@/b2b/components/admin/ClientCategories";
 import type { AdminOrg } from "@/b2b/components/admin/OrgsTab";
 import { ActivityTab } from "@/b2b/components/admin/UsersAndActivity";
 import { errorMessage } from "@/b2b/messages";
@@ -113,6 +114,7 @@ function OrgDetailView({ id, token }: { id: string; token: string }) {
           </form>
         )}
       </FleetPanel>
+      {o.type === "CLIENT" && <ClientCategoryPanel orgId={id} current={o.clientCategory ?? null} token={token} />}
       <ViewAsPanel orgId={id} token={token} />
       <FleetPanel title="Members" description={`${o.members.length} member(s)`} icon={Users}>
         {o.members.length === 0 ? (

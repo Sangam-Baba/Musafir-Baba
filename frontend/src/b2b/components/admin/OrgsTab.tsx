@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { errorMessage } from "../../messages";
 import { adminCall } from "./AdminPassGate";
+import { ClientCategoriesAdmin } from "./ClientCategories";
 import {
   FleetEmptyState,
   FleetPanel,
@@ -32,6 +33,7 @@ import {
 export interface AdminOrg {
   id: string;
   type: "CLIENT" | "HOTEL";
+  clientCategory?: string | null;
   reference: string;
   legalName: string;
   displayName: string;
@@ -162,6 +164,7 @@ export function OrgsTab({ token }: { token: string }) {
                   </TableCell>
                   <TableCell>
                     <TypePill type={o.type} />
+                    {o.clientCategory && <span className="ml-1.5 text-[11px] text-slate-500">{o.clientCategory.toLowerCase()}</span>}
                   </TableCell>
                   <TableCell className="font-mono text-[12px] text-slate-600">{o.reference}</TableCell>
                   <TableCell>
@@ -174,6 +177,7 @@ export function OrgsTab({ token }: { token: string }) {
           </Table>
         )}
       </FleetPanel>
+      <ClientCategoriesAdmin token={token} />
     </div>
   );
 }

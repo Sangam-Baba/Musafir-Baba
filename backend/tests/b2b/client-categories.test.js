@@ -73,6 +73,7 @@ describe("a client's category", () => {
       'GOLD',
     ]);
     expect((await app.admin.put(`/api/v1/admin/orgs/${c.orgId}/client-category`, { key: 'GOLD' }, OPS)).body.changed).toBe(false);
+    expect((await app.admin.get(`/api/v1/admin/orgs/${c.orgId}`, READER)).body.clientCategory).toBe('GOLD'); // admin client page
     await app.admin.patch('/api/v1/admin/client-categories/SILVER', { active: false }, OPS);
     expect((await app.admin.put(`/api/v1/admin/orgs/${c.orgId}/client-category`, { key: 'SILVER' }, OPS)).body.code).toBe(
       'CATEGORY_NOT_ACTIVE',
