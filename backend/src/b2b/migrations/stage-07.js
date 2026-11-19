@@ -1,5 +1,6 @@
 // @ts-check
 /** Migrations of Stage 07 (payments & ledger core). Run after 0001–0042; ids never renamed or reused. */
+import { INTENTS_COLLECTION, PAYMENT_INBOX_COLLECTION, RECON_EXCEPTIONS_COLLECTION } from '../modules/payments/index.js';
 import { ACCOUNTS_COLLECTION, BALANCE_SNAPSHOTS_COLLECTION, TRANSACTIONS_COLLECTION } from '../modules/wallet/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -33,6 +34,34 @@ export const STAGE_07 = [
     up: async (ctx) => {
       await ctx.createCollection(BALANCE_SNAPSHOTS_COLLECTION);
       await ctx.createIndex(BALANCE_SNAPSHOTS_COLLECTION, { accountId: 1 }, { name: 'account_unique', unique: true });
+    },
+  },
+  {
+    id: '0046-pay-intents',
+    description: 'Payment intents: one per PayU transaction id; open ones for the poller; by reference; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(INTENTS_COLLECTION);
+      await ctx.createIndex(INTENTS_COLLECTION, { txnId: 1 }, { name: 'txn_unique', unique: true });
+      await ctx.createIndex(INTENTS_COLLECTION, { status: 1, lastVerifiedAt: 1 }, { name: 'open' });
+      await ctx.createIndex(INTENTS_COLLECTION, { 'reference.type': 1, 'reference.id': 1 }, { name: 'reference' });
+      await ctx.createIndex(INTENTS_COLLECTION, { createdAt: -1 }, { name: 'recent' });
+      await ctx.createIndex(
+        INTENTS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
+  {
+    id: '0047-pay-inbox-and-exceptions',
+    description: 'PayU messages: one per transaction id and status; reconciliation exceptions: one per kind and key, open ones first',
+    up: async (ctx) => {
+      await ctx.createCollection(PAYMENT_INBOX_COLLECTION);
+      await ctx.createIndex(PAYMENT_INBOX_COLLECTION, { dedupeKey: 1 }, { name: 'dedupe_unique', unique: true });
+      await ctx.createIndex(PAYMENT_INBOX_COLLECTION, { txnId: 1 }, { name: 'txn' });
+      await ctx.createCollection(RECON_EXCEPTIONS_COLLECTION);
+      await ctx.createIndex(RECON_EXCEPTIONS_COLLECTION, { kind: 1, key: 1 }, { name: 'kind_key_unique', unique: true });
+      await ctx.createIndex(RECON_EXCEPTIONS_COLLECTION, { status: 1, raisedAt: -1 }, { name: 'open' });
     },
   },
 ];

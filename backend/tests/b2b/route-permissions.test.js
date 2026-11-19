@@ -79,6 +79,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /catalog/masters',
         'POST /registrations/hotel',
         'POST /registrations/client', // B2B client self-registration (S10-T03): same checks and IP limit as hotels
+        'POST /payments/payu/callback', // PayU browser return: trusted only after the reverse hash AND PayU's verify API
         'POST /registrations/verify-email',
       ].sort(),
     );
