@@ -5,6 +5,8 @@
  */
 import express from 'express';
 
+import { ServiceUnavailableError } from '../core/errors.js';
+
 import { createHotelItemHandler } from '../modules/hotel-booking/index.js';
 import { createHoldService } from '../modules/hotel-inventory/index.js';
 import {
@@ -56,6 +58,10 @@ export function bookingEngine(env, clock, logger, identity) {
  */
 export function stage08Routes(env, clock, logger, identity) {
   const router = express.Router();
+  // Online booking stays switched off on a server until the owner turns it on (`B2B_ORDERS_ENABLED=true`):
+  // the rest of the system can go live first, and nobody can hold rooms before checkout and limits are ready.
+  if (env.B2B_ORDERS_ENABLED !== 'true')
+    router.use('/orders', (_req, _res, next) => next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')));
   const engine = bookingEngine(env, clock, logger, identity);
   router.use(
     orderRoutes({

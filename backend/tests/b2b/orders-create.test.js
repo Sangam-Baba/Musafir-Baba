@@ -1,6 +1,10 @@
 // @ts-check
 /** Creating orders (S08-T01–T03): guests book with rooms held, idempotency, owner-only reads, duplicate guard, refusals. */
+import express from 'express';
 import { describe, expect, it } from 'vitest';
+
+import { createB2BRouter } from '../../src/b2b/routes/v1.js';
+import { startServer } from './helpers/http.js';
 
 import { BookingRecord, BookingStatusRecord } from '../../src/b2b/modules/hotel-booking/index.js';
 import {
@@ -225,5 +229,24 @@ describe('safety net', () => {
           .lean()
       )?.status,
     ).toBe('FAILED');
+  });
+});
+
+describe('switch', () => {
+  it('online booking is off on a server until B2B_ORDERS_ENABLED=true (503 ORDERS_NOT_ENABLED)', async () => {
+    const off = express();
+    off.use(
+      '/api/v1',
+      createB2BRouter({ connect: false, logger: createLogger({ write: () => {} }), clock, env: { B2B_AUTH_SECRET: 'x'.repeat(40) } }),
+    );
+    const srv = await startServer(off);
+    try {
+      const r = await srv.post('/api/v1/orders', body('x'.repeat(20)), guest());
+      expect(r.status).toBe(503);
+      expect(r.body.code).toBe('ORDERS_NOT_ENABLED');
+      expect((await srv.get('/api/v1/orders/MBO-0000-0000')).body.code).toBe('ORDERS_NOT_ENABLED');
+    } finally {
+      await srv.close();
+    }
   });
 });

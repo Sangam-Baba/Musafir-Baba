@@ -63,7 +63,7 @@ export function useInventoryApp(options) {
         connect: false,
         logger: createLogger({ write: () => {} }),
         clock: options.clock,
-        env: { B2B_AUTH_SECRET: secret },
+        env: { B2B_AUTH_SECRET: secret, B2B_ORDERS_ENABLED: 'true' },
       }),
     );
     env.srv = await startServer(app);
@@ -74,7 +74,7 @@ export function useInventoryApp(options) {
         connect: false,
         logger: createLogger({ write: () => {} }),
         clock: options.clock,
-        env: { B2B_AUTH_SECRET: secret },
+        env: { B2B_AUTH_SECRET: secret, B2B_ORDERS_ENABLED: 'true' },
         authenticate: async (req) => {
           const [staffId, perms] = String(req.get('x-staff') ?? '').split(':');
           return staffId ? { type: 'staff', staffId, permissions: (perms ?? '').split(',') } : null;
