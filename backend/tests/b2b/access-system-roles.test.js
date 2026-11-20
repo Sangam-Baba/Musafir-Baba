@@ -35,7 +35,7 @@ const FUTURE = definePermissions('Bookings', {
   walletTopUp: { code: 'wallet.topup.create', description: 'Top up the wallet', orgTypes: ['CLIENT'] },
   bankEdit: { code: 'hotel-catalog.bank.update', description: 'Change payout bank details', orgTypes: ['HOTEL'], sensitive: true },
 }).catalogue;
-const WITH_FUTURE = mergeCatalogues([PERMISSION_CATALOGUE, FUTURE]);
+const WITH_FUTURE = mergeCatalogues([PERMISSION_CATALOGUE, FUTURE.filter((d) => !PERMISSION_CATALOGUE.some((p) => p.code === d.code))]);
 /** @param {string} key */
 const futureGrants = (key) => resolveSystemRole(/** @type {any} */ (systemRole(key)), WITH_FUTURE);
 
@@ -139,6 +139,50 @@ describe('system roles (plan §4) — authorization matrix', () => {
     ['platform.support', 'hotel-inventory.admin.read', true],
     ['platform.support', 'hotel-inventory.admin.override', false],
     ['platform.superAdmin', 'hotel-inventory.admin.override', true],
+    // Stage 05: pricing & GST — Hotels team proposes, a different person with the approve permission approves
+    ['platform.hotels', 'pricing.rules.propose', true],
+    ['platform.hotels', 'pricing.simulator.use', true],
+    ['platform.hotels', 'pricing.rules.approve', false],
+    ['platform.hotels', 'pricing.tax.manage', false],
+    ['platform.superAdmin', 'pricing.rules.approve', true],
+    ['platform.superAdmin', 'pricing.tax.manage', true],
+    ['platform.support', 'pricing.rules.read', true],
+    ['platform.support', 'pricing.rules.propose', false],
+    ['platform.finance', 'pricing.rules.read', false],
+    ['client.owner', 'pricing.markup.manage', true],
+    ['client.bookingAgent', 'pricing.markup.read', true],
+    ['client.bookingAgent', 'pricing.markup.manage', false],
+    ['hotel.owner', 'pricing.rules.read', false],
+    // Stage 06: hotel search (website is public; B2B clients search with B2B prices)
+    ['client.owner', 'hotel-search.search.use', true],
+    ['client.admin', 'hotel-search.search.use', true],
+    ['client.bookingAgent', 'hotel-search.search.use', true],
+    ['client.accountant', 'hotel-search.search.use', false],
+    ['client.viewer', 'hotel-search.search.use', false],
+    ['hotel.owner', 'hotel-search.search.use', false],
+    // D37: booking requests
+    ['client.bookingAgent', 'hotel-booking.request.create', true],
+    ['client.viewer', 'hotel-booking.request.read', true],
+    ['client.viewer', 'hotel-booking.request.create', false],
+    ['client.accountant', 'hotel-booking.request.create', false],
+    ['platform.operations', 'hotel-booking.admin.handle', true],
+    ['platform.support', 'hotel-booking.admin.read', true],
+    ['platform.support', 'hotel-booking.admin.handle', false],
+    ['hotel.owner', 'hotel-booking.request.create', false],
+    // Stage 07: ledger and payments — Finance reads and works them; approvals, manual refunds and test payments are sensitive
+    ['platform.finance', 'wallet.ledger.read', true],
+    ['platform.finance', 'wallet.adjustment.propose', true],
+    ['platform.finance', 'wallet.adjustment.approve', false],
+    ['platform.finance', 'payments.payment.read', true],
+    ['platform.finance', 'payments.recon.manage', true],
+    ['platform.finance', 'payments.refund.create', false],
+    ['platform.superAdmin', 'wallet.adjustment.approve', true],
+    ['platform.superAdmin', 'payments.refund.create', true],
+    ['platform.superAdmin', 'payments.test.run', true],
+    ['platform.support', 'wallet.ledger.read', true],
+    ['platform.support', 'payments.payment.read', true],
+    ['platform.support', 'payments.recon.manage', false],
+    ['platform.hotels', 'payments.payment.read', false],
   ];
   it.each(matrix)('%s → %s = %s', (role, code, expected) => {
     expect(grants(role).includes(code)).toBe(expected);
@@ -155,7 +199,8 @@ describe('system roles (plan §4) — authorization matrix', () => {
     expect(futureGrants('client.bookingAgent')).not.toContain('wallet.topup.create');
     expect(futureGrants('client.accountant')).toContain('wallet.topup.create');
     expect(futureGrants('client.accountant')).not.toContain('hotel-booking.booking.create');
-    expect(futureGrants('client.viewer')).toEqual(['hotel-booking.booking.read', 'organizations.org.read']);
+    // + booking requests (D37, real today): viewers follow them too
+    expect(futureGrants('client.viewer')).toEqual(['hotel-booking.booking.read', 'hotel-booking.request.read', 'organizations.org.read']);
     expect(futureGrants('hotel.frontDesk')).toEqual([
       'hotel-booking.booking.acknowledge',
       'hotel-booking.booking.read',

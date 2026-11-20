@@ -22,6 +22,7 @@ export function AdminBell({ token }: { token: string }) {
       if (m.event !== "queue:changed") return;
       if (m.data?.queue === "kyc") void queryClient.invalidateQueries({ queryKey: ["b2b-admin", "kyc"] });
       if (m.data?.queue === "listings") void queryClient.invalidateQueries({ queryKey: ["b2b-admin", "listings"] });
+      if (m.data?.queue === "booking-requests") void queryClient.invalidateQueries({ queryKey: ["b2b-admin", "booking-requests"] }); // the Requests tab refreshes live
     },
     onSync: () => void queryClient.invalidateQueries({ queryKey: ["b2b-admin"] }),
   });

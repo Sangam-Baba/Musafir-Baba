@@ -212,6 +212,12 @@ export function createHoldService(deps) {
     releaseHold: async (ctx, holdId) => (assertSystem(ctx), releaseHold(deps, holdId)),
     /** @param {Ctx} ctx @param {string} holdId */
     extendHold: async (ctx, holdId) => (assertSystem(ctx), extendHold(holdId)),
+    /** The hold of an order, or null (the booking engine gives back what a failed checkout held). @param {Ctx} ctx @param {string} orderId */
+    holdOfOrder: async (ctx, orderId) => {
+      assertSystem(ctx);
+      const h = await HoldRecord.findOne({ orderId }).setOptions(SCOPE).lean();
+      return h ? holdDto(h) : null;
+    },
     /** A cancelled booking's rooms back (repeat-safe). @param {Ctx} ctx @param {{ bookingId: string, lines: HoldLine[] }} req */
     returnRooms: async (ctx, req) => (assertSystem(ctx), returnRooms(req)),
   };

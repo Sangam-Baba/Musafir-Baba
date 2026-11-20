@@ -27,6 +27,14 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your business is verified — MusafirBaba Business',
     text: 'Hello,\n\nGood news: {{orgName}} is verified and active on MusafirBaba Business.\n\nOpen your workspace: {{link}}\n\nMusafirBaba Business',
   },
+  'kyc.approved-client': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Verification approved',
+    body: '{{orgName}} is verified. You can now search hotels with your B2B prices and add your team.',
+    subject: 'Your company is verified — MusafirBaba Business',
+    text: 'Hello,\n\nGood news: {{orgName}} is verified and active on MusafirBaba Business. You can now search hotels with your B2B prices, set your own markup and invite your team.\n\nOpen your workspace: {{link}}\n\nMusafirBaba Business',
+  },
   'kyc.rejected': {
     version: 1,
     vars: ['orgName', 'link'],
@@ -42,6 +50,22 @@ export const TEMPLATES = Object.freeze({
     body: 'The registration of {{orgName}} is not finished yet. Add the missing details and documents, then submit.',
     subject: 'Finish registering your business — MusafirBaba Business',
     text: 'Hello,\n\nYou started registering {{orgName}} on MusafirBaba Business but have not submitted it yet. Add the missing details and documents, then submit:\n\n{{link}}\n\nIf it stays unfinished, we will remove the registration and its documents.\n\nMusafirBaba Business',
+  },
+  'booking-request.confirmed': {
+    version: 1,
+    vars: ['orgName', 'link', 'propertyName'],
+    title: 'Booking request confirmed',
+    body: 'Your booking request at {{propertyName}} is confirmed by MusafirBaba.',
+    subject: 'Booking request confirmed — MusafirBaba Business',
+    text: 'Hello,\n\nMusafirBaba has confirmed the booking request from {{orgName}} at {{propertyName}}.\n\nSee the details and the hotel confirmation number: {{link}}\n\nMusafirBaba Business',
+  },
+  'booking-request.declined': {
+    version: 1,
+    vars: ['orgName', 'link', 'propertyName', 'reason'],
+    title: 'Booking request declined',
+    body: 'Your booking request at {{propertyName}} could not be arranged: {{reason}}',
+    subject: 'Booking request declined — MusafirBaba Business',
+    text: 'Hello,\n\nMusafirBaba could not arrange the booking request from {{orgName}} at {{propertyName}}.\n\nReason: {{reason}}\n\nSee it here: {{link}}\n\nMusafirBaba Business',
   },
   'listing.published': {
     version: 1,

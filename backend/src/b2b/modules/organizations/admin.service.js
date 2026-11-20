@@ -28,6 +28,7 @@ const orgDto = (o) => ({
   displayName: o.displayName,
   status: o.status,
   statusReason: o.statusReason ?? null,
+  clientCategory: o.type === 'CLIENT' ? (o.clientCategory ?? null) : null,
   createdAt: o.createdAt,
 });
 

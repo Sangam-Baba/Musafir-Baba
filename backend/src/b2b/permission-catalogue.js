@@ -11,9 +11,15 @@ import { PERMISSION_CATALOGUE as identity } from './modules/identity/index.js';
 import { PERMISSION_CATALOGUE as files } from './modules/files/index.js';
 import { PERMISSION_CATALOGUE as hotelCatalog } from './modules/hotel-catalog/index.js';
 import { PERMISSION_CATALOGUE as hotelInventory } from './modules/hotel-inventory/index.js';
+import { PERMISSION_CATALOGUE as hotelSearch } from './modules/hotel-search/index.js';
+import { PERMISSION_CATALOGUE as hotelBooking } from './modules/hotel-booking/index.js';
+import { PERMISSION_CATALOGUE as orders } from './modules/orders/index.js';
+import { PERMISSION_CATALOGUE as wallet } from './modules/wallet/index.js';
+import { PERMISSION_CATALOGUE as payments } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE as kyc } from './modules/kyc/index.js';
 import { PERMISSION_CATALOGUE as notifications } from './modules/notifications/index.js';
 import { PERMISSION_CATALOGUE as organizations } from './modules/organizations/index.js';
+import { PERMISSION_CATALOGUE as pricing } from './modules/pricing/index.js';
 
 export const PERMISSION_CATALOGUE = mergeCatalogues([
   identity,
@@ -25,4 +31,10 @@ export const PERMISSION_CATALOGUE = mergeCatalogues([
   notifications,
   hotelCatalog,
   hotelInventory,
+  pricing,
+  hotelSearch,
+  hotelBooking,
+  orders,
+  wallet,
+  payments,
 ]);

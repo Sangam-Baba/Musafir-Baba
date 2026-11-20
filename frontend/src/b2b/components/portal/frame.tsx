@@ -1,7 +1,7 @@
 "use client";
 // The partner portal frame: dark sidebar (only pages that work today), top bar with the business switcher,
 // the bell and the account menu. Behaviour (switching business, log out, view-as) stays in BusinessShell.
-import { Activity, Building2, Hotel, Headphones, Home, LogOut, Menu, Settings, ShieldCheck, Users, X, type LucideIcon } from "lucide-react";
+import { Activity, Building2, ClipboardList, Hotel, Headphones, Home, LogOut, Menu, Percent, Search, Settings, ShieldCheck, Users, X, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,10 @@ const MAIN: NavItem[] = [
   { href: "/business/profile", label: "Business Profile", icon: Building2 },
   { href: "/business/verification", label: "Verification", icon: ShieldCheck, permission: "kyc.application.read" },
   { href: "/business/properties", label: "My Properties", icon: Hotel, permission: "hotel-catalog.property.read" },
+  // B2B clients (Stage 12 part A) — shown only to roles that have these permissions, so hotels never see them
+  { href: "/business/hotels", label: "Search Hotels", icon: Search, permission: "hotel-search.search.use" },
+  { href: "/business/booking-requests", label: "Booking Requests", icon: ClipboardList, permission: "hotel-booking.request.read" },
+  { href: "/business/markup", label: "My Markup", icon: Percent, permission: "pricing.markup.read" },
 ];
 const ADMIN: NavItem[] = [
   { href: "/business/team", label: "Team & Access", icon: Users },

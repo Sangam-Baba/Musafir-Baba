@@ -29,7 +29,8 @@ export function emptyDetails(): HotelDetailsInput {
 }
 
 /** What the API expects: optional fields left out when empty. */
-export function toRequest(v: HotelDetailsInput, termsVersion: string) {
+/** The details as the API expects them; B2B clients have no property count (Stage 10). */
+export function toRequest(v: HotelDetailsInput, termsVersion: string, kind: "HOTEL" | "CLIENT" = "HOTEL") {
   const opt = (s: string | undefined) => (s && s.trim() ? s.trim() : undefined);
   return {
     legalName: v.legalName,
@@ -40,7 +41,7 @@ export function toRequest(v: HotelDetailsInput, termsVersion: string) {
     gstin: v.gstRegistered ? opt(v.gstin) : undefined,
     pan: v.pan,
     address: { ...v.address, line2: opt(v.address.line2) },
-    propertyCount: v.propertyCount,
+    ...(kind === "HOTEL" ? { propertyCount: v.propertyCount } : {}),
     termsAccepted: v.termsAccepted,
     termsVersion,
     tradeName: opt(v.tradeName),

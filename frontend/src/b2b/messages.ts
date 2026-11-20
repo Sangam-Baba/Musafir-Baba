@@ -102,6 +102,16 @@ const MESSAGES: Record<string, string> = {
   IMPORT_TOO_MANY_ROWS: "The file has too many rows (at most 50 000).",
   IMPORT_CSV_UNCLOSED_QUOTE: "The file has a quote (\") that is never closed.",
   IMPORT_REQUEST_ID_REQUIRED: "Please check the file again before applying it.",
+  SECOND_PERSON_REQUIRED: "Someone else has to approve this — you wrote or submitted it.",
+  RULE_STATUS: "This can't be done in the rule's current state. Reload to see where it is.",
+  VERSION_CONFLICT: "Someone changed this meanwhile. Reload and try again.",
+  MARGIN_RULE_INVALID: "Some fields need fixing — see the list.",
+  TAX_RULE_INVALID: "Some fields need fixing — see the list.",
+  TAX_RULES_OVERLAP: "This rate would overlap a rate already in force for the same amounts and dates.",
+  PRICING_SETTINGS_INVALID: "Some settings need fixing — see the list.",
+  MARKUP_INVALID: "Some fields need fixing — see the list.",
+  NOT_SELLABLE: "Not sellable with the current rules.",
+  PROPERTY_LOCATION_MISSING: "This property has no location yet, so its GST state is unknown.",
 };
 
 export function errorMessage(error: unknown): string {

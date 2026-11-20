@@ -48,3 +48,4 @@ export { MAX_IMPORT_ROWS, MAX_IMPORT_ERRORS, rupeesToPaise, readHeader, readRows
 export { createCalendarImportService } from './calendar-import.service.js';
 export { createAdminCalendarService } from './admin-calendar.service.js';
 export { calendarOf } from './calendar.service.js';
+export { createPlanTermsService } from './plan-terms.service.js';

@@ -19,6 +19,7 @@ export const FREE_PATHS = [
   /^frontend\/src\/app\/business\//,
   /^frontend\/src\/app\/admin\/b2b\//,
   /^frontend\/src\/b2b\//,
+  /^frontend\/src\/app\/\(user\)\/hotels\//, // Stage 06 website hotel pages: a new folder in the website group (no existing file)
   // the business login relay (D35): must sit at /api/v1 on the website so the sign-in cookie path matches; new folder
   /^frontend\/src\/app\/api\/v1\//,
 ];

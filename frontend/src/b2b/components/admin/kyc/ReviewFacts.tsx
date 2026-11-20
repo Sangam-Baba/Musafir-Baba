@@ -97,7 +97,7 @@ export function ReviewFacts({ app, token }: { app: ReviewDetail; token: string }
         <Row k="Address">
           {[d.address.line1, d.address.line2, d.address.city, stateName(d.address.stateCode), d.address.pin].filter(Boolean).join(", ")}
         </Row>
-        <Row k="Properties">{d.propertyCount}</Row>
+        {app.orgType !== "CLIENT" && <Row k="Properties">{d.propertyCount}</Row>}
         <Row k="Bank account">
           {app.bank ? (
             <>

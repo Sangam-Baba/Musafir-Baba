@@ -1,5 +1,7 @@
 # Stage 10 — B2B Client Onboarding & KYC
 
+> **Moved earlier (D36, 19 Nov 2026):** built right after Stage 06, before Stage 07, so B2B clients can register and be verified ahead of the dashboard (Stage 12 part A). Scope unchanged.
+
 | | |
 | --- | --- |
 | **Phase** | B — B2B clients |

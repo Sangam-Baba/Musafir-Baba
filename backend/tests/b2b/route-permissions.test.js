@@ -58,6 +58,10 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /files/download',
         'GET /health',
         'GET /hotels/:ref', // public hotel content: LIVE + visible listings only
+        'GET /hotels/destinations', // website autocomplete: channel-visible names only, per-IP limit (search gateway)
+        'POST /hotels/search', // website search: LIVE visible hotels, from-prices only (no tokens), per-IP limit
+        'POST /hotels/offers/price-check', // token-bound re-price for the caller who got the token, per-IP limit
+        'POST /hotels/:ref/offers', // LIVE visible hotel only, the caller's price view (no hotel rate), per-IP limit
         'GET /invitations/lookup',
         'GET /media/*key', // local development: public hotel photos from disk (fixed key format, public folder only)
         'GET /meta/version',
@@ -74,6 +78,12 @@ describe('every /api/v1 route declares who may use it', () => {
         'POST /refresh',
         'GET /catalog/masters',
         'POST /registrations/hotel',
+        'POST /registrations/client', // B2B client self-registration (S10-T03): same checks and IP limit as hotels
+        'POST /orders', // website booking: guests too (browser session id), Idempotency-Key, per-IP limit, server re-prices the token
+        'GET /orders/:ref', // the buyer only (signed-in customer, same guest session, or the order link key); others 404
+        'POST /orders/:ref/payments', // the buyer only (as above); Idempotency-Key; the PayU form for the server's amount
+        'POST /orders/:ref/extend-hold', // the buyer only (as above); once, +10 minutes
+        'POST /payments/payu/callback', // PayU browser return: trusted only after the reverse hash AND PayU's verify API
         'POST /registrations/verify-email',
       ].sort(),
     );

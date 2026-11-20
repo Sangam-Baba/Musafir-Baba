@@ -47,7 +47,23 @@ import {
   InvitationRecord,
   MemberRecord,
   OrganizationRecord,
+  createClientCategoriesService,
+  seedClientCategories,
 } from './modules/organizations/index.js';
+import {
+  createPricingCacheSignals,
+  EVENTS as PRICING_EVENTS,
+  MarginRuleRecord,
+  seedDefaultMarginRules,
+  seedPricingSettings,
+  seedTaxRules,
+  TaxRuleRecord,
+} from './modules/pricing/index.js';
+import { createSearchCacheSignals } from './modules/hotel-search/index.js';
+import { BookingRecord, BookingRequestRecord } from './modules/hotel-booking/index.js';
+import { OrderRecord } from './modules/orders/index.js';
+import { createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
+import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
 
@@ -58,6 +74,7 @@ export const invariantChecks = createInvariantChecks();
 /** Stage 04: the rooms safety net — holds stuck half way (reconciler) and night counts vs their owners (invariants). */
 for (const rule of holdReconcileRules({ clock: systemClock, logger: defaultLogger })) reconciler.register(rule);
 for (const inv of inventoryInvariants({ clock: systemClock })) invariantChecks.register(inv);
+for (const inv of ledgerInvariants()) invariantChecks.register(inv);
 /** Event subscriptions (consumers) — e.g. notifications subscribe to 'hotel-booking.booking.confirmed'. */
 export const eventBus = createEventBus();
 
@@ -132,6 +149,47 @@ eventBus.subscribe({
   handler: (event) => availabilitySignals.handle(event),
 });
 
+/** Stage 05: a margin rule or GST rate changed → every process drops its cached pricing data (prices within a minute at worst). */
+const pricingCacheSignals = createPricingCacheSignals({ clock: systemClock, logger: defaultLogger });
+eventBus.subscribe({
+  consumer: 'pricing-cache-evict',
+  types: [PRICING_EVENTS.ruleActivated, PRICING_EVENTS.ruleRetired, PRICING_EVENTS.taxRuleActivated],
+  handler: () => pricingCacheSignals.handle(),
+});
+
+/** Stage 10: a B2B client was verified (org activated) → it starts in the Standard category (repeat-safe, never overrides). */
+const clientCategories = createClientCategoriesService({ clock: systemClock });
+eventBus.subscribe({
+  consumer: 'organizations-client-default-category',
+  types: [ORG_EVENTS.orgActivated],
+  handler: async (event) => {
+    if (event.payload.type === 'CLIENT') await clientCategories.assignDefault(String(event.payload.orgId));
+  },
+});
+
+/** Stage 07: a hotel company is activated → its payable account is opened (repeat-safe). */
+const ledger = createLedger({ clock: systemClock });
+eventBus.subscribe({
+  consumer: 'wallet-hotel-payable',
+  types: [ORG_EVENTS.orgActivated],
+  handler: async (event) => {
+    if (event.payload.type === 'HOTEL') await ledger.openHotelPayable(String(event.payload.orgId));
+  },
+});
+
+/** Stage 06: a listing published / changed / suspended / archived → every process drops its search caches (autocomplete). */
+const searchCacheSignals = createSearchCacheSignals({ clock: systemClock, logger: defaultLogger });
+eventBus.subscribe({
+  consumer: 'hotel-search-cache-evict',
+  types: [
+    CATALOG_EVENTS.propertyPublished,
+    CATALOG_EVENTS.propertyUpdated,
+    CATALOG_EVENTS.propertySuspended,
+    CATALOG_EVENTS.propertyArchived,
+  ],
+  handler: () => searchCacheSignals.handle(),
+});
+
 /** Models whose documents carry `pendingEvents` (state documents) — the relay reads these. */
 /** @type {import('mongoose').Model<any>[]} */
 export const eventSources = [
@@ -147,6 +205,13 @@ export const eventSources = [
   RoomTypeRecord,
   HoldRecord,
   ChangeLogRecord,
+  MarginRuleRecord,
+  TaxRuleRecord,
+  BookingRequestRecord,
+  IntentRecord,
+  RefundRecord,
+  OrderRecord,
+  BookingRecord,
 ];
 
 /**
@@ -156,6 +221,11 @@ export const eventSources = [
 export const startupTasks = [
   { name: 'access: sync permission catalogue', run: (deps) => syncPermissionCatalogue(PERMISSION_CATALOGUE, deps) },
   { name: 'hotel-catalog: starter master lists (adds only what is missing)', run: () => seedMasters() },
+  { name: 'pricing: starter GST rates (adds only what is missing)', run: () => seedTaxRules() },
+  { name: 'pricing: default margin rules (adds only keys never seeded)', run: (deps) => seedDefaultMarginRules(deps) },
+  { name: 'pricing: settings with the owner defaults (only if missing)', run: () => seedPricingSettings() },
+  { name: 'organizations: starter client categories (adds only what is missing)', run: () => seedClientCategories() },
+  { name: 'wallet: MusafirBaba ledger accounts (opens only what is missing)', run: () => seedPlatformAccounts() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;
@@ -182,7 +252,11 @@ export function routeSignal(signal, hub) {
  * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger, runJobs: boolean,
  *   hub: { deliver: (s: import('./core/realtime/signals.js').Signal) => void },
  *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null, publicUrl?: string,
- *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[] }} options
+ *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[],
+ *   rules?: import('./core/jobs/reconciler.js').ReconcileRule[],
+ *   consumers?: { consumer: string, types: string[], handler: (event: any) => Promise<void> }[],
+ *   invariants?: { name: string, check: () => Promise<{ id: string, detail: string }[]> }[] }} options
+ *   `rules` / `consumers`: parts built with the process's settings (the booking engine) — registered once here
  * @returns {{ stop: () => Promise<void> }}
  */
 export function startBackground(options) {
@@ -204,6 +278,9 @@ export function startBackground(options) {
     return { stop: () => reader.stop() };
   }
 
+  for (const rule of options.rules ?? []) if (!reconciler.rules().some((r) => r.name === rule.name)) reconciler.register(rule);
+  for (const c of options.consumers ?? []) eventBus.subscribe(c);
+  for (const inv of options.invariants ?? []) invariantChecks.register(inv);
   const scheduler = createScheduler({ workerId, ...deps });
   scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: () => reconciler.runOnce(deps).then(() => undefined) });
   for (const s of options.schedules ?? [])

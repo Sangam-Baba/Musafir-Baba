@@ -57,6 +57,8 @@ Version 1 = hotels only. Flights, packages, transfers, activities and visa plug 
 
 **Order (decided 12 Nov 2026):** foundations → **hotel side first** (onboarding, listings, rooms & rates, pricing, website search, payments, booking, after-booking) so there is a **working system** — hotels list, website customers book — → then **B2B clients** (onboarding, wallet, dashboard booking, plans) → then **API access**, finance and launch.
 
+**Order revised (19 Nov 2026, D36):** after Stage 06 → **10** (B2B client onboarding, in full) → **12 part A** (B2B dashboard without booking) → 07 → 08 → 09 → Pilot 1 → 11 → **12 part B** (dashboard booking, My Bookings, usage) → 13 → Pilot 2 → 14 → 15 → 16. Only the order changes; every stage keeps its scope.
+
 **Phases:** **A** = hotels + website (working system) · **B** = B2B clients · **C** = API, finance, launch.
 
 **Effort (2–3 developers):** Phase A critical path 00 → 01 → 02 → 03 → 04 → 05 → 06 → 08 → 09 ≈ **22 weeks** (Stage 07 runs in parallel; +1.5 weeks because the code works without database transactions so the database stays untouched — D28) → **Pilot 1 around week 23–28**. Phase B ≈ 8 weeks (10 ∥ 11, then 12, 13) → **Pilot 2 around week 31–37**. Phase C ≈ 4.5 weeks (14 ∥ 15, then 16) → **public launch around week 36–44**. Re-plan after Stage 01 and after Pilot 1.

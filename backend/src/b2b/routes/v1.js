@@ -39,6 +39,14 @@ import { ratePlanRoutes } from './hotel-rate-plans.js';
 import { calendarRoutes } from './hotel-calendar.js';
 import { calendarImportRoutes } from './hotel-calendar-import.js';
 import { adminCalendarRoutes } from './hotel-calendar-admin.js';
+import { stage05Routes } from './pricing-wiring.js';
+import { followCheck, stage06Routes } from './search-wiring.js';
+import { stage10Routes } from './client-wiring.js';
+import { paymentsFromEnv, stage07Routes } from './payments-wiring.js';
+import { bookingEngine, stage08Routes } from './orders-wiring.js';
+import { ORDER_SWEEP_EVERY_MS, orderConsumers, orderInvariants, orderReconcileRules, sweepOrders } from '../modules/orders/index.js';
+import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
+import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
@@ -83,8 +91,10 @@ const REQUEST_TIMEOUT_MS = 15_000;
 /**
  * @param {{ env?: NodeJS.ProcessEnv, connect?: boolean, logger?: import('../core/logger.js').Logger,
  *   authenticate?: import('../core/http/context-middleware.js').Authenticator, timeoutMs?: number,
- *   clock?: import('../core/clock.js').Clock, hub?: StreamHub }} [options]
+ *   clock?: import('../core/clock.js').Clock, hub?: StreamHub,
+ *   canFollow?: (actor: import('../core/context.js').Actor, rooms: string[]) => Promise<boolean> }} [options]
  *   connect: false (tests) = no database connection and no background work.
+ *   canFollow: tests of the stream itself may replace the "LIVE properties only" check.
  * @returns {import('express').Router}
  */
 export function createB2BRouter(options = {}) {
@@ -96,11 +106,10 @@ export function createB2BRouter(options = {}) {
   const hub =
     options.hub ??
     createStreamHub({ clock, logger: log, readSince: readSignalsSince, objectIdFrom: (hex) => new b2bMongoose.Types.ObjectId(hex) });
-  if (options.connect !== false) startDatabase(env, log, hub);
-
   const accessChanged = createAccessChangeNotifier({ clock, logger: log });
   const roles = createRoles(clock, accessChanged);
   const identity = createIdentity(env, clock, roles.permissionsOf, createMemberCache(clock));
+  if (options.connect !== false) startDatabase(env, log, hub, identity);
   const staffRoles = createStaffRoles(clock);
   const viewAsDeps = {
     viewAs: createViewAsService({ secret: env.B2B_AUTH_SECRET, clock }),
@@ -142,9 +151,12 @@ export function createB2BRouter(options = {}) {
   router.use(createTeamRoutes({ env, clock, roles, identity, accessChanged, staffRoles }));
   router.use(viewAsRoutes(viewAsDeps));
   router.use(stage02Routes(env, clock, identity));
+  router.use(stage06Routes(env, clock, identity)); // before Stage 03: `/hotels/destinations` must not be read as `/hotels/:ref`
   router.use(stage03Routes(env, clock, identity));
   router.use(stage04Routes(clock, identity));
-  router.use('/realtime', realtimeRoutes({ hub }));
+  router.use(stage05Routes(env, clock, identity, log));
+  router.use(stage10Routes(clock), stage07Routes(env, clock, log), stage08Routes(env, clock, log, identity));
+  router.use('/realtime', realtimeRoutes({ hub, canFollow: options.canFollow ?? followCheck(clock) }));
 
   router.use(notFoundHandler());
   router.use(problemHandler(log));
@@ -317,9 +329,11 @@ const CALENDAR_WINDOW_SCHEDULE = {
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/logger.js').Logger} log
  * @param {StreamHub} hub
+ * @param {ReturnType<typeof createIdentity>} identity
  */
-function startDatabase(env, log, hub) {
+function startDatabase(env, log, hub, identity) {
   const config = loadConfig(env);
+  const engine = bookingEngine(env, systemClock, log, identity);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
@@ -330,10 +344,21 @@ function startDatabase(env, log, hub) {
         hub,
         email,
         publicUrl: config.B2B_PUBLIC_URL,
+        rules: orderReconcileRules(engine.ordersDeps),
+        consumers: orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
+        invariants: orderInvariants({ clock: systemClock }),
         schedules: [
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+          { name: 'orders-sweeper', everyMs: ORDER_SWEEP_EVERY_MS, run: () => sweepOrders(engine.ordersDeps) },
+          { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
+          { name: 'payments-poller', everyMs: POLL_EVERY_MS, run: () => pollPayments(paymentsFromEnv(env, systemClock, log).deps) },
+          {
+            name: 'payments-daily-reconciliation',
+            everyMs: 24 * 60 * 60_000,
+            run: () => dailyReconciliation(paymentsFromEnv(env, systemClock, log).deps),
+          },
         ],
       }),
     )

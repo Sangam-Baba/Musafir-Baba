@@ -61,7 +61,13 @@ async function serve(opts = {}) {
   app.set('trust proxy', false);
   app.use(
     '/api/v1',
-    createB2BRouter({ connect: false, logger: quiet, hub: opts.hub ?? hub, authenticate: async () => opts.actor ?? null }),
+    createB2BRouter({
+      connect: false,
+      logger: quiet,
+      hub: opts.hub ?? hub,
+      authenticate: async () => opts.actor ?? null,
+      canFollow: async () => true,
+    }), // who may follow: hotel-search-live.test.js,
   );
   /** @type {import('node:http').Server} */
   const server = await new Promise((resolve) => {

@@ -243,8 +243,8 @@ function orgInfoFunctions() {
     /** Type and name of an org, any status (admin tools). @param {string} orgId */
     async basicInfo(orgId) {
       if (!ID.test(orgId)) return null;
-      const o = await OrganizationRecord.findOne({ _id: orgId }, { type: 1, displayName: 1, status: 1 }).lean();
-      return o ? { orgId, type: o.type, displayName: o.displayName, status: o.status } : null;
+      const o = await OrganizationRecord.findOne({ _id: orgId }, { type: 1, displayName: 1, status: 1, clientCategory: 1 }).lean();
+      return o ? { orgId, type: o.type, displayName: o.displayName, status: o.status, clientCategory: o.clientCategory ?? null } : null;
     },
 
     /** User ids of the org's active Owners (to notify them). @param {string} orgId */

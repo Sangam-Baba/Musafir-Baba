@@ -11,3 +11,10 @@ export { createMemberRolesService, isRoleInUse } from './member-roles.service.js
 export { createOrgAdminService } from './admin.service.js';
 export { INVITATIONS_COLLECTION, InvitationRecord } from './models/invitation.model.js';
 export { organizationRoutes } from './routes.js';
+export { CLIENT_CATEGORIES_COLLECTION, ClientCategoryRecord } from './models/client-category.model.js';
+export {
+  SEED_CLIENT_CATEGORIES,
+  DEFAULT_CLIENT_CATEGORY,
+  seedClientCategories,
+  createClientCategoriesService,
+} from './client-categories.service.js';

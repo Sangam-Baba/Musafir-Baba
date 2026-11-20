@@ -161,10 +161,10 @@ async function submitDoc(deps, { orgId, doc, by }) {
 function hotelEdits(deps, gstinUsedElsewhere) {
   return {
     /**
-     * New details (already checked by `validateHotelDetails`): risk is assessed again, and documents that
+     * New details (already checked by `validateHotelDetails` / `validateClientDetails`): risk is assessed again, and documents that
      * no longer belong to the set (e.g. a GST certificate after switching to "not registered") are dropped.
      * @param {import('../../core/context.js').RequestContext} ctx
-     * @param {import('./domain/hotel-details.js').HotelDetails} details
+     * @param {import('./domain/hotel-details.js').HotelDetails | import('./domain/client-details.js').ClientDetails} details
      */
     async saveDetails(ctx, details) {
       const { orgId } = orgOf(ctx);
@@ -231,7 +231,7 @@ export function createKycService(deps) {
 
     /**
      * Repeat-safe: one application per org (unique index); a second call returns the existing one.
-     * @param {{ orgId: string, orgType: 'CLIENT' | 'HOTEL', createdBy: string, details?: import('./domain/hotel-details.js').HotelDetails | null }} input
+     * @param {{ orgId: string, orgType: 'CLIENT' | 'HOTEL', createdBy: string, details?: import('./domain/hotel-details.js').HotelDetails | import('./domain/client-details.js').ClientDetails | null }} input
      */
     async ensureApplication(input) {
       const existing = await ApplicationRecord.findOne({ orgId: input.orgId }).lean();

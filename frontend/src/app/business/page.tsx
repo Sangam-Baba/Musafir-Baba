@@ -106,7 +106,7 @@ function Overview({ me }: { me: Me }) {
       {vSteps && !verified && (
         <ProgressCard
           title={kyc.data?.status === "REJECTED" ? "Your verification needs changes" : kyc.data?.status === "SUBMITTED" || kyc.data?.status === "UNDER_REVIEW" ? "Verification in progress" : "Complete your business verification"}
-          text={kyc.data?.status === "SUBMITTED" || kyc.data?.status === "UNDER_REVIEW" ? "MusafirBaba is reviewing your documents. You'll get an email and a notification when it's decided." : "Finish your setup so MusafirBaba can verify your business — then you can start listing your property."}
+          text={kyc.data?.status === "SUBMITTED" || kyc.data?.status === "UNDER_REVIEW" ? "MusafirBaba is reviewing your documents. You'll get an email and a notification when it's decided." : `Finish your setup so MusafirBaba can verify your business — then you can ${current?.type === "CLIENT" ? "search hotels with your B2B prices" : "start listing your property"}.`}
           steps={vSteps}
           cta={vSteps.find((s) => !s.done && !s.waiting) ? { label: "Continue verification", href: "/business/verification" } : undefined}
         />
@@ -119,6 +119,13 @@ function Overview({ me }: { me: Me }) {
           steps={lSteps}
           cta={lSteps.find((s) => !s.done && !s.waiting && s.href) ? { label: properties.length ? "Continue your listing" : "Add your property", href: lSteps.find((s) => !s.done && s.href)?.href ?? "/business/properties" } : undefined}
         />
+      )}
+      {verified && current?.type === "CLIENT" && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">
+          <CheckCircle2 className="h-4 w-4" /> {current.displayName} is verified.
+          {can("hotel-search.search.use") && <Link href="/business/hotels" className="font-medium underline">Search hotels with your B2B prices</Link>}
+          {can("pricing.markup.read") && <Link href="/business/markup" className="font-medium underline">Set your markup</Link>}
+        </div>
       )}
       {verified && live > 0 && (
         <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] text-emerald-800">

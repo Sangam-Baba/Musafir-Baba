@@ -29,6 +29,15 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/verification',
   },
+  // Stage 10: the same approval for a B2B client — its own wording and link (hotels keep 'kyc.approved')
+  'kyc.approved-client': {
+    audience: 'ORG',
+    permission: 'kyc.application.read',
+    critical: true,
+    label: 'Verification approved',
+    emailTo: 'OWNERS',
+    link: '/business',
+  },
   'kyc.rejected': {
     audience: 'ORG',
     permission: 'kyc.application.read',
@@ -85,6 +94,23 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'USER',
     link: '/business',
   },
+  // D37: booking requests from B2B clients
+  'booking-request.confirmed': {
+    audience: 'ORG',
+    permission: 'hotel-booking.request.read',
+    critical: false,
+    label: 'Booking request confirmed',
+    emailTo: 'OWNERS',
+    link: '/business/booking-requests',
+  },
+  'booking-request.declined': {
+    audience: 'ORG',
+    permission: 'hotel-booking.request.read',
+    critical: false,
+    label: 'Booking request declined',
+    emailTo: 'OWNERS',
+    link: '/business/booking-requests',
+  },
 });
 
 /** @typedef {keyof typeof CATEGORIES} CategoryKey */
@@ -101,6 +127,8 @@ export const EVENT_CATEGORIES = Object.freeze({
   'hotel-catalog.property.suspended': 'listing.suspended',
   'hotel-catalog.revision.decided': 'listing.revision-decided',
   'organizations.member.roles-changed': 'team.role-changed',
+  'hotel-booking.request.confirmed': 'booking-request.confirmed',
+  'hotel-booking.request.declined': 'booking-request.declined',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */
@@ -117,6 +145,10 @@ export const ADMIN_QUEUES = Object.freeze({
   'hotel-catalog.property.published': 'listings',
   'hotel-catalog.property.changes-requested': 'listings',
   'hotel-catalog.revision.decided': 'listings',
+  'hotel-booking.request.submitted': 'booking-requests',
+  'hotel-booking.request.cancelled': 'booking-requests',
+  'hotel-booking.request.confirmed': 'booking-requests',
+  'hotel-booking.request.declined': 'booking-requests',
 });
 
 /** @param {string} key @returns {Category | null} */
@@ -131,4 +163,18 @@ export function visibleOrgCategories(permissions) {
   return Object.entries(CATEGORIES)
     .filter(([, c]) => c.audience === 'ORG' && (c.permission === null || permissions.includes(c.permission)))
     .map(([key]) => key);
+}
+
+/** Notifications worded differently for B2B clients (event payload `orgType: 'CLIENT'`). @type {Readonly<Record<string, string>>} */
+export const CLIENT_VARIANTS = Object.freeze({ 'kyc.approved': 'kyc.approved-client' });
+
+/**
+ * The notification for an event: its category, or the client wording when the event is about a B2B client.
+ * @param {string} eventType
+ * @param {Record<string, unknown>} payload
+ * @returns {string | undefined}
+ */
+export function categoryKeyFor(eventType, payload) {
+  const key = EVENT_CATEGORIES[eventType];
+  return key && payload.orgType === 'CLIENT' ? (CLIENT_VARIANTS[key] ?? key) : key;
 }

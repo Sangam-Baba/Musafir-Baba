@@ -18,8 +18,8 @@ import { z } from 'zod';
 import { contextOf } from '../core/http/context-middleware.js';
 import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { PERMISSIONS as KYC, validateBankDetails, validateHotelDetails } from '../modules/kyc/index.js';
-import { HotelDetailsBody } from './registrations.js';
+import { PERMISSIONS as KYC, validateBankDetails, validateClientDetails, validateHotelDetails } from '../modules/kyc/index.js';
+import { ClientDetailsBody, HotelDetailsBody } from './registrations.js';
 
 const BankBody = z.strictObject({
   holderName: z.string().max(200),
@@ -36,8 +36,8 @@ const DocumentKey = z.strictObject({ key: z.string().regex(/^[a-z][a-z0-9_]{1,40
  */
 
 /**
- * The application, or — for a hotel still onboarding that has none (registration interrupted after the org
- * was created, or a hotel org created by an admin) — a new empty draft. Active orgs never get one here, so
+ * The application, or — for a hotel or client still onboarding that has none (registration interrupted after the
+ * org was created, or an org created by an admin) — a new empty draft of its own type. Active orgs never get one here, so
  * they are never reminded or cleaned up.
  * @param {KycRouteDeps} deps
  * @param {import('../core/context.js').RequestContext} ctx
@@ -49,10 +49,32 @@ async function mineOrStart(deps, ctx) {
     const a = ctx.actor;
     if (/** @type {{ code?: string }} */ (error).code !== 'KYC_APPLICATION_NOT_FOUND' || a.type !== 'member' || !deps.orgs) throw error;
     const org = await deps.orgs.basicInfo(a.orgId);
-    if (org?.type !== 'HOTEL' || org.status !== 'ONBOARDING') throw error;
-    await deps.kyc.ensureApplication({ orgId: a.orgId, orgType: 'HOTEL', createdBy: a.userId, details: null });
+    if ((org?.type !== 'HOTEL' && org?.type !== 'CLIENT') || org.status !== 'ONBOARDING') throw error;
+    await deps.kyc.ensureApplication({ orgId: a.orgId, orgType: org.type, createdBy: a.userId, details: null });
     return deps.kyc.mine(ctx);
   }
+}
+
+/**
+ * `PUT /kyc` details: the form follows the organisation's type (clients have no property count); hotels as before.
+ * @param {KycRouteDeps} deps
+ * @returns {import('express').RequestHandler[]}
+ */
+function detailsHandlers(deps) {
+  const isClient = (/** @type {import('express').Response} */ res) => {
+    const { actor } = contextOf(res);
+    return actor.type === 'member' && actor.orgType === 'CLIENT';
+  };
+  const hotelBody = validate({ body: z.strictObject({ details: HotelDetailsBody }) });
+  const clientBody = validate({ body: z.strictObject({ details: ClientDetailsBody }) });
+  return [
+    (req, res, next) => (isClient(res) ? clientBody : hotelBody)(req, res, next),
+    (_req, res, next) => {
+      const raw = res.locals.input.body.details;
+      const details = isClient(res) ? validateClientDetails(raw) : validateHotelDetails(raw);
+      deps.kyc.saveDetails(contextOf(res), details).then((a) => res.json(a), next);
+    },
+  ];
 }
 
 /** @param {KycRouteDeps} deps */
@@ -64,10 +86,7 @@ export function kycRoutes(deps) {
     mineOrStart(deps, contextOf(res)).then((a) => res.json(a), next);
   });
 
-  router.put('/kyc', submit, validate({ body: z.strictObject({ details: HotelDetailsBody }) }), (_req, res, next) => {
-    const details = validateHotelDetails(res.locals.input.body.details);
-    deps.kyc.saveDetails(contextOf(res), details).then((a) => res.json(a), next);
-  });
+  router.put('/kyc', submit, ...detailsHandlers(deps));
 
   router.put('/kyc/bank', submit, validate({ body: BankBody }), (_req, res, next) => {
     const bank = validateBankDetails(res.locals.input.body);
