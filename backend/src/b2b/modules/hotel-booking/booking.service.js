@@ -328,5 +328,12 @@ export function createHotelItemHandler(deps) {
     ledgerLines: (_order, item) => ledgerLines(deps, item),
     abandon: (_ctx, order) => abandon(deps, order),
     view: async (item, audience) => bookingView(await loadBooking(item.bookingId), audience),
+    timeline: async (item) =>
+      (await BookingStatusRecord.find({ bookingId: item.bookingId }).setOptions(ENGINE).sort({ at: 1 }).lean()).map((r) => ({
+        at: r.at,
+        what: `booking ${item.bookingRef}: ${r.from ?? '—'} → ${r.to}`,
+        by: r.by,
+        note: r.note ?? null,
+      })),
   };
 }

@@ -144,3 +144,30 @@ export async function ackEscalation(deps) {
   }
   return { sent };
 }
+
+/**
+ * MusafirBaba operations: confirmed bookings not acknowledged after an hour (ops queue `hotel-ack`) — whom to call.
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ */
+export async function overdueAcknowledgements(deps) {
+  const before = new Date(deps.clock.now().getTime() - 60 * 60_000);
+  const docs = await BookingRecord.find({ status: 'CONFIRMED', acknowledgedAt: null, confirmedAt: { $lte: before } })
+    .setOptions(ESCALATE)
+    .sort({ confirmedAt: 1 })
+    .limit(100)
+    .lean();
+  return docs.map((b) => {
+    const p = /** @type {any} */ (b.snapshot)?.property ?? {};
+    return {
+      ref: b.ref,
+      orderRef: b.orderRef,
+      propertyName: p.name ?? null,
+      city: p.cityName ?? null,
+      phone: p.contacts?.phone ?? null,
+      email: p.contacts?.email ?? null,
+      checkIn: b.stay.checkIn,
+      confirmedAt: b.confirmedAt,
+      hotelOrgId: b.hotelOrgId,
+    };
+  });
+}

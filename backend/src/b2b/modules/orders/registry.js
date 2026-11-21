@@ -26,6 +26,7 @@ import { DomainError } from '../../core/errors.js';
  *   ledgerLines: (order: OrderInfo, item: OrderItem) => Promise<LedgerLine[]>,
  *   abandon: (ctx: Ctx, order: OrderInfo) => Promise<void>,
  *   view: (item: OrderItem, audience: 'BUYER' | 'ADMIN') => Promise<Record<string, unknown>>,
+ *   timeline: (item: OrderItem) => Promise<{ at: Date, what: string, by: string, note: string | null }[]>,
  * }} ItemHandler
  * @typedef {{
  *   start: (ctx: Ctx, order: Record<string, any>, opts: { windowMinutes: number, returnUrl: string }) =>

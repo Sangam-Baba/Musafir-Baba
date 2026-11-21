@@ -24,7 +24,7 @@ const BATCH = 100;
 const MIN = 60_000;
 
 /** @param {import('./payment.service.js').PayDeps} deps @param {Record<string, any>} o */
-async function expire(deps, o) {
+export async function expireOrder(deps, o) {
   const event = newEvent(EVENTS.orderExpired, { orgId: o.hotelOrgIds?.[0] ?? 'platform', orderId: String(o._id), ref: o.ref }, deps);
   const moved = await transition(OrderRecord, {
     id: o._id,
@@ -51,7 +51,7 @@ export async function sweepOrders(deps) {
     .lean();
   let expired = 0;
   for (const o of due) {
-    const ok = await expire(deps, o).catch((err) => (deps.logger.warn({ err, ref: o.ref }, 'orders: expiring failed'), false));
+    const ok = await expireOrder(deps, o).catch((err) => (deps.logger.warn({ err, ref: o.ref }, 'orders: expiring failed'), false));
     if (ok) expired += 1;
   }
   const owed = await OrderRecord.find({

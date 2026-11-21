@@ -29,7 +29,7 @@
 | 05 | Pricing & GST | A | AWAITING_SIGN_OFF | 11 / 11 | 0 | 100 % | 2026-11-18 | — | [stage-05](stages/stage-05.md) |
 | 06 | Search & availability (website first) | A | AWAITING_SIGN_OFF | 11 / 12 | 1 | 100 % | 2026-11-18 | — | [stage-06](stages/stage-06.md) |
 | 07 | Payments (PayU) & ledger core | A | AWAITING_SIGN_OFF | 11 / 11 | 0 | 100 % | 2026-11-19 | — | [stage-07](stages/stage-07.md) |
-| 08 | Booking engine (website first) | A | IN_PROGRESS | 10 / 12 | 0 | 83 % | 2026-11-19 | — | [stage-08](stages/stage-08.md) |
+| 08 | Booking engine (website first) | A | IN_PROGRESS | 11 / 12 | 0 | 92 % | 2026-11-19 | — | [stage-08](stages/stage-08.md) |
 | 09 | After booking & hotel operations | A | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | — | **Pilot 1 — hotels + website** (2–3 weeks) | A | NOT_STARTED | — | — | — | — | — | Stage 09 §10 checklist |
 | 10 | B2B client onboarding & KYC | B | AWAITING_SIGN_OFF | 8 / 8 | 0 | 100 % | 2026-11-19 | — | [stage-10](stages/stage-10.md) |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 146 of 148 tasks done (99 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 147 of 148 tasks done (99 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

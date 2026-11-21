@@ -2,12 +2,13 @@
 // B2B admin (MusafirBaba staff): organisations, business users, activity and staff access.
 // Lives inside the existing admin panel and its login, built from the admin's own UI kit.
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Building2, ClipboardList, FileCheck2, Hotel, IndianRupee, Landmark, ListChecks, ShieldCheck, Users } from "lucide-react";
+import { Activity, Building2, ClipboardList, FileCheck2, Hotel, IndianRupee, Landmark, ShoppingBag, ListChecks, ShieldCheck, Users } from "lucide-react";
 
 import type { QueueItem } from "@/b2b/admin-kyc";
 import { AdminBell } from "@/b2b/components/admin/AdminBell";
 import { BookingRequestsTab } from "@/b2b/components/admin/BookingRequestsTab";
 import { FinanceTab } from "@/b2b/components/admin/finance/FinanceTab";
+import { OrdersTab } from "@/b2b/components/admin/OrdersTab";
 import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
 import { KycQueueTab } from "@/b2b/components/admin/KycQueueTab";
 import { ListingsTab } from "@/b2b/components/admin/ListingsTab";
@@ -21,6 +22,7 @@ import { ActivityTab, UsersTab } from "@/b2b/components/admin/UsersAndActivity";
 const TABS = [
   { value: "kyc", label: "Verification", icon: FileCheck2, title: "Verification", description: "Hotels waiting for KYC review." },
   { value: "listings", label: "Listings", icon: Hotel, title: "Listings", description: "Hotel listings waiting for approval, and every property." },
+  { value: "orders", label: "Orders", icon: ShoppingBag, title: "Orders", description: "Website bookings: search, timeline, actions with two people, hotels not answering." },
   { value: "requests", label: "Requests", icon: ClipboardList, title: "Booking requests", description: "B2B clients asking MusafirBaba to arrange a stay." },
   { value: "masters", label: "Masters", icon: ListChecks, title: "Master lists", description: "Cities, amenities, property and bed types, meal plans." },
   { value: "pricing", label: "Pricing", icon: IndianRupee, title: "Pricing", description: "Margin rules, price simulator, GST rates and settings." },
@@ -52,12 +54,15 @@ function B2BAdmin({ token }: { token: string }) {
         ]}
       />
       <Tabs defaultValue="kyc" className="flex flex-col gap-4">
-        <AdminTabsList tabs={TABS} gridClassName="lg:grid-cols-10" />
+        <AdminTabsList tabs={TABS} gridClassName="lg:grid-cols-11" />
         <TabsContent value="kyc" className="mt-0">
           <KycQueueTab token={token} />
         </TabsContent>
         <TabsContent value="listings" className="mt-0">
           <ListingsTab token={token} />
+        </TabsContent>
+        <TabsContent value="orders" className="mt-0">
+          <OrdersTab token={token} />
         </TabsContent>
         <TabsContent value="requests" className="mt-0">
           <BookingRequestsTab token={token} />
