@@ -2,12 +2,14 @@
 /**
  * Stage 11 background parts for live client wallets:
  * - a client company is activated → its wallet is opened (repeat-safe);
+ * - a PayU top-up is paid (on time or late) → the wallet is credited once;
  * - every minute: wallets missing for active clients are opened (clients activated before Stage 11) and wallet ops left
  *   half-way (process stopped) are finished; holds past their time expire; holds stuck half-way are finished;
  * - the hourly check: live balances match the journal.
  */
 import { systemScope } from '../core/db/tenant-plugin.js';
 import { EVENTS as ORG_EVENTS, OrganizationRecord } from '../modules/organizations/index.js';
+import { EVENTS as PAYMENT_EVENTS } from '../modules/payments/index.js';
 import { AccountRecord, createHolds, createLedger, createLiveWallets, liveInvariants } from '../modules/wallet/index.js';
 
 const SCOPE = systemScope('wallet: open client wallets', { routine: true });
@@ -42,6 +44,16 @@ export function walletParts(clock) {
       /** @param {any} event */
       handler: async (event) => {
         if (event.payload.type === 'CLIENT') await wallets.open(String(event.payload.orgId));
+      },
+    },
+    topUps: {
+      consumer: 'wallet-topup-paid',
+      types: [PAYMENT_EVENTS.intentSucceeded, PAYMENT_EVENTS.intentPaidLate],
+      /** @param {any} event */
+      handler: async (event) => {
+        const p = event.payload;
+        if (p.purpose === 'TOPUP' && p.orgId && p.orgId !== 'platform')
+          await wallets.topUpPaid({ clientOrgId: String(p.orgId), txnId: String(p.txnId), amountPaise: Number(p.amountPaise) });
       },
     },
     invariants: liveInvariants(),

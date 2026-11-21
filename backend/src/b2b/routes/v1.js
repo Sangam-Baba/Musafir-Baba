@@ -40,6 +40,7 @@ import { stage05Routes } from './pricing-wiring.js';
 import { followCheck, stage06Routes } from './search-wiring.js';
 import { stage10Routes } from './client-wiring.js';
 import { stage07Routes } from './payments-wiring.js';
+import { stage11Routes } from './wallet.js';
 import { stage08Routes } from './orders-wiring.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
@@ -143,9 +144,8 @@ export function createB2BRouter(options = {}) {
   router.use(stage02Routes(env, clock, identity));
   router.use(stage06Routes(env, clock, identity)); // before Stage 03: `/hotels/destinations` must not be read as `/hotels/:ref`
   router.use(stage03Routes(env, clock, identity));
-  router.use(stage04Routes(clock, identity));
-  router.use(stage05Routes(env, clock, identity, log));
-  router.use(stage10Routes(clock), stage07Routes(env, clock, log), stage08Routes(env, clock, log, identity));
+  router.use(stage04Routes(clock, identity), stage05Routes(env, clock, identity, log), stage10Routes(clock));
+  router.use(stage07Routes(env, clock, log), stage08Routes(env, clock, log, identity), stage11Routes(env, clock, log));
   router.use('/realtime', realtimeRoutes({ hub, canFollow: options.canFollow ?? followCheck(clock) }));
 
   router.use(notFoundHandler());

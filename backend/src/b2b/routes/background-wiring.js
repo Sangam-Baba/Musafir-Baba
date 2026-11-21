@@ -92,6 +92,7 @@ export function startDatabase(env, log, hub, identity) {
           summaries.consumer,
           ...payables.consumers,
           wallet.consumer,
+          wallet.topUps,
         ],
         invariants: [
           ...orderInvariants({ clock: systemClock }),

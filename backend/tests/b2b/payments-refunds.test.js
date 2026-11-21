@@ -79,7 +79,7 @@ beforeEach(async () => {
   payments = createPayments(deps);
 });
 
-const intent = (/** @type {'ORDER' | 'TOPUP'} */ purpose = 'ORDER') =>
+const intent = (/** @type {'ORDER' | 'TOPUP' | 'SUBSCRIPTION'} */ purpose = 'ORDER') =>
   payments.createIntent({
     purpose,
     reference: { type: 'order', id: 'MBO-1' },
@@ -110,8 +110,8 @@ describe('poller', () => {
     expect((await IntentRecord.findOne({ txnId: i.txnId }).lean())?.journalPosted).toBe(true);
   });
 
-  it('paid after its window (not an order): the money is recorded, finance told, refunded to the source once', async () => {
-    const i = await intent('TOPUP');
+  it('paid after its window (not an order or a top-up): the money is recorded, finance told, refunded to the source once', async () => {
+    const i = await intent('SUBSCRIPTION');
     nowMs += 31 * 60_000;
     await pollPayments(deps); // PayU: not found → abandoned
     expect((await IntentRecord.findOne({ txnId: i.txnId }).lean())?.failureReason).toBe('ABANDONED');

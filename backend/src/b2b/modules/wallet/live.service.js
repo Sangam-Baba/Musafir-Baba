@@ -130,6 +130,28 @@ export function createLiveWallets(deps) {
     read: async (clientOrgId) => walletDto(await walletOf(clientOrgId)),
     /** @param {Parameters<typeof apply>[1]} a */
     apply: (a) => apply(deps, a),
+    /**
+     * A PayU top-up confirmed (on time or late — always credited, plan §3.4): customer advances → the wallet, once per
+     * txn id. Any credit in use is settled first simply because the balance goes up.
+     * @param {{ clientOrgId: string, txnId: string, amountPaise: number }} a
+     */
+    async topUpPaid(a) {
+      await deps.ledger.openAccount(a.clientOrgId, 'WALLET', 'system:topup');
+      const advances = await deps.ledger.accountId('platform', 'CUSTOMER_ADVANCES');
+      return apply(deps, {
+        clientOrgId: a.clientOrgId,
+        opId: `topup:${a.txnId}`,
+        type: 'TOPUP',
+        amountPaise: a.amountPaise,
+        journal: {
+          reference: { type: 'wallet-topup', id: a.txnId },
+          purpose: 'wallet-topup',
+          lines: [{ accountId: advances, debitPaise: a.amountPaise }],
+          memo: `PayU top-up ${a.txnId}`,
+        },
+        by: 'system:payments',
+      });
+    },
     /** Ops left half-way (process stopped) → journal posted, op removed. Hold ops are the holds' business. */
     async reconcileOps() {
       const before = new Date(deps.clock.now().getTime() - OP_STUCK_MS);
