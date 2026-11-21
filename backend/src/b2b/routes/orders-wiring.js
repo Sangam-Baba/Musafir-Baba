@@ -28,8 +28,10 @@ import {
   createOrderPayments,
   createOrderService,
   createPaymentModes,
+  createWalletMode,
   orderView,
 } from '../modules/orders/index.js';
+import { createHolds, createLiveWallets } from '../modules/wallet/index.js';
 import { documentsFor } from './documents-wiring.js';
 import { hotelBookingRoutes } from './hotel-bookings.js';
 import { customerBookingRoutes } from './customer-bookings.js';
@@ -66,6 +68,10 @@ export function bookingEngine(env, clock, logger, identity) {
   );
   const modes = createPaymentModes();
   modes.register('GATEWAY', createGatewayMode({ payments, paymentsDeps, ledger: paymentsDeps.ledger }));
+  const walletDeps = { clock, ledger: paymentsDeps.ledger };
+  const wallet = createWalletMode({ ...walletDeps, wallets: createLiveWallets(walletDeps), holds: createHolds(walletDeps) });
+  modes.register('WALLET', wallet); // Stage 12 part B: B2B clients — balance first, then the credit line
+  modes.register('CREDIT', wallet); // the same money (credit = the wallet below zero); kept for the API's wording
   const ordersDeps = { clock, logger, handlers, modes, ledger: paymentsDeps.ledger };
   return { parts, handlers, modes, payments, paymentsDeps, ordersDeps, orders: createOrderService(ordersDeps) };
 }

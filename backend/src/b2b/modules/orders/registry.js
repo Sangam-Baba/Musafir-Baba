@@ -37,7 +37,11 @@ import { DomainError } from '../../core/errors.js';
  *     Promise<{ intentId: string, txnId: string, action: string, fields: Record<string, string> }>,
  *   debitAccount: (order: Record<string, any>) => Promise<string>,
  *   refund: (ctx: Ctx, order: Record<string, any>, a: { intentId: string, key: string, reason: string, amountPaise?: number }) => Promise<void>,
+ *   instant?: boolean,
+ *   settle?: (ctx: Ctx, order: Record<string, any>) => Promise<void>,
  * }} PaymentMode
+ *   `instant`: paid as soon as `start` returns (wallet) — no gateway answer to wait for; `settle`: called just before the
+ *   order's journal entry (the wallet takes the money it held)
  */
 
 /**

@@ -200,6 +200,11 @@ export function createHolds(deps) {
     capture: (holdId, a) => capture(deps, holdId, a),
     /** @param {string} holdId */
     release: (holdId) => release(deps, holdId),
+    /** @param {string} id */
+    byId: async (id) => {
+      const h = /^[a-f0-9]{24}$/.test(id) ? await load(id) : null;
+      return h ? holdDto(h) : null;
+    },
     /** @param {string} key */
     byKey: async (key) => {
       const h = await WalletHoldRecord.findOne({ key }).setOptions(SCOPE).lean();

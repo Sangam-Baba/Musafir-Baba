@@ -13,6 +13,17 @@
 | **Depends on** | Part A: Stages 05, 06, 10 · Part B: Stages 07, 08, 09, 11 |
 | **Modules** | Part A: `hotel-search` (client selling price on offers / search), `pricing` (client markups — Stage 05), new client screens in the business area |
 
+## Defaults used for part B (owner can change any of them)
+
+| Topic | Default |
+| --- | --- |
+| Paying | **Wallet** (balance first, then the credit line if the company has one — one choice, "Wallet / credit") or **PayU** (the Stage 08 checkout). Wallet money is held while the rooms are confirmed, then taken; if the rooms are gone the hold is freed |
+| Who books | Roles with `orders.order.create` (client Owner, Admin, Booking Agent); Viewer and Accountant read. Branch-limited people see their branches' bookings |
+| Limits | 20 orders waiting at once per client company; the largest online order stays ₹5,00,000 (bigger: offline booking by MusafirBaba) |
+| Voucher | Client's own name and contact (or no branding) — never the B2B price, net rate or margin; the client's selling price only if they ask for it |
+| Guest emails | Off for B2B bookings (the company tells its guest); the booker gets the confirmation |
+| Usage counting (D3) | 1 per billable call (search, offers, price check, booking) after a successful answer; autocomplete and content free; nothing charged until Stage 13 |
+
 ## Defaults used for part A (owner can change any of them)
 
 | Topic | Default |
@@ -38,6 +49,17 @@
 | S12-T09 | Booking requests — admin: queue, take, confirm (hotel confirmation no.) / decline with reason; client notified (bell + email) | D37 | DONE | AI (Claude) | | 2 ✅ | `GET /admin/booking-requests` (open ones oldest first, or `?status`) with the customer's contact, `GET /:id`, `POST /:id/take`, `/confirm` (hotel confirmation number, note), `/decline` (reason required) — `If-Match`, one conditional update with history + event (relayed). Client bell + email to owners on confirmed / declined (`booking-request.confirmed / declined` templates); admin queue pushes on every change. Staff names stay inside MusafirBaba (client history has no `by`) |
 | S12-T10 | Booking requests — screens: "Request booking" on the dashboard hotel page, **Booking requests** page, admin tab | D37 | DONE | AI (Claude) | | tsc ✅ | **Dashboard hotel page**: each room's button is now **Request booking** (for roles that may send requests; not during view-as) → a small form (customer name, phone, email, own reference, guest names, notes) → sent; a changed price is shown and the agent sends again on the new price; success shows the `BR-…` reference. **Booking Requests** page (`/business/booking-requests`, menu entry for `hotel-booking.request.read`): status filter, each request with stay, customer, quoted total, hotel confirmation / decision, history; open ones can be cancelled. **Admin → Requests tab**: open requests oldest first (or by status), customer contact, take / confirm (hotel confirmation no.) / decline (reason), history with staff; refreshes live from the admin bell. The room list's button is a slot (`action`), so the website keeps its Reserve button. Type-checked; not clicked through in a browser by me |
 | S12-T11 | Booking requests — tests: OK price only, isolation between clients, status flow, no rooms taken, nothing private stored or shown | D37 | DONE | AI (Claude) | | 5 ✅ | `booking-requests.test.js`: stored with stay / customer / own quoted price, nothing private, same token → same request, **rooms left unchanged**; changed price → 409 with the new one, sold out refused; website visitors 401, hotels 403, another client sees nothing (404), unscoped reads refused; take → confirm with hotel number, client sees it, history without staff names, event stored; decline needs a reason, closed requests can't change, client cancels an open one (412 on a stale version) |
+| S12-T12 | Part B setup: task list, defaults (D3 counting, wallet at checkout, client orders, branded voucher) | §3 | DONE | AI (Claude) |  | — | Part B tasks added after Stage 11 |
+| S12-T13 | Wallet / credit payment in the engine: money held → rooms confirmed → money taken → journal (wallet → customer advances → hotel payable, GST, margin); rooms lost → hold released / refund to wallet | §3.4 | DONE | AI (Claude) |  | orders-wallet.test.js | `orders/wallet-mode.js` registered as WALLET and CREDIT; two optional hooks on payment modes (`instant`, `settle`) — the PayU path is unchanged; buyer may switch mode before paying; not enough money / credit overdue → rooms released, order FAILED; rooms lost → hold freed; cancellation refunds into the wallet |
+| S12-T14 | Client orders: `POST /client/orders` (B2B price token, branch, customer reference), pay by wallet / credit / PayU, read by the company; limits (20 open per client, value limit); no double booking across channels | §3.4, §3.13, §5 | DOING | AI (Claude) |  |  |  |
+| S12-T15 | Client checkout screens: guests per room → review with breakdown → wallet (balance) / credit / PayU → confirmation with documents | §3.5 | TODO |  |  |  |  |
+| S12-T16 | Client-branded voucher: client name / contact or unbranded, never net or margin, optional selling price; guest emails off by default | §3.6 | TODO |  |  |  |  |
+| S12-T17 | My Bookings (client): list with filters (booking ID, dates, guest, destination, status, payment, branch, created by), branch limits, detail, CSV export | §3.7 | TODO |  |  |  |  |
+| S12-T18 | Client cancellations (refund to wallet for wallet / credit, to source for PayU) and change requests for client users | §3.8, §3.9 | TODO |  |  |  |  |
+| S12-T19 | Offline bookings by MusafirBaba admin for a client (same engine, channel ADMIN, the client's wallet / credit), audited, client told | §3.10 | TODO |  |  |  |  |
+| S12-T20 | Usage counting `mtr_usage_events` / daily / monthly: billable routes after a successful response, buffered and flushed (2 s / 200), flush on stop, refresh header rules, nightly check | §3.11 | TODO |  |  |  |  |
+| S12-T21 | Usage screens: client (this month by endpoint, by user, daily) and admin (per client, all clients sorted, CSV) | §3.12 | TODO |  |  |  |  |
+| S12-T22 | Part B mandatory tests: mixed-channel last-room race, wallet ledger table, insufficient balance releases rooms, wallet refund on cancel, branded voucher without net / margin, usage counting rules | §8 | TODO |  |  |  |  |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 

@@ -60,11 +60,12 @@ async function extendOnce(deps, ctx, o) {
  * @param {PayDeps} deps
  * @param {Ctx} ctx
  * @param {Record<string, any>} order
- * @param {{ returnUrl: string }} opts
+ * @param {{ returnUrl: string, mode?: string }} opts
  */
 async function startPayment(deps, ctx, order, opts) {
   let o = order;
   if (o.status !== 'AWAITING_PAYMENT') throw new ConflictError('ORDER_NOT_PAYABLE', { orderStatus: o.status });
+  if (opts.mode && opts.mode !== o.paymentMode) o = await switchMode(deps, o, opts.mode);
   if ((o.payment?.attempts ?? 0) >= MAX_PAYMENT_ATTEMPTS) throw new ConflictError('PAYMENT_ATTEMPTS_EXCEEDED');
   let plan = paymentPlan({ holdExpiresAt: new Date(o.holdExpiresAt), extendedOnce: o.holdExtended, now: deps.clock.now() });
   if (plan.action === 'EXTEND') {
@@ -72,7 +73,9 @@ async function startPayment(deps, ctx, order, opts) {
     plan = paymentPlan({ holdExpiresAt: new Date(o.holdExpiresAt), extendedOnce: true, now: deps.clock.now() });
   }
   if (plan.action !== 'PAY') throw new ConflictError('HOLD_ENDING');
-  const pay = await deps.modes.get(o.paymentMode).start(ctx, o, { windowMinutes: plan.windowMinutes, returnUrl: opts.returnUrl });
+  const mode = deps.modes.get(o.paymentMode);
+  if (mode.instant) return payInstantly(deps, ctx, o, mode);
+  const pay = await mode.start(ctx, o, { windowMinutes: plan.windowMinutes, returnUrl: opts.returnUrl });
   const res = await OrderRecord.updateOne(
     { _id: o._id, status: 'AWAITING_PAYMENT' },
     {
@@ -85,6 +88,64 @@ async function startPayment(deps, ctx, order, opts) {
   ).setOptions(ORDERS);
   if (res.modifiedCount !== 1) throw new ConflictError('ORDER_NOT_PAYABLE');
   return { txnId: pay.txnId, action: pay.action, fields: pay.fields, windowEndsAt: plan.windowEndsAt };
+}
+
+/**
+ * The buyer chose another way to pay before paying (e.g. wallet instead of PayU) — only while nothing is under way.
+ * @param {PayDeps} deps
+ * @param {Record<string, any>} o
+ * @param {string} mode
+ */
+async function switchMode(deps, o, mode) {
+  deps.modes.get(mode);
+  const res = await OrderRecord.updateOne(
+    { _id: o._id, status: 'AWAITING_PAYMENT', 'payment.verified': false },
+    { $set: { paymentMode: mode } },
+  ).setOptions(ORDERS);
+  if (res.modifiedCount !== 1) throw new ConflictError('ORDER_NOT_PAYABLE');
+  return /** @type {Record<string, any>} */ (await load(o._id));
+}
+
+/**
+ * An instant payment mode (wallet): the money is held now → CONFIRMING → confirmed forward. Not enough money (or credit
+ * overdue) → the rooms are given back and the order fails (plan §3.4 — the buyer tops up or pays by PayU next time).
+ * @param {PayDeps} deps
+ * @param {Ctx} ctx
+ * @param {Record<string, any>} o
+ * @param {import('./registry.js').PaymentMode} mode
+ */
+async function payInstantly(deps, ctx, o, mode) {
+  let pay;
+  try {
+    pay = await mode.start(ctx, o, { windowMinutes: 0, returnUrl: '' });
+  } catch (e) {
+    const code = /** @type {any} */ (e)?.code;
+    if (code === 'INSUFFICIENT_WALLET_BALANCE' || code === 'CREDIT_OVERDUE') {
+      for (const item of o.items) await deps.handlers.get(item.type).release(ctx, orderInfo(o), item, 'FAILED');
+      await failOrder(deps, o, 'AWAITING_PAYMENT', { code });
+    }
+    throw e;
+  }
+  const moved = await transition(OrderRecord, {
+    id: o._id,
+    from: 'AWAITING_PAYMENT',
+    to: 'CONFIRMING',
+    set: {
+      'payment.intentId': pay.intentId,
+      'payment.txnId': pay.txnId,
+      'payment.verified': true,
+      'payment.verifiedIntentId': pay.intentId,
+    },
+    clock: deps.clock,
+    options: ORDERS,
+  });
+  if (!moved) {
+    await mode.refund(ctx, o, { intentId: pay.intentId, key: 'not-payable', reason: 'order no longer payable' });
+    throw new ConflictError('ORDER_NOT_PAYABLE');
+  }
+  await pushHistory(deps, o._id, { status: 'CONFIRMING', by: o.createdBy, note: `paid by ${o.paymentMode.toLowerCase()} ${pay.txnId}` });
+  const status = await confirmForward(deps, /** @type {Record<string, any>} */ (await load(o._id)));
+  return { txnId: pay.txnId, action: pay.action, fields: pay.fields, windowEndsAt: null, status };
 }
 
 /**
@@ -126,7 +187,9 @@ export async function refundOrder(deps, ctx, o) {
  * @param {Record<string, any>} o
  */
 async function finish(deps, o) {
-  const debit = await deps.modes.get(o.paymentMode).debitAccount(o);
+  const mode = deps.modes.get(o.paymentMode);
+  if (mode.settle) await mode.settle(sys(deps, 'take the held money'), o);
+  const debit = await mode.debitAccount(o);
   /** @type {import('./registry.js').LedgerLine[]} */
   const lines = [{ accountId: debit, debitPaise: o.totalPaise }];
   for (const item of o.items) lines.push(...(await deps.handlers.get(item.type).ledgerLines(orderInfo(o), item)));
@@ -272,7 +335,7 @@ async function paymentFailed(deps, p) {
 /** @param {PayDeps} deps */
 export function createOrderPayments(deps) {
   return {
-    /** @param {Ctx} ctx @param {Record<string, any>} order @param {{ returnUrl: string }} opts */
+    /** @param {Ctx} ctx @param {Record<string, any>} order @param {{ returnUrl: string, mode?: string }} opts */
     start: (ctx, order, opts) => startPayment(deps, ctx, order, opts),
     /** @param {Ctx} ctx @param {Record<string, any>} order */
     extend: (ctx, order) => {

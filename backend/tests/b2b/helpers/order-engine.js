@@ -21,6 +21,7 @@ import {
   createItemHandlers,
   createOrderPayments,
   createPaymentModes,
+  createWalletMode,
   orderConsumers,
   OrderRecord,
 } from '../../../src/b2b/modules/orders/index.js';
@@ -39,11 +40,14 @@ import { BookingSummaryRecord } from '../../../src/b2b/modules/reporting/index.j
 import { AmendmentRecord, CancellationRecord, HotelFailureRecord, NoShowRecord } from '../../../src/b2b/modules/hotel-booking/index.js';
 import {
   BalanceSnapshotRecord,
+  createHolds,
   createLedger,
+  createLiveWallets,
   ManualPayoutRecord,
   PayableRecord,
   seedPlatformAccounts,
   TransactionRecord,
+  WalletHoldRecord,
 } from '../../../src/b2b/modules/wallet/index.js';
 import { useInventoryApp } from './inventory-app.js';
 import { seedPricing, sellableHotel } from './search-setup.js';
@@ -83,6 +87,7 @@ export function useOrderEngine() {
       PayableRecord,
       ManualPayoutRecord,
       BalanceSnapshotRecord,
+      WalletHoldRecord,
     ],
   });
   const logger = createLogger({ write: () => {} });
@@ -117,6 +122,9 @@ export function useOrderEngine() {
     handlers.register('HOTEL', createHotelItemHandler(/** @type {any} */ ({ clock, logger, holds: createHoldService({ clock }), ledger })));
     const modes = createPaymentModes();
     modes.register('GATEWAY', createGatewayMode({ payments, paymentsDeps, ledger }));
+    const walletDeps = { clock, ledger };
+    const wallets = createLiveWallets(walletDeps);
+    modes.register('WALLET', createWalletMode({ ...walletDeps, wallets, holds: createHolds(walletDeps) }));
     const deps = { clock, logger, handlers, modes, ledger };
     const consumers = orderConsumers(deps, PAY);
     /** Deliver the intent's stored events to the order consumers (what the relay + inbox do). @param {string} txnId */
@@ -125,7 +133,7 @@ export function useOrderEngine() {
       for (const e of i.pendingEvents ?? [])
         for (const c of consumers) if (c.types.includes(e.type)) await c.handler({ payload: e.payload });
     };
-    return { deps, payments, paymentsDeps, orderPay: createOrderPayments(deps), deliver };
+    return { deps, payments, paymentsDeps, orderPay: createOrderPayments(deps), deliver, wallets };
   }
 
   /** @param {number} rooms */

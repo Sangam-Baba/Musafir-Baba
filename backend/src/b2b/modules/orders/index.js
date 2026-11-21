@@ -32,6 +32,7 @@ export {
   ORDERS,
 } from './orders.service.js';
 export { createGatewayMode } from './gateway-mode.js';
+export { createWalletMode, WALLET_HOLD_TTL_MS } from './wallet-mode.js';
 export { orderReconcileRules, orderConsumers, HOLDING_STUCK_MS, CONFIRMING_STUCK_MS } from './safety-net.js';
 export { createOrderPayments, confirmForward, refundOrder, MAX_PAYMENT_ATTEMPTS } from './payment.service.js';
 export { sweepOrders, orderInvariants, expireOrder, ORDER_SWEEP_EVERY_MS } from './sweeper.js';
