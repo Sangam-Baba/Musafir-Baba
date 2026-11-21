@@ -89,6 +89,8 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /bookings/hotels/:ref/amendments', // the buyer only (as above)
         'POST /bookings/hotels/:ref/amendments', // the buyer only; at most 5 open per booking
         'POST /bookings/hotels/:ref/amendments/:id/messages', // the buyer only; their own booking's request
+        'GET /bookings/hotels/:ref/no-show', // the buyer only (as above)
+        'POST /bookings/hotels/:ref/no-show-dispute', // the buyer only; within 72 hours of the hotel marking it
         'POST /bookings/hotels/:ref/cancel', // the buyer only; Idempotency-Key + a valid signed quote; server-side amounts
         'POST /bookings/hotels/:ref/cancellation-quote', // the buyer only (as above); server-computed, signed, 5 minutes
         'GET /orders/:ref/documents/:id', // the buyer only (as above): the page, escaped, strict CSP

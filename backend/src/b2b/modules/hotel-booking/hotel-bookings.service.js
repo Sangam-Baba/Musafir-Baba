@@ -11,12 +11,28 @@ import { newEvent } from '../../core/db/events.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { NotFoundError } from '../../core/errors.js';
 import { parseReference } from '../../core/ids.js';
+import { todayIn } from '../../core/dates.js';
+import { noShowWindow } from './domain/cancellation-charge.js';
 import { authz } from '../access/index.js';
 import { EVENTS } from './events.js';
 import { PERMISSIONS } from './permissions.js';
 import { BookingRecord } from './models/booking.model.js';
 
 const SEEN = ['CONFIRMED', 'CANCELLING', 'CANCELLED', 'COMPLETED', 'NO_SHOW', 'HOTEL_FAILED'];
+
+/**
+ * The hotel inbox views (plan Stage 09 §3.6) for a day (hotel's date, default today in India).
+ * @type {Record<string, { filter: (day: string) => Record<string, unknown>, sort: Record<string, 1 | -1> }>}
+ */
+export const VIEWS = {
+  all: { filter: () => ({ status: { $in: SEEN } }), sort: { confirmedAt: -1 } },
+  waiting: { filter: () => ({ status: 'CONFIRMED', acknowledgedAt: null }), sort: { confirmedAt: 1 } },
+  arrivals: { filter: (day) => ({ 'stay.checkIn': day, status: { $in: ['CONFIRMED', 'NO_SHOW'] } }), sort: { 'stay.checkIn': 1 } },
+  departures: { filter: (day) => ({ 'stay.checkOut': day, status: { $in: ['CONFIRMED', 'COMPLETED'] } }), sort: { 'stay.checkOut': 1 } },
+  upcoming: { filter: (day) => ({ 'stay.checkIn': { $gt: day }, status: 'CONFIRMED' }), sort: { 'stay.checkIn': 1 } },
+  cancellations: { filter: () => ({ status: { $in: ['CANCELLING', 'CANCELLED'] } }), sort: { statusChangedAt: -1 } },
+  'no-shows': { filter: () => ({ status: 'NO_SHOW' }), sort: { statusChangedAt: -1 } },
+};
 const ESCALATE = systemScope('hotel-booking: acknowledgement reminders', { routine: true });
 
 /** Reminder steps (minutes after confirmation → event). */
@@ -46,7 +62,15 @@ export function hotelView(b) {
     cancellation: snap.policy?.summary ?? null,
     confirmedAt: b.confirmedAt,
     acknowledgedAt: b.acknowledgedAt ?? null,
+    noShow: noShowTimes(b),
   };
+}
+
+/** When the hotel may mark a no-show (only for confirmed bookings). @param {Record<string, any>} b */
+function noShowTimes(b) {
+  if (b.status !== 'CONFIRMED') return null;
+  const w = noShowWindow(b.stay, b.snapshot?.property?.timeZone ?? 'Asia/Kolkata');
+  return { from: w.from.toISOString(), until: w.until.toISOString() };
 }
 
 /** Each room's occupancy and guest names. @param {Record<string, any>} b */
@@ -73,13 +97,17 @@ async function own(ctx, ref) {
 /** @param {{ clock: import('../../core/clock.js').Clock }} deps */
 export function createHotelBookingsService(deps) {
   return {
-    /** @param {import('../../core/context.js').RequestContext} ctx @param {{ propertyId?: string, waiting?: boolean }} q */
+    /** @param {import('../../core/context.js').RequestContext} ctx @param {{ propertyId?: string, waiting?: boolean, view?: string, date?: string }} q */
     async list(ctx, q) {
       authz.assert(ctx, PERMISSIONS.bookingRead);
-      const filter = { ...authz.scopeFilter(ctx, { orgField: 'hotelOrgId', propertyField: 'propertyId' }), status: { $in: SEEN } };
+      const day = q.date ?? todayIn(deps.clock, 'Asia/Kolkata');
+      const view = q.view ?? (q.waiting ? 'waiting' : 'all');
+      const v = /** @type {{ filter: (day: string) => Record<string, unknown>, sort: Record<string, 1 | -1> }} */ (
+        VIEWS[view] ?? VIEWS.all
+      );
+      const filter = { ...authz.scopeFilter(ctx, { orgField: 'hotelOrgId', propertyField: 'propertyId' }), ...v.filter(day) };
       if (q.propertyId) Object.assign(filter, { propertyId: q.propertyId });
-      if (q.waiting) Object.assign(filter, { status: 'CONFIRMED', acknowledgedAt: null });
-      const docs = await BookingRecord.find(filter).sort({ confirmedAt: -1 }).limit(200).lean();
+      const docs = await BookingRecord.find(filter).sort(v.sort).limit(200).lean();
       return docs.map(hotelView);
     },
     /** @param {import('../../core/context.js').RequestContext} ctx @param {string} ref */

@@ -21,9 +21,9 @@ import {
 } from '../modules/orders/index.js';
 import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
-import { amendmentEmailConsumer, customerEmailConsumers } from './customer-emails.js';
+import { amendmentEmailConsumer, customerEmailConsumers, noShowEmailConsumer } from './customer-emails.js';
 import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
-import { ackEscalation, BookingRecord, bookingInvariants } from '../modules/hotel-booking/index.js';
+import { ackEscalation, BookingRecord, bookingInvariants, createNoShows } from '../modules/hotel-booking/index.js';
 import { createOrderCancellations } from '../modules/orders/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
@@ -96,6 +96,7 @@ export function startDatabase(env, log, hub, identity) {
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+          { name: 'hotel-booking-no-show-settle', everyMs: 10 * 60_000, run: () => settleNoShows(engine.ordersDeps) },
           { name: 'hotel-booking-ack-reminders', everyMs: 60_000, run: () => ackEscalation({ clock: systemClock }) },
           { name: 'reporting-summaries-rebuild', everyMs: SUMMARIES_REBUILD_EVERY_MS, run: () => summaries.summaries.rebuild() },
           { name: 'documents-retry', everyMs: DOCUMENTS_RETRY_EVERY_MS, run: () => documents.retryMissing() },
@@ -149,5 +150,30 @@ function emailConsumers(engine, config, email) {
       : null,
     events: ORDER_EVENTS,
   };
-  return [...customerEmailConsumers(deps), amendmentEmailConsumer(deps, 'hotel-booking.amendment.staff-replied')];
+  return [
+    ...customerEmailConsumers(deps),
+    amendmentEmailConsumer(deps, 'hotel-booking.amendment.staff-replied'),
+    noShowEmailConsumer(deps, 'hotel-booking.no-show.marked'),
+  ];
+}
+
+/**
+ * Every 10 minutes: no-shows whose dispute window is over (or that MusafirBaba upheld) → the unused part refunded and the
+ * ledger settled (once), then marked settled. One failing item never stops the others.
+ * @param {import('../modules/orders/payment.service.js').PayDeps} ordersDeps
+ */
+async function settleNoShows(ordersDeps) {
+  const noShows = createNoShows({ clock: ordersDeps.clock });
+  const cancellations = createOrderCancellations(ordersDeps);
+  let settled = 0;
+  for (const n of await noShows.dueToSettle()) {
+    try {
+      await cancellations.settleNoShow(n.orderId, n.bookingId, { chargePaise: n.chargePaise, refundPaise: n.refundPaise });
+      await noShows.markSettled(String(n._id));
+      settled += 1;
+    } catch (err) {
+      ordersDeps.logger.warn({ err, ref: n.bookingRef }, 'no-show not settled yet');
+    }
+  }
+  return { settled };
 }

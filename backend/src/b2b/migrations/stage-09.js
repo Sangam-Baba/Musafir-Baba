@@ -1,6 +1,6 @@
 // @ts-check
 /** Migrations of Stage 09 (after booking, hotel operations). Run after 0001–0057; ids never renamed or reused. */
-import { AMENDMENTS_COLLECTION, CANCELLATIONS_COLLECTION } from '../modules/hotel-booking/index.js';
+import { AMENDMENTS_COLLECTION, CANCELLATIONS_COLLECTION, NO_SHOWS_COLLECTION } from '../modules/hotel-booking/index.js';
 import { BOOKING_SUMMARIES_COLLECTION } from '../modules/reporting/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -56,6 +56,21 @@ export const STAGE_09 = [
       await ctx.createIndex(AMENDMENTS_COLLECTION, { status: 1, firstResponseDueAt: 1 }, { name: 'queue' });
       await ctx.createIndex(
         AMENDMENTS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
+  {
+    id: '0061-hbk-no-shows',
+    description: 'No-shows: one per booking; dispute window and settlement by status and time; per hotel; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(NO_SHOWS_COLLECTION);
+      await ctx.createIndex(NO_SHOWS_COLLECTION, { bookingId: 1 }, { name: 'booking_unique', unique: true });
+      await ctx.createIndex(NO_SHOWS_COLLECTION, { status: 1, disputeUntil: 1 }, { name: 'status_due' });
+      await ctx.createIndex(NO_SHOWS_COLLECTION, { hotelOrgId: 1, markedAt: -1 }, { name: 'hotel_recent' });
+      await ctx.createIndex(
+        NO_SHOWS_COLLECTION,
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );

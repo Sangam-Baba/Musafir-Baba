@@ -6,6 +6,7 @@
  *   POST /admin/amendments/:id/messages      (`hotel-booking.admin.handle`) {text, waitForCustomer}
  *   POST /admin/amendments/:id/close         (`hotel-booking.admin.handle`) {status: RESOLVED | CLOSED, resolution}
  *   POST /admin/amendments/:id/apply-guest-names (`hotel-booking.admin.handle`) — the requested lead guest names
+ *   GET  /admin/no-show-disputes             (`hotel-booking.admin.read`) · POST /admin/no-shows/:id/resolve {decision, note} (`…handle`)
  */
 import express from 'express';
 import { z } from 'zod';
@@ -34,7 +35,7 @@ const handle = (fn) =>
     }
   );
 
-/** @param {{ amendments: ReturnType<typeof import('../modules/hotel-booking/index.js').createAmendments> }} deps */
+/** @param {{ amendments: ReturnType<typeof import('../modules/hotel-booking/index.js').createAmendments>, noShows: ReturnType<typeof import('../modules/hotel-booking/index.js').createNoShows> }} deps */
 export function amendmentAdminRoutes(deps) {
   const router = express.Router();
   const read = requirePermission(HBK.adminRead);
@@ -74,6 +75,17 @@ export function amendmentAdminRoutes(deps) {
     act,
     validate({ params: Id, body: z.strictObject({}) }),
     handle(async (_q, res) => deps.amendments.applyGuestNames(staff(res), res.locals.input.params.id)),
+  );
+  router.get(
+    '/admin/no-show-disputes',
+    read,
+    handle(async () => ({ data: await deps.noShows.disputes() })),
+  );
+  router.post(
+    '/admin/no-shows/:id/resolve',
+    act,
+    validate({ params: Id, body: z.strictObject({ decision: z.enum(['UPHOLD', 'REVERSE']), note: z.string().trim().min(3).max(500) }) }),
+    handle(async (_q, res) => deps.noShows.resolve(staff(res), res.locals.input.params.id, res.locals.input.body)),
   );
   return router;
 }

@@ -29,7 +29,7 @@ import { DomainError } from '../../core/errors.js';
  *   timeline: (item: OrderItem) => Promise<{ at: Date, what: string, by: string, note: string | null }[]>,
  *   cancelStart: (ctx: Ctx, item: OrderItem, q: { chargePaise: number, refundPaise: number, by: string, reason?: string | null }) => Promise<{ started: boolean, status: string }>,
  *   cancelRooms: (ctx: Ctx, item: OrderItem) => Promise<void>,
- *   cancelLedgerLines: (item: OrderItem) => Promise<{ refundPaise: number, lines: LedgerLine[] }>,
+ *   cancelLedgerLines: (item: OrderItem, amounts?: { chargePaise: number, refundPaise: number }) => Promise<{ refundPaise: number, lines: LedgerLine[] }>,
  *   cancelDone: (ctx: Ctx, item: OrderItem) => Promise<void>,
  * }} ItemHandler
  * @typedef {{

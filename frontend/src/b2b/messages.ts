@@ -2,6 +2,10 @@
 import { B2BError } from "./api";
 
 const MESSAGES: Record<string, string> = {
+  NO_SHOW_NOT_NOW: "A no-show can be marked from 12:00 on the check-in day until the end of the check-out day.",
+  BOOKING_NOT_CONFIRMED: "This booking isn't confirmed any more — refresh the list.",
+  DISPUTE_CLOSED: "The 72 hours to dispute this no-show have passed. Please contact us.",
+  NO_SHOW_ALREADY_DECIDED: "This dispute was already decided.",
   GUEST_NAMES_INVALID: "Please give a valid name for each room (letters, spaces, dot, apostrophe, hyphen).",
   TOO_MANY_OPEN_REQUESTS: "You already have 5 open requests on this booking — please wait for our answers.",
   BOOKING_CANNOT_BE_CHANGED: "This booking can't be changed now — send a message instead.",

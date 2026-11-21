@@ -92,6 +92,14 @@ export const TEMPLATES = Object.freeze({
     subject: 'Reply to your request {{requestRef}} (booking {{orderRef}})',
     text: 'Hello {{name}},\n\nMusafirBaba replied to your request {{requestRef}} about booking {{orderRef}}.\n\nRead it and answer here: {{link}}\n\n(Please reply on that page — replies to this email are not read yet.)\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
   },
+  'no-show.marked-customer': {
+    version: 1,
+    vars: ['name', 'orderRef', 'link'],
+    title: 'The hotel reported a no-show',
+    body: 'The hotel reported that nobody checked in for {{orderRef}}.',
+    subject: 'The hotel reported a no-show for {{orderRef}}',
+    text: 'Hello {{name}},\n\nThe hotel told us that nobody checked in for your booking {{orderRef}}. The no-show terms of your booking apply.\n\nIf you did stay, or this is wrong, tell us within 72 hours here: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
   // Stage 09: cancellations
   'order.cancelled-customer': {
     version: 1,

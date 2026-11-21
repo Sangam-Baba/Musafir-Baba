@@ -23,6 +23,12 @@ export const EVENTS = /** @type {const} */ ({
   amendmentStaffReplied: 'hotel-booking.amendment.staff-replied',
   /** a change request was resolved or closed */
   amendmentClosed: 'hotel-booking.amendment.closed',
+  /** the hotel marked a no-show — the buyer is told and may dispute for 72 hours */
+  noShowMarked: 'hotel-booking.no-show.marked',
+  /** the buyer disputes a no-show — MusafirBaba's queue */
+  noShowDisputed: 'hotel-booking.no-show.disputed',
+  /** a no-show is final (window over or upheld) or reversed */
+  noShowResolved: 'hotel-booking.no-show.resolved',
   /** not acknowledged after 15 minutes — the hotel is reminded */
   bookingAckReminded: 'hotel-booking.booking.ack-reminded',
   /** not acknowledged after 30 minutes — the hotel's owners are told */

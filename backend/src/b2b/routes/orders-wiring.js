@@ -15,6 +15,7 @@ import {
   readQuote,
   createAmendments,
   bookingByRef,
+  createNoShows,
 } from '../modules/hotel-booking/index.js';
 import { IntentRecord, RefundRecord } from '../modules/payments/index.js';
 import { createHoldService } from '../modules/hotel-inventory/index.js';
@@ -157,7 +158,8 @@ export function stage08Routes(env, clock, logger, identity) {
       clock,
     }),
   );
-  router.use(hotelBookingRoutes({ bookings: createHotelBookingsService({ clock }) }));
+  const noShows = createNoShows({ clock });
+  router.use(hotelBookingRoutes({ bookings: createHotelBookingsService({ clock }), noShows }));
   router.use(
     customerBookingRoutes({
       summaries: summariesFor(engine.ordersDeps),
@@ -175,13 +177,14 @@ export function stage08Routes(env, clock, logger, identity) {
   router.use(
     customerAmendmentRoutes({
       amendments,
+      noShows,
       bookingByRef,
       bookings: createCustomerBookings({ clock }),
       orders: engine.orders,
       linkSecret: env.B2B_AUTH_SECRET ?? '',
     }),
   );
-  router.use(amendmentAdminRoutes({ amendments }));
+  router.use(amendmentAdminRoutes({ amendments, noShows }));
   const admin = createOrderAdmin(engine.ordersDeps);
   router.use(orderAdminRoutes({ admin, detail: (o) => adminDetail(engine, admin, o), overdue: () => overdueAcknowledgements({ clock }) }));
   return router;

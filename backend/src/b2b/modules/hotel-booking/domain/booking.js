@@ -27,7 +27,7 @@ export const BOOKING_TRANSITIONS = Object.freeze({
   FAILED: [],
   CANCELLED: [],
   COMPLETED: [],
-  NO_SHOW: [],
+  NO_SHOW: ['COMPLETED'], // reversed by MusafirBaba after a dispute: the guest did stay
   HOTEL_FAILED: [],
 });
 

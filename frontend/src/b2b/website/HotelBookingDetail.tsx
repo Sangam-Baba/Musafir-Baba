@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import { B2B_API } from "../api";
 import { errorMessage } from "../messages";
 import { ChangeRequests } from "./ChangeRequests";
+import { NoShowBox } from "./NoShowBox";
 import { cancelHotelBooking, cancellationQuote, DOC_LABEL, documentUrl, hotelBooking, randomId, STATUS_TEXT, type CancellationQuote, type Moment } from "./checkout";
 import { inr, MEAL_LABEL } from "./hotels";
 
@@ -95,6 +96,7 @@ export function HotelBookingDetail({ bookingRef, linkKey }: { bookingRef: string
           {payments.map((p) => <p key={p.txnId} className="text-xs text-slate-600">Paid {inr(p.amountPaise)}{p.mode ? ` · ${p.mode}` : ""} · {new Date(p.at).toLocaleString("en-IN")}</p>)}
           {refunds.map((r, i) => <p key={i} className="text-xs text-emerald-700">Refund {inr(r.amountPaise)} · {r.status === "SUCCEEDED" ? "done" : "on the way"} · {new Date(r.at).toLocaleDateString("en-IN")}</p>)}
         </div>
+        {b.status === "NO_SHOW" && <NoShowBox bookingRef={b.ref} linkKey={linkKey} />}
         <ChangeRequests bookingRef={b.ref} linkKey={linkKey} rooms={b.rooms} />
         {documents.length > 0 && (
           <div className="space-y-1 rounded-xl border border-slate-200 bg-white p-4 text-sm">

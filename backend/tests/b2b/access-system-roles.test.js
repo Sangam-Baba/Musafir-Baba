@@ -203,6 +203,7 @@ describe('system roles (plan §4) — authorization matrix', () => {
     expect(futureGrants('client.viewer')).toEqual(['hotel-booking.booking.read', 'hotel-booking.request.read', 'organizations.org.read']);
     expect(futureGrants('hotel.frontDesk')).toEqual([
       'hotel-booking.booking.acknowledge',
+      'hotel-booking.booking.markNoShow', // Stage 09: listed by exact code in the role
       'hotel-booking.booking.read',
       'organizations.org.read',
     ]);

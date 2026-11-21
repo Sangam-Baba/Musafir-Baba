@@ -192,6 +192,8 @@ export const ADMIN_QUEUES = Object.freeze({
   'hotel-booking.amendment.buyer-replied': 'amendments',
   'hotel-booking.amendment.staff-replied': 'amendments',
   'hotel-booking.amendment.closed': 'amendments',
+  'hotel-booking.no-show.disputed': 'no-show-disputes',
+  'hotel-booking.no-show.resolved': 'no-show-disputes',
 });
 
 /** @param {string} key @returns {Category | null} */

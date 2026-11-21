@@ -60,7 +60,7 @@ import {
   TaxRuleRecord,
 } from './modules/pricing/index.js';
 import { createSearchCacheSignals } from './modules/hotel-search/index.js';
-import { AmendmentRecord, BookingRecord, BookingRequestRecord } from './modules/hotel-booking/index.js';
+import { AmendmentRecord, BookingRecord, BookingRequestRecord, NoShowRecord } from './modules/hotel-booking/index.js';
 import { OrderRecord } from './modules/orders/index.js';
 import { DocumentRecord } from './modules/documents/index.js';
 import { createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
@@ -215,6 +215,7 @@ export const eventSources = [
   BookingRecord,
   DocumentRecord,
   AmendmentRecord,
+  NoShowRecord,
 ];
 
 /**

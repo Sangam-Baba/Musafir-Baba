@@ -104,3 +104,26 @@ export function amendmentEmailConsumer(deps, staffReplied) {
     },
   };
 }
+
+/**
+ * The buyer is emailed when the hotel marks a no-show, with the booking page link to dispute within 72 hours.
+ * @param {Parameters<typeof customerEmailConsumers>[0]} deps
+ * @param {string} marked the hotel-booking event name
+ */
+export function noShowEmailConsumer(deps, marked) {
+  const base = deps.publicUrl.replace(/\/$/, '');
+  return {
+    consumer: 'customer-email-no-show',
+    types: [marked],
+    handler: async (/** @type {{ payload: any }} */ e) => {
+      const o = /^[a-f0-9]{24}$/.test(String(e.payload.orderId))
+        ? /** @type {any} */ (await OrderRecord.findOne({ _id: e.payload.orderId }).setOptions(ORDERS).lean())
+        : null;
+      if (!o) return;
+      const link = `${base}/hotels/my-bookings/${e.payload.bookingRef}?key=${linkKey(deps.linkSecret, o.ref)}`;
+      const msg = renderTemplate('no-show.marked-customer', { name: o.contact.name, orderRef: o.ref, link });
+      if (!deps.send) return deps.ordersDeps.logger.info({ ref: o.ref }, 'customer email not sent (email settings missing)');
+      await deps.send({ to: o.contact.email, subject: msg.subject, text: msg.text });
+    },
+  };
+}

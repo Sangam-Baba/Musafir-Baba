@@ -28,6 +28,11 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: 'Acknowledge a new booking (stops the reminders)',
     orgTypes: ['HOTEL'],
   },
+  bookingMarkNoShow: {
+    code: 'hotel-booking.booking.markNoShow',
+    description: "Mark a guest who didn't come as a no-show (from noon on the check-in day)",
+    orgTypes: ['HOTEL'],
+  },
   adminRead: {
     code: 'hotel-booking.admin.read',
     description: 'MusafirBaba admin: see booking requests from B2B clients',

@@ -4,6 +4,7 @@
  *   GET  /bookings/hotels/:ref/amendments
  *   POST /bookings/hotels/:ref/amendments {type, message, guestNames?}
  *   POST /bookings/hotels/:ref/amendments/:id/messages {text}
+ *   GET  /bookings/hotels/:ref/no-show · POST /bookings/hotels/:ref/no-show-dispute {message} (within 72 hours)
  */
 import express from 'express';
 import { z } from 'zod';
@@ -41,6 +42,7 @@ const buyerId = (res) => {
 /**
  * @param {Parameters<typeof ownBooking>[2] & {
  *   amendments: ReturnType<typeof import('../modules/hotel-booking/index.js').createAmendments>,
+ *   noShows: ReturnType<typeof import('../modules/hotel-booking/index.js').createNoShows>,
  *   bookingByRef: (ref: string) => Promise<Record<string, any>>,
  * }} deps
  */
@@ -79,6 +81,25 @@ export function customerAmendmentRoutes(deps) {
         noStore(res).json(
           await deps.amendments.buyerReply(String(b._id), res.locals.input.params.id, buyerId(res), res.locals.input.body.text),
         );
+      })().catch(next);
+    },
+  );
+  router.get('/bookings/hotels/:ref/no-show', publicRoute(), validate({ params: Ref, query: KeyQuery }), (req, res, next) => {
+    (async () => {
+      await ownBooking(req, res, deps);
+      const b = await deps.bookingByRef(res.locals.input.params.ref);
+      noStore(res).json({ noShow: await deps.noShows.forBooking(String(b._id)) });
+    })().catch(next);
+  });
+  router.post(
+    '/bookings/hotels/:ref/no-show-dispute',
+    publicRoute(),
+    validate({ params: Ref, query: KeyQuery, body: z.strictObject({ message: Text }) }),
+    (req, res, next) => {
+      (async () => {
+        await ownBooking(req, res, deps);
+        const b = await deps.bookingByRef(res.locals.input.params.ref);
+        noStore(res).json(await deps.noShows.dispute(String(b._id), buyerId(res), res.locals.input.body.message));
       })().catch(next);
     },
   );

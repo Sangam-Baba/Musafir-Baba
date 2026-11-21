@@ -172,3 +172,8 @@ export const openChangeRequest = (ref: string, key: string | null, body: { type:
   hotelsApi<ChangeRequest>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/amendments`, key), body, { headers: { "Content-Type": "application/json", ...headers() } });
 export const replyChangeRequest = (ref: string, key: string | null, id: string, text: string) =>
   hotelsApi<ChangeRequest>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/amendments/${id}/messages`, key), { text }, { headers: { "Content-Type": "application/json", ...headers() } });
+
+export type NoShowInfo = { status: "DISPUTE_WINDOW" | "DISPUTED" | "FINAL" | "REVERSED"; disputeUntil: string; chargePaise: number; refundPaise: number; dispute: { at: string; message: string } | null; resolution: { decision: string; note: string } | null };
+export const bookingNoShow = (ref: string, key?: string | null) => hotelsApi<{ noShow: NoShowInfo | null }>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/no-show`, key), undefined, { headers: headers(), cache: "no-store" });
+export const disputeNoShow = (ref: string, key: string | null, message: string) =>
+  hotelsApi<NoShowInfo>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/no-show-dispute`, key), { message }, { headers: { "Content-Type": "application/json", ...headers() } });

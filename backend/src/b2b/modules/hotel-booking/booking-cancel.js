@@ -79,10 +79,14 @@ async function cancelRooms(deps, item) {
   await deps.holds.returnRooms(ctx, { bookingId: String(b._id), lines: holdLinesOf(b.stay, b.stay.nights) });
 }
 
-/** @param {CancelDeps} deps @param {OrderItem} item */
-async function cancelLedgerLines(deps, item) {
+/**
+ * @param {CancelDeps} deps
+ * @param {OrderItem} item
+ * @param {{ chargePaise: number, refundPaise: number }} [amounts] a no-show's amounts (default: the booking's cancellation)
+ */
+async function cancelLedgerLines(deps, item, amounts) {
   const b = await loadBooking(item.bookingId);
-  const c = b.cancellation;
+  const c = amounts ?? b.cancellation;
   if (!c) return { refundPaise: 0, lines: [] };
   await deps.ledger.openHotelPayable(b.hotelOrgId);
   const lines = [];
@@ -111,8 +115,8 @@ export function cancelSteps(deps) {
     cancelStart: (_ctx, item, q) => cancelStart(deps, item, q),
     /** @param {unknown} _ctx @param {OrderItem} item */
     cancelRooms: (_ctx, item) => cancelRooms(deps, item),
-    /** @param {OrderItem} item */
-    cancelLedgerLines: (item) => cancelLedgerLines(deps, item),
+    /** @param {OrderItem} item @param {{ chargePaise: number, refundPaise: number }} [amounts] */
+    cancelLedgerLines: (item, amounts) => cancelLedgerLines(deps, item, amounts),
     /** @param {unknown} _ctx @param {OrderItem} item */
     cancelDone: (_ctx, item) => cancelDone(deps, item),
   };

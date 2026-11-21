@@ -126,3 +126,32 @@ export function cancellationReversal(t, c) {
   if (revenue < 0) lines.push({ type: 'REVENUE_MARGIN', creditPaise: -revenue });
   return lines;
 }
+
+/**
+ * A penalty applied to what was paid (shared by cancellations and no-shows): percent, the first N nights, or fixed —
+ * never more than paid.
+ * @param {Penalty | null} penalty
+ * @param {{ paidPaise: number, nights: number[] }} a
+ */
+export function chargeFor(penalty, a) {
+  let charge = 0;
+  if (penalty?.type === 'PERCENT') charge = Math.round((a.paidPaise * penalty.value) / 100);
+  else if (penalty?.type === 'NIGHTS') charge = a.nights.slice(0, penalty.value).reduce((s, n) => s + n, 0);
+  else if (penalty?.type === 'FIXED') charge = penalty.value;
+  charge = Math.min(Math.max(charge, 0), a.paidPaise);
+  return { chargePaise: charge, refundPaise: a.paidPaise - charge };
+}
+
+/**
+ * When a hotel may mark a no-show (plan Stage 09 §6): from 12:00 on the check-in day until the end of the check-out
+ * day, hotel time.
+ * @param {{ checkIn: string, checkOut: string }} stay
+ * @param {string} timeZone
+ */
+export function noShowWindow(stay, timeZone) {
+  const next = new Date(Date.parse(`${stay.checkOut}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+  return {
+    from: hotelDeadline(/** @type {any} */ (stay.checkIn), '12:00', timeZone),
+    until: hotelDeadline(/** @type {any} */ (next), '00:00', timeZone),
+  };
+}
