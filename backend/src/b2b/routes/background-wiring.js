@@ -22,6 +22,7 @@ import {
 import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
 import { customerEmailConsumers } from './customer-emails.js';
+import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
 import { ackEscalation, bookingInvariants } from '../modules/hotel-booking/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
@@ -65,6 +66,7 @@ export function startDatabase(env, log, hub, identity) {
   const config = loadConfig(env);
   const engine = bookingEngine(env, systemClock, log, identity);
   const documents = documentJobs(engine.ordersDeps, ORDER_EVENTS.orderConfirmed);
+  const summaries = summaryJobs(engine.ordersDeps);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   const customerEmails = customerEmailConsumers({
     ordersDeps: engine.ordersDeps,
@@ -83,7 +85,7 @@ export function startDatabase(env, log, hub, identity) {
         email,
         publicUrl: config.B2B_PUBLIC_URL,
         rules: orderReconcileRules(engine.ordersDeps),
-        consumers: [...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS), documents.consumer, ...customerEmails],
+        consumers: [...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS), documents.consumer, ...customerEmails, summaries.consumer],
         invariants: [
           ...orderInvariants({ clock: systemClock }),
           ...documentInvariants({ clock: systemClock }),
@@ -94,6 +96,7 @@ export function startDatabase(env, log, hub, identity) {
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
           { name: 'hotel-booking-ack-reminders', everyMs: 60_000, run: () => ackEscalation({ clock: systemClock }) },
+          { name: 'reporting-summaries-rebuild', everyMs: SUMMARIES_REBUILD_EVERY_MS, run: () => summaries.summaries.rebuild() },
           { name: 'documents-retry', everyMs: DOCUMENTS_RETRY_EVERY_MS, run: () => documents.retryMissing() },
           { name: 'orders-sweeper', everyMs: ORDER_SWEEP_EVERY_MS, run: () => sweepOrders(engine.ordersDeps) },
           { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
