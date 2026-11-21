@@ -23,6 +23,7 @@ import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
 import { amendmentEmailConsumer, customerEmailConsumers, hotelFailedEmailConsumer, noShowEmailConsumer } from './customer-emails.js';
 import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
+import { payableJobs, payablesFor } from './payables-wiring.js';
 import { ackEscalation, BookingRecord, bookingInvariants, createHotelFailures, createNoShows } from '../modules/hotel-booking/index.js';
 import { createOrderCancellations } from '../modules/orders/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
@@ -68,6 +69,7 @@ export function startDatabase(env, log, hub, identity) {
   const engine = bookingEngine(env, systemClock, log, identity);
   const documents = documentJobs(engine.ordersDeps, ORDER_EVENTS.orderConfirmed);
   const summaries = summaryJobs(engine.ordersDeps);
+  const payables = payableJobs(engine.ordersDeps);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   const emails = emailConsumers(engine, config, email);
   connectB2BDatabase(config.MONGO_URI, 'api')
@@ -86,6 +88,7 @@ export function startDatabase(env, log, hub, identity) {
           documents.creditNotes,
           ...emails,
           summaries.consumer,
+          ...payables.consumers,
         ],
         invariants: [
           ...orderInvariants({ clock: systemClock }),
@@ -96,6 +99,7 @@ export function startDatabase(env, log, hub, identity) {
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+          payables.completion,
           { name: 'hotel-booking-no-show-settle', everyMs: 10 * 60_000, run: () => settleNoShows(engine.ordersDeps) },
           { name: 'hotel-booking-ack-reminders', everyMs: 60_000, run: () => ackEscalation({ clock: systemClock }) },
           { name: 'reporting-summaries-rebuild', everyMs: SUMMARIES_REBUILD_EVERY_MS, run: () => summaries.summaries.rebuild() },
@@ -172,6 +176,7 @@ async function settleNoShows(ordersDeps) {
     try {
       await cancellations.settleNoShow(n.orderId, n.bookingId, { chargePaise: n.chargePaise, refundPaise: n.refundPaise });
       await noShows.markSettled(String(n._id));
+      await payablesFor(ordersDeps).sync(n.bookingId); // final → the hotel's share becomes ready to pay
       settled += 1;
     } catch (err) {
       ordersDeps.logger.warn({ err, ref: n.bookingRef }, 'no-show not settled yet');

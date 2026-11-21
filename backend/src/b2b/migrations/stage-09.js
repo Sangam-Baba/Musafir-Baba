@@ -7,6 +7,7 @@ import {
   NO_SHOWS_COLLECTION,
 } from '../modules/hotel-booking/index.js';
 import { BOOKING_SUMMARIES_COLLECTION } from '../modules/reporting/index.js';
+import { PAYABLES_COLLECTION } from '../modules/wallet/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_09 = [
@@ -93,6 +94,21 @@ export const STAGE_09 = [
         HOTEL_FAILURES_COLLECTION,
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
+  {
+    id: '0063-wal-payables',
+    description: 'Hotel payables: one per booking; per hotel by status and check-out; ready to pay by time',
+    up: async (ctx) => {
+      await ctx.createCollection(PAYABLES_COLLECTION);
+      await ctx.createIndex(PAYABLES_COLLECTION, { bookingId: 1 }, { name: 'booking_unique', unique: true });
+      await ctx.createIndex(PAYABLES_COLLECTION, { hotelOrgId: 1, status: 1, checkOut: -1 }, { name: 'hotel_status' });
+      await ctx.createIndex(PAYABLES_COLLECTION, { status: 1, eligibleAt: 1 }, { name: 'due' });
+      await ctx.createIndex(
+        PAYABLES_COLLECTION,
+        { payoutId: 1 },
+        { name: 'payout', partialFilterExpression: { payoutId: { $type: 'string' } } },
       );
     },
   },

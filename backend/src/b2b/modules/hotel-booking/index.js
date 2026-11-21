@@ -51,3 +51,4 @@ export { createNoShows, noShowDto } from './no-show.service.js';
 export { chargeFor, noShowWindow } from './domain/cancellation-charge.js';
 export { HOTEL_FAILURES_COLLECTION, HOTEL_FAILURE_STATUSES, HotelFailureRecord } from './models/hotel-failure.model.js';
 export { createHotelFailures, failureDto } from './hotel-failure.service.js';
+export { completeStays, payableState } from './completion.js';

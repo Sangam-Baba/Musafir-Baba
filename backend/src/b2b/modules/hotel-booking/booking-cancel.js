@@ -29,7 +29,7 @@ import { CancellationRecord } from './models/cancellation.model.js';
  */
 async function cancelStart(deps, item, q) {
   const b = await loadBooking(item.bookingId);
-  if (b.status === 'CANCELLING' || b.status === 'CANCELLED') return { started: false, status: b.status };
+  // already being cancelled by someone else → the other request sees the current state (one wins)
   if (b.status !== 'CONFIRMED') throw new ConflictError('BOOKING_NOT_CANCELLABLE', { bookingStatus: b.status });
   const now = deps.clock.now();
   const { hotelPaise } = splitCharge({

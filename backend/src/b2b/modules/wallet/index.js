@@ -11,3 +11,5 @@ export { BALANCE_SNAPSHOTS_COLLECTION, JOURNAL_CURSOR, BalanceSnapshotRecord } f
 export { ROLLUP_EVERY_MS, rollUpBalances, balancesOf, ledgerInvariants } from './balances.service.js';
 export { ADJUSTMENTS_COLLECTION, REASON_CODES, AdjustmentRecord } from './models/adjustment.model.js';
 export { createAdjustments, entriesOf } from './adjustments.service.js';
+export { PAYABLES_COLLECTION, PAYABLE_STATUSES, PayableRecord } from './models/payable.model.js';
+export { createPayables, payableDto } from './payables.service.js';

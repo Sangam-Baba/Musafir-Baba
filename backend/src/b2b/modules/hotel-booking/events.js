@@ -33,6 +33,8 @@ export const EVENTS = /** @type {const} */ ({
   hotelFailed: 'hotel-booking.booking.hotel-failed',
   /** a hotel failure was resolved (refunded or moved) */
   hotelFailureResolved: 'hotel-booking.hotel-failure.resolved',
+  /** the stay is over (check-out day passed, hotel time) — the hotel's payable becomes ready to pay */
+  bookingCompleted: 'hotel-booking.booking.completed',
   /** not acknowledged after 15 minutes — the hotel is reminded */
   bookingAckReminded: 'hotel-booking.booking.ack-reminded',
   /** not acknowledged after 30 minutes — the hotel's owners are told */
