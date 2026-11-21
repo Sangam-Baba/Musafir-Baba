@@ -6,6 +6,7 @@
  *   POST /wallet/top-ups     (`wallet.account.topup`) {amountPaise} + Idempotency-Key → the PayU form to post
  *   GET  /wallet/manual-top-ups (`wallet.account.read`) the company's bank-transfer top-ups + where to send money
  *   POST /wallet/manual-top-ups (`wallet.account.topup`) {amountPaise, method, utr, paidOn, note} — finance checks it
+ *   GET  /credit             (`wallet.account.read`)  credit limit, due days, used, due date, overdue
  * Switched off until the owner turns it on (`B2B_WALLET_ENABLED=true`) → 503 WALLET_NOT_ENABLED. Where clients send bank
  * transfers: `B2B_TOPUP_BANK_DETAILS` (MusafirBaba's account, plain text).
  */
@@ -20,6 +21,7 @@ import { validate } from '../core/http/validate.js';
 import { UserRecord } from '../modules/identity/index.js';
 import { IntentRecord } from '../modules/payments/index.js';
 import {
+  createCreditLines,
   createLiveWallets,
   createManualTopUps,
   MANUAL_TOPUP_MAX_PAISE,
@@ -55,7 +57,7 @@ const topUpDto = (i) => ({
 /**
  * @param {{ wallets: ReturnType<typeof import('../modules/wallet/index.js').createLiveWallets>,
  *   payments: ReturnType<typeof import('../modules/payments/index.js').createPayments>, publicUrl: string, bankDetails: string | null,
- *   manualTopUps: ReturnType<typeof createManualTopUps>,
+ *   manualTopUps: ReturnType<typeof createManualTopUps>, creditLines: ReturnType<typeof createCreditLines>,
  *   clock: import('../core/clock.js').Clock }} deps
  */
 export function walletRoutes(deps) {
@@ -117,6 +119,13 @@ export function walletRoutes(deps) {
 
 /** @param {import('express').Router} router @param {Parameters<typeof walletRoutes>[0]} deps */
 function manualRoutes(router, deps) {
+  router.get('/credit', requirePermission(WAL.walletRead), (_req, res, next) => {
+    const { orgId } = member(res);
+    deps.wallets
+      .open(orgId)
+      .then(() => deps.creditLines.summary(orgId))
+      .then((c) => noStore(res).json(c), next);
+  });
   router.get('/wallet/manual-top-ups', requirePermission(WAL.walletRead), (_req, res, next) => {
     const { orgId } = member(res);
     deps.manualTopUps.list({ clientOrgId: orgId }).then((data) => noStore(res).json({ data, bankDetails: deps.bankDetails }), next);
@@ -154,16 +163,18 @@ function manualRoutes(router, deps) {
 export function stage11Routes(env, clock, logger) {
   const router = express.Router();
   if (env.B2B_WALLET_ENABLED !== 'true')
-    router.use('/wallet', (_req, _res, next) => next(new ServiceUnavailableError('WALLET_NOT_ENABLED')));
+    router.use(['/wallet', '/credit'], (_req, _res, next) => next(new ServiceUnavailableError('WALLET_NOT_ENABLED')));
   const { deps, payments } = paymentsFromEnv(env, clock, logger);
   const wallets = createLiveWallets({ clock, ledger: deps.ledger });
   const manualTopUps = createManualTopUps({ clock, ledger: deps.ledger, wallets });
-  router.use(walletAdminRoutes({ manualTopUps }));
+  const creditLines = createCreditLines({ clock, ledger: deps.ledger });
+  router.use(walletAdminRoutes({ manualTopUps, creditLines }));
   router.use(
     walletRoutes({
       wallets,
       payments,
       manualTopUps,
+      creditLines,
       bankDetails: env.B2B_TOPUP_BANK_DETAILS || null,
       clock,
       publicUrl: (env.B2B_PUBLIC_URL || 'https://musafirbaba.com').replace(/\/$/, ''),

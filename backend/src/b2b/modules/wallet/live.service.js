@@ -11,7 +11,7 @@
  */
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
-import { availableOf, canTake, creditUsedOf } from './domain/live.js';
+import { availableOf, canTake, creditState, creditUsedOf } from './domain/live.js';
 import { AccountRecord } from './models/account.model.js';
 import { TransactionRecord } from './models/transaction.model.js';
 
@@ -46,9 +46,16 @@ export const walletDto = (a) => ({
   }),
   creditUsedPaise: creditUsedOf({ balancePaise: a.balancePaise ?? 0, creditLimitPaise: a.creditLimitPaise ?? 0 }),
   negativeSince: a.negativeSince ?? null,
+  creditDueDays: a.creditDueDays ?? 0,
   lowBalanceThresholdPaise: a.lowBalanceThresholdPaise ?? 0,
   status: a.status,
 });
+
+/** New spending is blocked while credit is overdue (D9) — top-ups and refunds still come in. @param {Record<string, any>} w @param {Date} now */
+export function assertNotOverdue(w, now) {
+  const c = creditState(/** @type {any} */ (w), now);
+  if (c.overdue) throw new ConflictError('CREDIT_OVERDUE', { usedPaise: c.usedPaise, dueAt: c.dueAt });
+}
 
 /** @param {string} clientOrgId */
 export async function walletOf(clientOrgId) {
@@ -97,6 +104,7 @@ async function apply(deps, a) {
   const w = await walletOf(a.clientOrgId);
   if (w.status !== 'ACTIVE') throw new ConflictError('WALLET_NOT_ACTIVE');
   if (await journalled(a.journal)) return { applied: false };
+  if (a.type === 'DEBIT') assertNotOverdue(w, deps.clock.now());
   const now = deps.clock.now();
   const op = { opId: a.opId, type: a.type, amountPaise: a.amountPaise, at: now, journal: a.journal };
   const res = await AccountRecord.updateOne(

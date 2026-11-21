@@ -20,3 +20,16 @@ export const canTake = (amount) => ({ $gte: [{ $add: [{ $subtract: ['$balancePai
 
 /** Live operation types: HOLD keeps money aside; the others change the balance and carry their journal entry. */
 export const LIVE_OP_TYPES = /** @type {const} */ (['HOLD', 'CAPTURE', 'TOPUP', 'REFUND', 'ADJUST', 'DEBIT']);
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Credit dues (D9): credit used = the wallet below zero; due `creditDueDays` after it went below zero; overdue after.
+ * @param {{ balancePaise: number, creditLimitPaise: number, creditDueDays?: number, negativeSince?: Date | null }} a
+ * @param {Date} now
+ */
+export function creditState(a, now) {
+  const usedPaise = Math.max(0, -a.balancePaise);
+  const dueAt = usedPaise > 0 && a.negativeSince ? new Date(a.negativeSince.getTime() + (a.creditDueDays ?? 0) * DAY_MS) : null;
+  return { usedPaise, dueAt, overdue: Boolean(dueAt && now > dueAt) };
+}

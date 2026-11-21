@@ -21,3 +21,7 @@ export { HOLDS_COLLECTION, HOLD_STATUSES, WalletHoldRecord } from './models/hold
 export { createHolds, holdDto } from './holds.service.js';
 export { MANUAL_TOPUPS_COLLECTION, MANUAL_TOPUP_STATUSES, TRANSFER_METHODS, ManualTopUpRecord } from './models/manual-topup.model.js';
 export { createManualTopUps, manualTopUpDto, MANUAL_TOPUP_MIN_PAISE, MANUAL_TOPUP_MAX_PAISE } from './manual-topups.service.js';
+export { CREDIT_LINES_COLLECTION, CREDIT_LINE_STATUSES, CreditLineRecord } from './models/credit-line.model.js';
+export { createCreditLines, creditLineDto, CREDIT_LIMIT_MAX_PAISE } from './credit-lines.service.js';
+export { creditState } from './domain/live.js';
+export { assertNotOverdue } from './live.service.js';

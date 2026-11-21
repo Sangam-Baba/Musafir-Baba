@@ -1,6 +1,6 @@
 // @ts-check
 /** Stage 11 — client wallets and credit (new `wal_` collections only). */
-import { HOLDS_COLLECTION, MANUAL_TOPUPS_COLLECTION } from '../modules/wallet/index.js';
+import { CREDIT_LINES_COLLECTION, HOLDS_COLLECTION, MANUAL_TOPUPS_COLLECTION } from '../modules/wallet/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_11 = [
@@ -28,6 +28,20 @@ export const STAGE_11 = [
       );
       await ctx.createIndex(MANUAL_TOPUPS_COLLECTION, { clientOrgId: 1, createdAt: -1 }, { name: 'client' });
       await ctx.createIndex(MANUAL_TOPUPS_COLLECTION, { status: 1, createdAt: 1 }, { name: 'status_age' });
+    },
+  },
+  {
+    id: '0067-wal-credit-lines',
+    description: 'Credit lines: per client newest first; one open proposal per client; by status (approval queue)',
+    up: async (ctx) => {
+      await ctx.createCollection(CREDIT_LINES_COLLECTION);
+      await ctx.createIndex(CREDIT_LINES_COLLECTION, { clientOrgId: 1, createdAt: -1 }, { name: 'client' });
+      await ctx.createIndex(
+        CREDIT_LINES_COLLECTION,
+        { clientOrgId: 1 },
+        { name: 'one_open_proposal', unique: true, partialFilterExpression: { status: 'PROPOSED' } },
+      );
+      await ctx.createIndex(CREDIT_LINES_COLLECTION, { status: 1, createdAt: 1 }, { name: 'status_age' });
     },
   },
 ];

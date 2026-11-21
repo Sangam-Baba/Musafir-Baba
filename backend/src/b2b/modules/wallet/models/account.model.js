@@ -27,6 +27,8 @@ const schema = new b2bMongoose.Schema(
     balancePaise: { type: Number, default: 0 },
     heldPaise: { type: Number, default: 0, min: 0 },
     creditLimitPaise: { type: Number, default: 0, min: 0 },
+    creditDueDays: { type: Number, default: 0, min: 0 }, // credit used must be paid back within this many days
+    creditLineId: { type: String, default: null }, // the approved credit line in force (wal_credit_lines)
     ops: {
       type: [
         new b2bMongoose.Schema(

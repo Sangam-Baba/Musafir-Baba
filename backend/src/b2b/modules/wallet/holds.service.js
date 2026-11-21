@@ -10,7 +10,7 @@
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
 import { availableOf, canTake } from './domain/live.js';
-import { finishOp, OP_STUCK_MS, trackCredit, walletOf } from './live.service.js';
+import { assertNotOverdue, finishOp, OP_STUCK_MS, trackCredit, walletOf } from './live.service.js';
 import { AccountRecord } from './models/account.model.js';
 import { WalletHoldRecord } from './models/hold.model.js';
 
@@ -88,7 +88,15 @@ async function hold(deps, a) {
   let h = /** @type {Record<string, any>} */ (await WalletHoldRecord.findOne({ key: a.key }).setOptions(SCOPE).lean());
   if (h.amountPaise !== a.amountPaise || h.clientOrgId !== a.clientOrgId) throw new ConflictError('HOLD_KEY_REUSED');
   if (h.status === 'FAILED' && (await step(deps, h, ['FAILED', 'PLACING'], { expiresAt: doc.expiresAt }))) h = { ...h, status: 'PLACING' };
-  if (h.status === 'PLACING') h = await place(deps, h);
+  if (h.status === 'PLACING') {
+    try {
+      assertNotOverdue(w, now);
+    } catch (error) {
+      await step(deps, h, ['PLACING', 'FAILED']);
+      throw error;
+    }
+    h = await place(deps, h);
+  }
   if (h.status === 'FAILED')
     throw new ConflictError('INSUFFICIENT_WALLET_BALANCE', {
       availablePaise: availableOf(/** @type {any} */ (await walletOf(a.clientOrgId))),
