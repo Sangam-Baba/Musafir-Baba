@@ -1,16 +1,64 @@
 "use client";
 // One hotel booking for its customer (Stage 09): the stay, the cancellation terms — deadlines in hotel time and in the
-// viewer's own time —, what cancelling now would cost, payments and refunds, documents. Cancel comes with S09-T05.
+// viewer's own time —, what cancelling now would cost, payments and refunds, documents, and cancelling (a signed quote
+// first — charge and refund — then a confirmation; the refund goes back to the card / UPI / bank account).
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
 import { B2B_API } from "../api";
 import { errorMessage } from "../messages";
-import { DOC_LABEL, documentUrl, hotelBooking, STATUS_TEXT, type Moment } from "./checkout";
+import { cancelHotelBooking, cancellationQuote, DOC_LABEL, documentUrl, hotelBooking, randomId, STATUS_TEXT, type CancellationQuote, type Moment } from "./checkout";
 import { inr, MEAL_LABEL } from "./hotels";
 
 const yourTime = (m: Moment) => new Date(m.at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 const When = ({ m }: { m: Moment }) => <span>{m.hotelTime} hotel time<span className="text-slate-400"> ({yourTime(m)} your time)</span></span>;
+
+function CancelBox({ bookingRef, linkKey, onDone }: { bookingRef: string; linkKey: string | null; onDone: () => void }) {
+  const [quote, setQuote] = useState<CancellationQuote | null>(null);
+  const [agree, setAgree] = useState(false);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [requestKey] = useState(() => randomId());
+  async function ask() {
+    setBusy(true);
+    try {
+      setQuote(await cancellationQuote(bookingRef, linkKey));
+      setAgree(false);
+    } catch (e) {
+      toast.error(errorMessage(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function confirm() {
+    if (!quote) return;
+    setBusy(true);
+    try {
+      const r = await cancelHotelBooking(bookingRef, linkKey, quote.quoteToken, reason.trim() || null, requestKey);
+      toast.success(r.refundPaise > 0 ? `Cancelled. ${inr(r.refundPaise)} is on its way back to you.` : "Cancelled.");
+      onDone();
+    } catch (e) {
+      toast.error(errorMessage(e));
+      setQuote(null);
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (!quote) return <button disabled={busy} onClick={ask} className="rounded-lg border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 disabled:opacity-50">{busy ? "Checking…" : "Cancel this booking"}</button>;
+  return (
+    <div className="space-y-2 rounded-lg bg-red-50 p-3 text-sm text-red-900">
+      <p>Cancel now: charge <strong>{inr(quote.chargePaise)}</strong>, refund <strong>{inr(quote.refundPaise)}</strong> to the same card, UPI or bank account (banks usually take a few working days). This price holds for 5 minutes.</p>
+      <input className="block h-9 w-full rounded-lg border border-red-200 bg-white px-2 text-sm" placeholder="Reason (optional)" value={reason} maxLength={500} onChange={(e) => setReason(e.target.value)} />
+      {quote.chargePaise > 0 && <label className="flex items-center gap-2"><input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} /> I understand {inr(quote.chargePaise)} will not be refunded.</label>}
+      <div className="flex gap-2">
+        <button disabled={busy || (quote.chargePaise > 0 && !agree)} onClick={confirm} className="rounded-lg bg-red-600 px-3 py-1.5 font-semibold text-white disabled:opacity-50">{busy ? "Cancelling…" : "Yes, cancel"}</button>
+        <button onClick={() => setQuote(null)} className="rounded-lg border border-red-200 bg-white px-3 py-1.5">Keep my booking</button>
+      </div>
+    </div>
+  );
+}
 
 export function HotelBookingDetail({ bookingRef, linkKey }: { bookingRef: string; linkKey: string | null }) {
   const q = useQuery({ queryKey: ["hotel-booking", bookingRef], queryFn: () => hotelBooking(bookingRef, linkKey) });
@@ -35,6 +83,8 @@ export function HotelBookingDetail({ bookingRef, linkKey }: { bookingRef: string
           {!t.nonRefundable && t.steps.map((s, i) => s.from && <p key={i} className="text-slate-700">From <When m={s.from} />: {s.text}</p>)}
           {b.status === "CONFIRMED" && <p className="text-slate-700">If you cancel now: charge {inr(t.ifCancelledNow.chargePaise)}, refund {inr(t.ifCancelledNow.refundPaise)}.</p>}
           {b.status === "CONFIRMED" && !t.canCancelOnline && <p className="text-xs text-slate-500">Online cancellation has closed for this stay — please call +91 92896 02447.</p>}
+          {b.status === "CONFIRMED" && t.canCancelOnline && <CancelBox bookingRef={b.ref} linkKey={linkKey} onDone={() => void q.refetch()} />}
+          {b.cancelled && <p className="text-slate-700">Cancelled: charge {inr(b.cancelled.chargePaise)}, refund {inr(b.cancelled.refundPaise)}.</p>}
         </div>
       </div>
       <div className="space-y-4">

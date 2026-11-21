@@ -33,7 +33,7 @@ export function createGatewayMode(deps) {
     refund: async (_ctx, order, a) => {
       await refundPayment(deps.paymentsDeps, {
         intentId: a.intentId,
-        amountPaise: order.totalPaise,
+        amountPaise: a.amountPaise ?? order.totalPaise,
         key: a.key,
         reason: a.reason,
         by: 'system:orders',

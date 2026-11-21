@@ -201,6 +201,7 @@ describe('delivery and the bell', () => {
       ['team.role-changed', false],
       ['booking.new', true], // Stage 08: hotel booking alerts can't be switched off
       ['booking.reminder', true],
+      ['booking.cancelled', false],
       ['booking.escalated', true],
     ]); // a Manager sees listings, not the KYC categories
     expect(prefs.find((/** @type {any} */ p) => p.category === 'team.role-changed')).toEqual({

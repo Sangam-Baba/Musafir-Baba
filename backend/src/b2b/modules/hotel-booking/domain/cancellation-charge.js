@@ -95,3 +95,34 @@ export function splitCharge(a) {
   const hotel = a.totalPaise > 0 ? Math.round((a.chargePaise * a.hotelPayablePaise) / a.totalPaise) : 0;
   return { hotelPaise: Math.min(hotel, a.chargePaise), musafirbabaPaise: a.chargePaise - Math.min(hotel, a.chargePaise) };
 }
+
+/**
+ * What a cancellation takes back from the confirmation's credits (the payment mode adds the credit of the refund to the
+ * buyer's side — PayU: customer advances). Only the refunded part is reversed:
+ *   hotel payable  ← payable − the hotel's share of the charge (= payable × refund ÷ total)
+ *   GST payable    ← each part × refund ÷ total (the credit note's GST)
+ *   margin revenue ← the rest (a credit when the margin gave more than it had)
+ * Always balances to the refund.
+ * @param {{ totalPaise: number, hotelPayablePaise: number, cgstPaise: number, sgstPaise: number, igstPaise: number }} t
+ * @param {{ chargePaise: number, refundPaise: number }} c
+ * @returns {{ type: 'PAYABLE' | 'TAX_PAYABLE_CGST' | 'TAX_PAYABLE_SGST' | 'TAX_PAYABLE_IGST' | 'REVENUE_MARGIN', debitPaise?: number, creditPaise?: number }[]}
+ */
+export function cancellationReversal(t, c) {
+  if (c.refundPaise <= 0 || t.totalPaise <= 0) return [];
+  const { hotelPaise } = splitCharge({ chargePaise: c.chargePaise, totalPaise: t.totalPaise, hotelPayablePaise: t.hotelPayablePaise });
+  const payable = t.hotelPayablePaise - hotelPaise;
+  const part = (/** @type {number} */ x) => Math.round((x * c.refundPaise) / t.totalPaise);
+  const taxes = /** @type {const} */ ([
+    ['TAX_PAYABLE_CGST', part(t.cgstPaise)],
+    ['TAX_PAYABLE_SGST', part(t.sgstPaise)],
+    ['TAX_PAYABLE_IGST', part(t.igstPaise)],
+  ]);
+  const revenue = c.refundPaise - payable - taxes.reduce((s, [, v]) => s + v, 0);
+  /** @type {ReturnType<typeof cancellationReversal>} */
+  const lines = [];
+  if (payable > 0) lines.push({ type: 'PAYABLE', debitPaise: payable });
+  for (const [type, v] of taxes) if (v > 0) lines.push({ type, debitPaise: v });
+  if (revenue > 0) lines.push({ type: 'REVENUE_MARGIN', debitPaise: revenue });
+  if (revenue < 0) lines.push({ type: 'REVENUE_MARGIN', creditPaise: -revenue });
+  return lines;
+}

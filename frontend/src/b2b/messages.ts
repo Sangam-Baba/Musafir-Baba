@@ -2,6 +2,11 @@
 import { B2BError } from "./api";
 
 const MESSAGES: Record<string, string> = {
+  QUOTE_EXPIRED: "The price shown is more than 5 minutes old. Please check the cancellation again.",
+  QUOTE_INVALID: "Something went wrong with this cancellation. Please start again.",
+  BOOKING_CHANGED: "This booking changed meanwhile. Refresh and try again.",
+  BOOKING_NOT_CANCELLABLE: "This booking can't be cancelled now — refresh to see where it stands.",
+  CANCEL_ONLINE_CLOSED: "Online cancellation has closed for this stay. Please call +91 92896 02447.",
   SOLD_OUT: "Sorry — this room was just sold out for your dates. Please pick another room or dates.",
   PRICE_CHANGED: "The price changed since you looked. Please check the new price.",
   TOO_MANY_OPEN_ORDERS: "You already have bookings waiting for payment. Finish or let them expire first.",

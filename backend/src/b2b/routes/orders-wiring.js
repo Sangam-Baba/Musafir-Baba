@@ -12,12 +12,14 @@ import {
   createHotelBookingsService,
   createHotelItemHandler,
   overdueAcknowledgements,
+  readQuote,
 } from '../modules/hotel-booking/index.js';
 import { IntentRecord, RefundRecord } from '../modules/payments/index.js';
 import { createHoldService } from '../modules/hotel-inventory/index.js';
 import {
   createGatewayMode,
   createOrderAdmin,
+  createOrderCancellations,
   createItemHandlers,
   createOrderPayments,
   createOrderService,
@@ -160,6 +162,9 @@ export function stage08Routes(env, clock, logger, identity) {
       money: (orderId) => buyerMoney(orderId),
       documents: documentsFor(engine.ordersDeps),
       linkSecret: env.B2B_AUTH_SECRET ?? '',
+      cancellations: createOrderCancellations(engine.ordersDeps),
+      readQuote: (token, booking) => readQuote(token, booking, { now: clock.now(), secret: env.B2B_AUTH_SECRET ?? '' }),
+      clock,
     }),
   );
   const admin = createOrderAdmin(engine.ordersDeps);

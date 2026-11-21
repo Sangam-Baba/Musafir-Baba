@@ -17,7 +17,7 @@ const REFUNDED_FAILURES = ['ROOMS_LOST'];
  *   ordersDeps: import('../modules/orders/payment.service.js').PayDeps,
  *   publicUrl: string, linkSecret: string,
  *   send: ((message: { to: string, subject: string, text: string }) => Promise<unknown>) | null,
- *   events: { orderConfirmed: string, orderFailed: string },
+ *   events: { orderConfirmed: string, orderFailed: string, orderCancelled: string },
  * }} deps
  */
 export function customerEmailConsumers(deps) {
@@ -47,6 +47,22 @@ export function customerEmailConsumers(deps) {
           checkIn: view?.stay?.checkIn ?? '',
           checkOut: view?.stay?.checkOut ?? '',
         });
+      },
+    },
+    {
+      consumer: 'customer-email-order-cancelled',
+      types: [deps.events.orderCancelled],
+      handler: async (/** @type {{ payload: any }} */ e) => {
+        const o = await load(String(e.payload.orderId));
+        if (!o) return;
+        let refund = 0;
+        let propertyName = 'your hotel';
+        for (const it of o.items) {
+          const v = /** @type {any} */ (await deps.ordersDeps.handlers.get(it.type).view(it, 'BUYER'));
+          refund += v.cancelled?.refundPaise ?? 0;
+          propertyName = v.property?.name ?? propertyName;
+        }
+        await mail(o, 'order.cancelled-customer', { propertyName, refund: rupees(refund) });
       },
     },
     {

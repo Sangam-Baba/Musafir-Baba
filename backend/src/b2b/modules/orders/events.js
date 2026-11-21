@@ -9,4 +9,6 @@ export const EVENTS = /** @type {const} */ ({
   orderFailed: 'orders.order.failed',
   /** the payment window ran out with nothing paid; rooms given back */
   orderExpired: 'orders.order.expired',
+  /** every booking of a confirmed order cancelled by the buyer (refund on its way) */
+  orderCancelled: 'orders.order.cancelled',
 });

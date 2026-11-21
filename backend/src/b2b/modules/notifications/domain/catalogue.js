@@ -128,6 +128,14 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/bookings',
   },
+  'booking.cancelled': {
+    audience: 'ORG',
+    permission: 'hotel-booking.booking.read',
+    critical: false,
+    label: 'Booking cancelled',
+    emailTo: 'OWNERS',
+    link: '/business/bookings',
+  },
   'booking.escalated': {
     audience: 'ORG',
     permission: 'hotel-booking.booking.read',
@@ -157,6 +165,7 @@ export const EVENT_CATEGORIES = Object.freeze({
   'hotel-booking.booking.confirmed': 'booking.new',
   'hotel-booking.booking.ack-reminded': 'booking.reminder',
   'hotel-booking.booking.ack-escalated': 'booking.escalated',
+  'hotel-booking.booking.cancelled': 'booking.cancelled',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */

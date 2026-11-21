@@ -84,6 +84,23 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your payment of {{total}} is being refunded ({{orderRef}})',
     text: 'Hello {{name}},\n\nWe are sorry: the rooms for your booking {{orderRef}} sold out before your payment reached us, so the booking could not be confirmed.\n\nYour payment of {{total}} is being refunded to the same card, UPI or bank account through PayU. Banks usually take a few working days to show it.\n\nSee the status: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
   },
+  // Stage 09: cancellations
+  'order.cancelled-customer': {
+    version: 1,
+    vars: ['name', 'orderRef', 'propertyName', 'refund', 'link'],
+    title: 'Booking cancelled',
+    body: 'Your booking {{orderRef}} at {{propertyName}} is cancelled. Refund: {{refund}}.',
+    subject: 'Booking cancelled — {{propertyName}} ({{orderRef}})',
+    text: 'Hello {{name}},\n\nYour booking {{orderRef}} at {{propertyName}} is cancelled.\n\nRefund: {{refund}} — sent back to the same card, UPI or bank account through PayU. Banks usually take a few working days to show it.\n\nSee the details: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
+  'booking.cancelled': {
+    version: 1,
+    vars: ['orgName', 'link', 'propertyName'],
+    title: 'Booking cancelled',
+    body: 'A booking at {{propertyName}} was cancelled by the guest. The rooms are back on sale.',
+    subject: 'Booking cancelled at {{propertyName}}',
+    text: 'Hello,\n\nA booking at {{propertyName}} was cancelled by the guest. The rooms are back in your calendar.\n\nSee it here: {{link}}\n\nMusafirBaba Business',
+  },
   // Stage 08: bookings — the hotel's alert, reminders and the escalation to its owners
   'booking.new': {
     version: 1,

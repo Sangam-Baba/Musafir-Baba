@@ -86,6 +86,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /orders/:ref/documents', // the buyer only (as above): voucher, invoice, receipt list
         'GET /bookings/hotels', // the signed-in customer's (existing website login) or this browser's guest id; per buyer only
         'GET /bookings/hotels/:ref', // the buyer only (customer, guest id or order link key); others 404
+        'POST /bookings/hotels/:ref/cancel', // the buyer only; Idempotency-Key + a valid signed quote; server-side amounts
         'POST /bookings/hotels/:ref/cancellation-quote', // the buyer only (as above); server-computed, signed, 5 minutes
         'GET /orders/:ref/documents/:id', // the buyer only (as above): the page, escaped, strict CSP
         'POST /payments/payu/callback', // PayU browser return: trusted only after the reverse hash AND PayU's verify API

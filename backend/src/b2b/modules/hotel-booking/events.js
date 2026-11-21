@@ -13,6 +13,8 @@ export const EVENTS = /** @type {const} */ ({
   bookingConfirmed: 'hotel-booking.booking.confirmed',
   /** the hotel acknowledged a new booking — escalation stops */
   bookingAcknowledged: 'hotel-booking.booking.acknowledged',
+  /** cancelled by the buyer (rooms back, refund on its way) — the hotel is told */
+  bookingCancelled: 'hotel-booking.booking.cancelled',
   /** not acknowledged after 15 minutes — the hotel is reminded */
   bookingAckReminded: 'hotel-booking.booking.ack-reminded',
   /** not acknowledged after 30 minutes — the hotel's owners are told */

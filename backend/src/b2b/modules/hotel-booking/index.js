@@ -25,7 +25,9 @@ export {
   nightAmounts,
   cancellationCharge,
   splitCharge,
+  cancellationReversal,
 } from './domain/cancellation-charge.js';
+export { CANCELLATIONS_COLLECTION, CancellationRecord } from './models/cancellation.model.js';
 export {
   createCustomerBookings,
   termsOf,

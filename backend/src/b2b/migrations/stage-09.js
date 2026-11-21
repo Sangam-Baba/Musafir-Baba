@@ -1,5 +1,6 @@
 // @ts-check
 /** Migrations of Stage 09 (after booking, hotel operations). Run after 0001–0057; ids never renamed or reused. */
+import { CANCELLATIONS_COLLECTION } from '../modules/hotel-booking/index.js';
 import { BOOKING_SUMMARIES_COLLECTION } from '../modules/reporting/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -33,6 +34,16 @@ export const STAGE_09 = [
         { leadGuest: 'text', bookingRef: 'text', orderRef: 'text' },
         { name: 'search_text' },
       );
+    },
+  },
+  {
+    id: '0059-hbk-cancellations',
+    description: 'Cancellations: one per booking; newest first (admin monitor); per hotel',
+    up: async (ctx) => {
+      await ctx.createCollection(CANCELLATIONS_COLLECTION);
+      await ctx.createIndex(CANCELLATIONS_COLLECTION, { bookingId: 1 }, { name: 'booking_unique', unique: true });
+      await ctx.createIndex(CANCELLATIONS_COLLECTION, { requestedAt: -1 }, { name: 'recent' });
+      await ctx.createIndex(CANCELLATIONS_COLLECTION, { hotelOrgId: 1, requestedAt: -1 }, { name: 'hotel_recent' });
     },
   },
 ];

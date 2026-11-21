@@ -123,13 +123,15 @@ describe('the customer', () => {
     const { o, e } = await confirmed();
     /** @type {{ to: string, subject: string, text: string }[]} */
     const sent = [];
-    const [ok, refunding] = customerEmailConsumers({
+    const consumers = customerEmailConsumers({
       ordersDeps: e.deps,
       publicUrl: 'https://musafirbaba.com',
       linkSecret: 'link-secret-for-tests-0000000000',
       send: async (m) => void sent.push(m),
       events: ORDER_EVENTS,
     });
+    const ok = consumers.find((c) => c.consumer === 'customer-email-order-confirmed');
+    const refunding = consumers.find((c) => c.consumer === 'customer-email-order-refunding');
     await ok?.handler({ payload: { orderId: String(o._id) } });
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({ to: 'asha@example.com', subject: expect.stringContaining(o.ref) });

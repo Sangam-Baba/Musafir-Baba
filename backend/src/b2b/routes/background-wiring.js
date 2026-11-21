@@ -23,7 +23,8 @@ import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
 import { customerEmailConsumers } from './customer-emails.js';
 import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
-import { ackEscalation, bookingInvariants } from '../modules/hotel-booking/index.js';
+import { ackEscalation, BookingRecord, bookingInvariants } from '../modules/hotel-booking/index.js';
+import { createOrderCancellations } from '../modules/orders/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
@@ -84,7 +85,7 @@ export function startDatabase(env, log, hub, identity) {
         hub,
         email,
         publicUrl: config.B2B_PUBLIC_URL,
-        rules: orderReconcileRules(engine.ordersDeps),
+        rules: [...orderReconcileRules(engine.ordersDeps), cancellingRule(engine.ordersDeps)],
         consumers: [...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS), documents.consumer, ...customerEmails, summaries.consumer],
         invariants: [
           ...orderInvariants({ clock: systemClock }),
@@ -112,4 +113,21 @@ export function startDatabase(env, log, hub, identity) {
     .catch((error) => {
       log.error({ err: error }, 'b2b database connection or background start failed');
     });
+}
+
+/**
+ * Reconciler: a booking stuck in CANCELLING for more than 30 seconds → its cancellation finished (rooms, ledger, refund,
+ * CANCELLED) — forward, the buyer was promised the refund.
+ * @param {import('../modules/orders/payment.service.js').PayDeps} ordersDeps
+ * @returns {import('../core/jobs/reconciler.js').ReconcileRule}
+ */
+function cancellingRule(ordersDeps) {
+  const cancellations = createOrderCancellations(ordersDeps);
+  return {
+    name: 'hotel-booking-cancelling',
+    model: BookingRecord,
+    stuckStatus: 'CANCELLING',
+    olderThanMs: 30_000,
+    resume: async (b) => cancellations.finishBooking(String(b.orderId), String(b._id)),
+  };
 }

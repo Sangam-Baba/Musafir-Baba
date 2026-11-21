@@ -146,7 +146,7 @@ export type BookingRow = { bookingRef: string; orderRef: string; propertyName: s
 export type Moment = { at: string; hotelTime: string };
 export type Terms = { timeZone: string; checkInAt: string; checkInHotelTime: string; nonRefundable: boolean; freeUntil: Moment | null; steps: { from: Moment | null; text: string }[]; summary: string; ifCancelledNow: { chargePaise: number; refundPaise: number }; canCancelOnline: boolean };
 export type BookingDetail = {
-  booking: OrderItem & { confirmedAt: string | null };
+  booking: OrderItem & { confirmedAt: string | null; cancelled: { chargePaise: number; refundPaise: number; requestedAt: string } | null };
   terms: Terms;
   order: { ref: string; status: OrderStatus; totalPaise: number; gstPaise: number; createdAt: string; confirmedAt: string | null };
   payments: { txnId: string; status: string; amountPaise: number; mode: string | null; at: string }[];
@@ -157,3 +157,9 @@ export type BookingDetail = {
 export const myHotelBookings = () => hotelsApi<{ data: BookingRow[] }>("/bookings/hotels", undefined, { headers: headers(), cache: "no-store" });
 export const hotelBooking = (ref: string, key?: string | null) => hotelsApi<BookingDetail>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}`, key), undefined, { headers: headers(), cache: "no-store" });
 export const STATUS_TEXT: Record<string, string> = { CONFIRMED: "Confirmed", HELD: "Waiting for payment", EXPIRED: "Not paid in time", FAILED: "Not completed", CANCELLING: "Cancelling", CANCELLED: "Cancelled", COMPLETED: "Stayed", NO_SHOW: "No-show", HOTEL_FAILED: "Hotel couldn't honour" };
+
+export type CancellationQuote = { quoteToken: string; chargePaise: number; refundPaise: number; expiresAt: string; nonRefundable: boolean; paidPaise: number };
+export const cancellationQuote = (ref: string, key?: string | null) =>
+  hotelsApi<CancellationQuote>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/cancellation-quote`, key), {}, { headers: { "Content-Type": "application/json", ...headers() } });
+export const cancelHotelBooking = (ref: string, key: string | null, quoteToken: string, reason: string | null, requestKey: string) =>
+  hotelsApi<{ chargePaise: number; refundPaise: number }>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/cancel`, key), { quoteToken, reason }, { headers: { "Content-Type": "application/json", ...headers({ "Idempotency-Key": requestKey }) } });

@@ -27,12 +27,16 @@ import { DomainError } from '../../core/errors.js';
  *   abandon: (ctx: Ctx, order: OrderInfo) => Promise<void>,
  *   view: (item: OrderItem, audience: 'BUYER' | 'ADMIN') => Promise<Record<string, unknown>>,
  *   timeline: (item: OrderItem) => Promise<{ at: Date, what: string, by: string, note: string | null }[]>,
+ *   cancelStart: (ctx: Ctx, item: OrderItem, q: { chargePaise: number, refundPaise: number, by: string, reason?: string | null }) => Promise<{ started: boolean, status: string }>,
+ *   cancelRooms: (ctx: Ctx, item: OrderItem) => Promise<void>,
+ *   cancelLedgerLines: (item: OrderItem) => Promise<{ refundPaise: number, lines: LedgerLine[] }>,
+ *   cancelDone: (ctx: Ctx, item: OrderItem) => Promise<void>,
  * }} ItemHandler
  * @typedef {{
  *   start: (ctx: Ctx, order: Record<string, any>, opts: { windowMinutes: number, returnUrl: string }) =>
  *     Promise<{ intentId: string, txnId: string, action: string, fields: Record<string, string> }>,
  *   debitAccount: (order: Record<string, any>) => Promise<string>,
- *   refund: (ctx: Ctx, order: Record<string, any>, a: { intentId: string, key: string, reason: string }) => Promise<void>,
+ *   refund: (ctx: Ctx, order: Record<string, any>, a: { intentId: string, key: string, reason: string, amountPaise?: number }) => Promise<void>,
  * }} PaymentMode
  */
 

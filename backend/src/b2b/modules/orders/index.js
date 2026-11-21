@@ -36,6 +36,7 @@ export { orderReconcileRules, orderConsumers, HOLDING_STUCK_MS, CONFIRMING_STUCK
 export { createOrderPayments, confirmForward, refundOrder, MAX_PAYMENT_ATTEMPTS } from './payment.service.js';
 export { sweepOrders, orderInvariants, expireOrder, ORDER_SWEEP_EVERY_MS } from './sweeper.js';
 export { createOrderAdmin } from './admin.service.js';
+export { createOrderCancellations } from './cancel.service.js';
 export { ADMIN_ACTIONS_COLLECTION, ADMIN_ACTIONS, ADMIN_ACTION_STATUSES, AdminActionRecord } from './models/admin-action.model.js';
 /** @typedef {import('./registry.js').ItemHandler} ItemHandler */
 /** @typedef {import('./registry.js').PaymentMode} PaymentMode */
