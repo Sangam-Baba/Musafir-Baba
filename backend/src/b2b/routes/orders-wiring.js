@@ -13,6 +13,8 @@ import {
   createHotelItemHandler,
   overdueAcknowledgements,
   readQuote,
+  createAmendments,
+  bookingByRef,
 } from '../modules/hotel-booking/index.js';
 import { IntentRecord, RefundRecord } from '../modules/payments/index.js';
 import { createHoldService } from '../modules/hotel-inventory/index.js';
@@ -29,6 +31,8 @@ import {
 import { documentsFor } from './documents-wiring.js';
 import { hotelBookingRoutes } from './hotel-bookings.js';
 import { customerBookingRoutes } from './customer-bookings.js';
+import { customerAmendmentRoutes } from './customer-amendments.js';
+import { amendmentAdminRoutes } from './amendments-admin.js';
 import { orderAdminRoutes } from './orders-admin.js';
 import { summariesFor } from './reporting-wiring.js';
 import { orderRoutes } from './orders.js';
@@ -167,6 +171,17 @@ export function stage08Routes(env, clock, logger, identity) {
       clock,
     }),
   );
+  const amendments = createAmendments({ clock });
+  router.use(
+    customerAmendmentRoutes({
+      amendments,
+      bookingByRef,
+      bookings: createCustomerBookings({ clock }),
+      orders: engine.orders,
+      linkSecret: env.B2B_AUTH_SECRET ?? '',
+    }),
+  );
+  router.use(amendmentAdminRoutes({ amendments }));
   const admin = createOrderAdmin(engine.ordersDeps);
   router.use(orderAdminRoutes({ admin, detail: (o) => adminDetail(engine, admin, o), overdue: () => overdueAcknowledgements({ clock }) }));
   return router;

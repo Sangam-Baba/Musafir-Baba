@@ -84,6 +84,14 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your payment of {{total}} is being refunded ({{orderRef}})',
     text: 'Hello {{name}},\n\nWe are sorry: the rooms for your booking {{orderRef}} sold out before your payment reached us, so the booking could not be confirmed.\n\nYour payment of {{total}} is being refunded to the same card, UPI or bank account through PayU. Banks usually take a few working days to show it.\n\nSee the status: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
   },
+  'amendment.reply-customer': {
+    version: 1,
+    vars: ['name', 'orderRef', 'requestRef', 'link'],
+    title: 'Reply to your request',
+    body: 'MusafirBaba replied to your request {{requestRef}}.',
+    subject: 'Reply to your request {{requestRef}} (booking {{orderRef}})',
+    text: 'Hello {{name}},\n\nMusafirBaba replied to your request {{requestRef}} about booking {{orderRef}}.\n\nRead it and answer here: {{link}}\n\n(Please reply on that page — replies to this email are not read yet.)\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
   // Stage 09: cancellations
   'order.cancelled-customer': {
     version: 1,

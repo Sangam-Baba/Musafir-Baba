@@ -1,6 +1,6 @@
 // @ts-check
 /** Migrations of Stage 09 (after booking, hotel operations). Run after 0001–0057; ids never renamed or reused. */
-import { CANCELLATIONS_COLLECTION } from '../modules/hotel-booking/index.js';
+import { AMENDMENTS_COLLECTION, CANCELLATIONS_COLLECTION } from '../modules/hotel-booking/index.js';
 import { BOOKING_SUMMARIES_COLLECTION } from '../modules/reporting/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -44,6 +44,21 @@ export const STAGE_09 = [
       await ctx.createIndex(CANCELLATIONS_COLLECTION, { bookingId: 1 }, { name: 'booking_unique', unique: true });
       await ctx.createIndex(CANCELLATIONS_COLLECTION, { requestedAt: -1 }, { name: 'recent' });
       await ctx.createIndex(CANCELLATIONS_COLLECTION, { hotelOrgId: 1, requestedAt: -1 }, { name: 'hotel_recent' });
+    },
+  },
+  {
+    id: '0060-hbk-amendments',
+    description: 'Change requests: unique reference; per booking newest first; queue by status and due time; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(AMENDMENTS_COLLECTION);
+      await ctx.createIndex(AMENDMENTS_COLLECTION, { ref: 1 }, { name: 'ref_unique', unique: true });
+      await ctx.createIndex(AMENDMENTS_COLLECTION, { bookingId: 1, createdAt: -1 }, { name: 'booking_recent' });
+      await ctx.createIndex(AMENDMENTS_COLLECTION, { status: 1, firstResponseDueAt: 1 }, { name: 'queue' });
+      await ctx.createIndex(
+        AMENDMENTS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];

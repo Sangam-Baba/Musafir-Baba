@@ -2,6 +2,10 @@
 import { B2BError } from "./api";
 
 const MESSAGES: Record<string, string> = {
+  GUEST_NAMES_INVALID: "Please give a valid name for each room (letters, spaces, dot, apostrophe, hyphen).",
+  TOO_MANY_OPEN_REQUESTS: "You already have 5 open requests on this booking — please wait for our answers.",
+  BOOKING_CANNOT_BE_CHANGED: "This booking can't be changed now — send a message instead.",
+  AMENDMENT_CLOSED: "This request is closed. Open a new one if you need something else.",
   QUOTE_EXPIRED: "The price shown is more than 5 minutes old. Please check the cancellation again.",
   QUOTE_INVALID: "Something went wrong with this cancellation. Please start again.",
   BOOKING_CHANGED: "This booking changed meanwhile. Refresh and try again.",

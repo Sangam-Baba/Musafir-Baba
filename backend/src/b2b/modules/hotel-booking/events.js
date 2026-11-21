@@ -15,6 +15,14 @@ export const EVENTS = /** @type {const} */ ({
   bookingAcknowledged: 'hotel-booking.booking.acknowledged',
   /** cancelled by the buyer (rooms back, refund on its way) — the hotel is told */
   bookingCancelled: 'hotel-booking.booking.cancelled',
+  /** a buyer asked for a change — MusafirBaba's queue */
+  amendmentOpened: 'hotel-booking.amendment.opened',
+  /** the buyer wrote again in a change request */
+  amendmentBuyerReplied: 'hotel-booking.amendment.buyer-replied',
+  /** MusafirBaba answered a change request — the buyer is emailed */
+  amendmentStaffReplied: 'hotel-booking.amendment.staff-replied',
+  /** a change request was resolved or closed */
+  amendmentClosed: 'hotel-booking.amendment.closed',
   /** not acknowledged after 15 minutes — the hotel is reminded */
   bookingAckReminded: 'hotel-booking.booking.ack-reminded',
   /** not acknowledged after 30 minutes — the hotel's owners are told */

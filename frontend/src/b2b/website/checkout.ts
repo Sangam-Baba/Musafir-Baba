@@ -163,3 +163,12 @@ export const cancellationQuote = (ref: string, key?: string | null) =>
   hotelsApi<CancellationQuote>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/cancellation-quote`, key), {}, { headers: { "Content-Type": "application/json", ...headers() } });
 export const cancelHotelBooking = (ref: string, key: string | null, quoteToken: string, reason: string | null, requestKey: string) =>
   hotelsApi<{ chargePaise: number; refundPaise: number }>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/cancel`, key), { quoteToken, reason }, { headers: { "Content-Type": "application/json", ...headers({ "Idempotency-Key": requestKey }) } });
+
+export const AMENDMENT_TYPES = { MODIFY_DATES: "Change dates", MODIFY_GUESTS: "Change guest names", UPGRADE_ROOM: "Better room", REFUND_REQUEST: "Refund question", OTHER: "Something else" } as const;
+export type AmendmentType = keyof typeof AMENDMENT_TYPES;
+export type ChangeRequest = { id: string; ref: string; type: AmendmentType; status: "OPEN" | "IN_PROGRESS" | "WAITING_CUSTOMER" | "RESOLVED" | "CLOSED"; messages: { at: string; from: string; text: string }[]; resolution: string | null; createdAt: string };
+export const changeRequests = (ref: string, key?: string | null) => hotelsApi<{ data: ChangeRequest[] }>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/amendments`, key), undefined, { headers: headers(), cache: "no-store" });
+export const openChangeRequest = (ref: string, key: string | null, body: { type: AmendmentType; message: string; guestNames?: { room: number; leadGuest: string }[] }) =>
+  hotelsApi<ChangeRequest>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/amendments`, key), body, { headers: { "Content-Type": "application/json", ...headers() } });
+export const replyChangeRequest = (ref: string, key: string | null, id: string, text: string) =>
+  hotelsApi<ChangeRequest>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}/amendments/${id}/messages`, key), { text }, { headers: { "Content-Type": "application/json", ...headers() } });

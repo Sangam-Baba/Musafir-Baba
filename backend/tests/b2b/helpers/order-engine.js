@@ -36,7 +36,7 @@ import { MarginRuleRecord, PricingSettingsRecord, SigningKeyRecord } from '../..
 import { DocumentRecord, NumberSeriesRecord } from '../../../src/b2b/modules/documents/index.js';
 import { AdminActionRecord } from '../../../src/b2b/modules/orders/index.js';
 import { BookingSummaryRecord } from '../../../src/b2b/modules/reporting/index.js';
-import { CancellationRecord } from '../../../src/b2b/modules/hotel-booking/index.js';
+import { AmendmentRecord, CancellationRecord } from '../../../src/b2b/modules/hotel-booking/index.js';
 import { createLedger, seedPlatformAccounts, TransactionRecord } from '../../../src/b2b/modules/wallet/index.js';
 import { useInventoryApp } from './inventory-app.js';
 import { seedPricing, sellableHotel } from './search-setup.js';
@@ -70,6 +70,7 @@ export function useOrderEngine() {
       AdminActionRecord,
       BookingSummaryRecord,
       CancellationRecord,
+      AmendmentRecord,
     ],
   });
   const logger = createLogger({ write: () => {} });

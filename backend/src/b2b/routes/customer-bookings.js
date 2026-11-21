@@ -50,9 +50,9 @@ const listRow = (r) => ({
  * otherwise 404, so a booking's existence isn't revealed.
  * @param {import('express').Request} req
  * @param {import('express').Response} res
- * @param {Parameters<typeof customerBookingRoutes>[0]} deps
+ * @param {{ bookings: ReturnType<typeof import('../modules/hotel-booking/index.js').createCustomerBookings>, orders: ReturnType<typeof import('../modules/orders/index.js').createOrderService>, linkSecret: string }} deps
  */
-async function ownBooking(req, res, deps) {
+export async function ownBooking(req, res, deps) {
   const { actor } = contextOf(res);
   const d = await deps.bookings.detail(res.locals.input.params.ref);
   const order = await deps.orders.read(d.orderRef, {

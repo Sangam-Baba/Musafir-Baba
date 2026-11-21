@@ -21,7 +21,7 @@ import {
 } from '../modules/orders/index.js';
 import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
-import { customerEmailConsumers } from './customer-emails.js';
+import { amendmentEmailConsumer, customerEmailConsumers } from './customer-emails.js';
 import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
 import { ackEscalation, BookingRecord, bookingInvariants } from '../modules/hotel-booking/index.js';
 import { createOrderCancellations } from '../modules/orders/index.js';
@@ -69,13 +69,7 @@ export function startDatabase(env, log, hub, identity) {
   const documents = documentJobs(engine.ordersDeps, ORDER_EVENTS.orderConfirmed);
   const summaries = summaryJobs(engine.ordersDeps);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
-  const customerEmails = customerEmailConsumers({
-    ordersDeps: engine.ordersDeps,
-    publicUrl: config.B2B_PUBLIC_URL || 'https://musafirbaba.com',
-    linkSecret: config.B2B_AUTH_SECRET ?? '',
-    send: email ? (message) => queueEmail(message, { secret: email.secret, clock: systemClock }) : null,
-    events: ORDER_EVENTS,
-  });
+  const emails = emailConsumers(engine, config, email);
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -90,7 +84,7 @@ export function startDatabase(env, log, hub, identity) {
           ...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
           documents.consumer,
           documents.creditNotes,
-          ...customerEmails,
+          ...emails,
           summaries.consumer,
         ],
         invariants: [
@@ -136,4 +130,24 @@ function cancellingRule(ordersDeps) {
     olderThanMs: 30_000,
     resume: async (b) => cancellations.finishBooking(String(b.orderId), String(b._id)),
   };
+}
+
+/**
+ * Emails to website buyers: confirmed / refunding / cancelled orders and answers to their change requests.
+ * @param {ReturnType<typeof bookingEngine>} engine
+ * @param {ReturnType<typeof loadConfig>} config
+ * @param {{ sender: unknown, secret: string } | null} email
+ */
+function emailConsumers(engine, config, email) {
+  const deps = {
+    ordersDeps: engine.ordersDeps,
+    publicUrl: config.B2B_PUBLIC_URL || 'https://musafirbaba.com',
+    linkSecret: config.B2B_AUTH_SECRET ?? '',
+    send: email
+      ? (/** @type {{ to: string, subject: string, text: string }} */ message) =>
+          queueEmail(message, { secret: email.secret, clock: systemClock })
+      : null,
+    events: ORDER_EVENTS,
+  };
+  return [...customerEmailConsumers(deps), amendmentEmailConsumer(deps, 'hotel-booking.amendment.staff-replied')];
 }

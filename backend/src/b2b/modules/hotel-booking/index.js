@@ -37,3 +37,11 @@ export {
   BUFFER_HOURS,
   QUOTE_MINUTES,
 } from './cancellation.service.js';
+export {
+  AMENDMENTS_COLLECTION,
+  AMENDMENT_TYPES,
+  AMENDMENT_STATUSES,
+  FIRST_RESPONSE_HOURS,
+  AmendmentRecord,
+} from './models/amendment.model.js';
+export { createAmendments, buyerAmendment, adminAmendment } from './amendments.service.js';

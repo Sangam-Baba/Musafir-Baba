@@ -76,3 +76,31 @@ export function customerEmailConsumers(deps) {
     },
   ];
 }
+
+/**
+ * The buyer is emailed when MusafirBaba answers a change request (with the link to the booking page to reply there).
+ * @param {Parameters<typeof customerEmailConsumers>[0]} deps
+ * @param {string} staffReplied the hotel-booking event name
+ */
+export function amendmentEmailConsumer(deps, staffReplied) {
+  const base = deps.publicUrl.replace(/\/$/, '');
+  return {
+    consumer: 'customer-email-amendment-reply',
+    types: [staffReplied],
+    handler: async (/** @type {{ payload: any }} */ e) => {
+      const o = /^[a-f0-9]{24}$/.test(String(e.payload.orderId))
+        ? /** @type {any} */ (await OrderRecord.findOne({ _id: e.payload.orderId }).setOptions(ORDERS).lean())
+        : null;
+      if (!o) return;
+      const link = `${base}/hotels/my-bookings/${e.payload.bookingRef}?key=${linkKey(deps.linkSecret, o.ref)}`;
+      const msg = renderTemplate('amendment.reply-customer', {
+        name: o.contact.name,
+        orderRef: o.ref,
+        requestRef: String(e.payload.ref),
+        link,
+      });
+      if (!deps.send) return deps.ordersDeps.logger.info({ ref: o.ref }, 'customer email not sent (email settings missing)');
+      await deps.send({ to: o.contact.email, subject: msg.subject, text: msg.text });
+    },
+  };
+}

@@ -188,6 +188,10 @@ export const ADMIN_QUEUES = Object.freeze({
   'hotel-booking.request.declined': 'booking-requests',
   'hotel-booking.booking.ack-overdue': 'hotel-ack', // 60 minutes: operations call the hotel
   'hotel-booking.booking.acknowledged': 'hotel-ack',
+  'hotel-booking.amendment.opened': 'amendments', // Stage 09: change requests
+  'hotel-booking.amendment.buyer-replied': 'amendments',
+  'hotel-booking.amendment.staff-replied': 'amendments',
+  'hotel-booking.amendment.closed': 'amendments',
 });
 
 /** @param {string} key @returns {Category | null} */
