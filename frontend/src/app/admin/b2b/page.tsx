@@ -2,7 +2,7 @@
 // B2B admin (MusafirBaba staff): organisations, business users, activity and staff access.
 // Lives inside the existing admin panel and its login, built from the admin's own UI kit.
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Building2, ClipboardList, FileCheck2, Hotel, Headset, IndianRupee, Landmark, ShoppingBag, ListChecks, ShieldCheck, Users } from "lucide-react";
+import { Activity, Building2, ClipboardList, FileCheck2, Hotel, Headset, IndianRupee, Landmark, ShoppingBag, ListChecks, ShieldCheck, Users, Wallet } from "lucide-react";
 
 import type { QueueItem } from "@/b2b/admin-kyc";
 import { AdminBell } from "@/b2b/components/admin/AdminBell";
@@ -18,6 +18,7 @@ import { AdminPageHeader, AdminTabsList, FleetKpiStrip, FleetPage, SECTION, Tabs
 import { OrgsTab, type AdminOrg } from "@/b2b/components/admin/OrgsTab";
 import { PricingTab } from "@/b2b/components/admin/pricing/PricingTab";
 import { StaffTab } from "@/b2b/components/admin/StaffTab";
+import { WalletsTab } from "@/b2b/components/admin/wallets/WalletsTab";
 import { ActivityTab, UsersTab } from "@/b2b/components/admin/UsersAndActivity";
 
 const TABS = [
@@ -29,6 +30,7 @@ const TABS = [
   { value: "masters", label: "Masters", icon: ListChecks, title: "Master lists", description: "Cities, amenities, property and bed types, meal plans." },
   { value: "pricing", label: "Pricing", icon: IndianRupee, title: "Pricing", description: "Margin rules, price simulator, GST rates and settings." },
   { value: "finance", label: "Finance", icon: Landmark, title: "Finance", description: "Ledger accounts, corrections, PayU payments, refunds and reconciliation." },
+  { value: "wallets", label: "Wallets", icon: Wallet, title: "Client wallets", description: "Client wallets and credit, bank-transfer approvals, wallet adjustments, manual credits report." },
   { value: "orgs", label: "Organisations", icon: Building2, title: "Organisations", description: "Client and hotel organisations." },
   { value: "users", label: "Users", icon: Users, title: "Business users", description: "People who sign in to the business area." },
   { value: "activity", label: "Activity", icon: Activity, title: "Activity", description: "Sign-ins and changes in every organisation." },
@@ -56,7 +58,7 @@ function B2BAdmin({ token }: { token: string }) {
         ]}
       />
       <Tabs defaultValue="kyc" className="flex flex-col gap-4">
-        <AdminTabsList tabs={TABS} gridClassName="lg:grid-cols-12" />
+        <AdminTabsList tabs={TABS} gridClassName="lg:grid-cols-[repeat(13,minmax(0,1fr))]" />
         <TabsContent value="kyc" className="mt-0">
           <KycQueueTab token={token} />
         </TabsContent>
@@ -80,6 +82,9 @@ function B2BAdmin({ token }: { token: string }) {
         </TabsContent>
         <TabsContent value="finance" className="mt-0">
           <FinanceTab token={token} />
+        </TabsContent>
+        <TabsContent value="wallets" className="mt-0">
+          <WalletsTab token={token} />
         </TabsContent>
         <TabsContent value="orgs" className="mt-0">
           <OrgsTab token={token} />

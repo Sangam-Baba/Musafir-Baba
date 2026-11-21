@@ -221,7 +221,7 @@ export function stage11Routes(env, clock, logger) {
   const manualTopUps = createManualTopUps({ clock, ledger: deps.ledger, wallets });
   const creditLines = createCreditLines({ clock, ledger: deps.ledger });
   const adjustments = createWalletAdjustments({ clock, ledger: deps.ledger, wallets });
-  router.use(walletAdminRoutes({ manualTopUps, creditLines, adjustments }));
+  router.use(walletAdminRoutes({ manualTopUps, creditLines, adjustments, clock }));
   router.use(
     walletRoutes({
       wallets,
