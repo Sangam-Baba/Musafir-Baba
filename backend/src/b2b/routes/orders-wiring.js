@@ -17,6 +17,7 @@ import {
   createPaymentModes,
   orderView,
 } from '../modules/orders/index.js';
+import { documentsFor } from './documents-wiring.js';
 import { orderRoutes } from './orders.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
@@ -68,6 +69,7 @@ export function stage08Routes(env, clock, logger, identity) {
       gate: engine.parts.gate,
       orders: engine.orders,
       payments: createOrderPayments(engine.ordersDeps),
+      documents: documentsFor(engine.ordersDeps),
       publicUrl: (env.B2B_PUBLIC_URL || 'https://musafirbaba.com').replace(/\/$/, ''),
       view: (o) => orderView(engine.ordersDeps, o, 'BUYER'),
       linkSecret: env.B2B_AUTH_SECRET ?? '',

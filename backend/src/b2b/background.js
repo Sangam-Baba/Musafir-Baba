@@ -62,6 +62,7 @@ import {
 import { createSearchCacheSignals } from './modules/hotel-search/index.js';
 import { BookingRecord, BookingRequestRecord } from './modules/hotel-booking/index.js';
 import { OrderRecord } from './modules/orders/index.js';
+import { DocumentRecord } from './modules/documents/index.js';
 import { createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
@@ -212,6 +213,7 @@ export const eventSources = [
   RefundRecord,
   OrderRecord,
   BookingRecord,
+  DocumentRecord,
 ];
 
 /**

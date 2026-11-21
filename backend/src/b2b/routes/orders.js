@@ -7,6 +7,8 @@
  *   GET  /orders/:ref       the buyer only: signed-in customer, the same guest session, or the link key (`?key=`)
  *   POST /orders/:ref/payments     the buyer; Idempotency-Key → the PayU form (window ends before the hold)
  *   POST /orders/:ref/extend-hold  the buyer; once, +10 minutes
+ *   GET  /orders/:ref/documents    the buyer; voucher, tax invoice, receipt (latest versions)
+ *   GET  /orders/:ref/documents/:id  the buyer; the page itself (printable HTML, strict Content-Security-Policy)
  * Both are public routes (guests have no login); the search gateway limits them per IP, and every read is checked
  * against the order's owner — anyone else gets 404. B2B members use booking requests until Stage 12 part B.
  */
@@ -98,6 +100,36 @@ function viewerOf(req, res, linkSecret) {
   };
 }
 
+/** The buyer's documents. @param {import('express').Router} router @param {Parameters<typeof orderRoutes>[0]} deps */
+function documentRoutes(router, deps) {
+  const noStore = (/** @type {import('express').Response} */ res) => res.set('Cache-Control', 'private, no-store');
+  router.get('/orders/:ref/documents', publicRoute(), validate({ params: Ref, query: LinkQuery }), (req, res, next) => {
+    (async () => {
+      const order = await deps.orders.read(res.locals.input.params.ref, viewerOf(req, res, deps.linkSecret));
+      noStore(res).json({ data: await deps.documents.list(String(order._id)) });
+    })().catch(next);
+  });
+  router.get(
+    '/orders/:ref/documents/:id',
+    publicRoute(),
+    validate({ params: Ref.extend({ id: z.string().regex(/^[a-f0-9]{24}$/) }), query: LinkQuery }),
+    (req, res, next) => {
+      (async () => {
+        const order = await deps.orders.read(res.locals.input.params.ref, viewerOf(req, res, deps.linkSecret));
+        const doc = await deps.documents.read(String(order._id), res.locals.input.params.id);
+        noStore(res)
+          .set('Content-Type', 'text/html; charset=utf-8')
+          .set(
+            'Content-Security-Policy',
+            "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
+          )
+          .set('X-Content-Type-Options', 'nosniff')
+          .send(doc.html);
+      })().catch(next);
+    },
+  );
+}
+
 /** POST /orders. @param {import('express').Router} router @param {Parameters<typeof orderRoutes>[0]} deps */
 function createRoute(router, deps) {
   const noStore = (/** @type {import('express').Response} */ res) => res.set('Cache-Control', 'private, no-store');
@@ -149,6 +181,7 @@ function createRoute(router, deps) {
  *   gate: ReturnType<typeof import('./search-gateway.js').createSearchGate>,
  *   orders: ReturnType<typeof import('../modules/orders/index.js').createOrderService>,
  *   payments: ReturnType<typeof import('../modules/orders/index.js').createOrderPayments>,
+ *   documents: { list: (orderId: string) => Promise<unknown[]>, read: (orderId: string, id: string) => Promise<{ html: string }> },
  *   publicUrl: string,
  *   view: (order: Record<string, any>) => Promise<Record<string, unknown>>,
  *   linkSecret: string,
@@ -205,5 +238,6 @@ export function orderRoutes(deps) {
       })().catch(next);
     },
   );
+  documentRoutes(router, deps);
   return router;
 }

@@ -83,6 +83,8 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /orders/:ref', // the buyer only (signed-in customer, same guest session, or the order link key); others 404
         'POST /orders/:ref/payments', // the buyer only (as above); Idempotency-Key; the PayU form for the server's amount
         'POST /orders/:ref/extend-hold', // the buyer only (as above); once, +10 minutes
+        'GET /orders/:ref/documents', // the buyer only (as above): voucher, invoice, receipt list
+        'GET /orders/:ref/documents/:id', // the buyer only (as above): the page, escaped, strict CSP
         'POST /payments/payu/callback', // PayU browser return: trusted only after the reverse hash AND PayU's verify API
         'POST /registrations/verify-email',
       ].sort(),

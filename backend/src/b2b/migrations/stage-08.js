@@ -1,6 +1,7 @@
 // @ts-check
 /** Migrations of Stage 08 (booking engine). Run after 0001–0050; ids never renamed or reused. */
 import { BOOKINGS_COLLECTION, STATUS_HISTORY_COLLECTION } from '../modules/hotel-booking/index.js';
+import { DOCUMENTS_COLLECTION, NUMBER_SERIES_COLLECTION } from '../modules/documents/index.js';
 import { ORDERS_COLLECTION } from '../modules/orders/index.js';
 
 const relayIndex = { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } };
@@ -76,6 +77,27 @@ export const STAGE_08 = [
     up: async (ctx) => {
       await ctx.createCollection(STATUS_HISTORY_COLLECTION);
       await ctx.createIndex(STATUS_HISTORY_COLLECTION, { hotelOrgId: 1, bookingId: 1, at: 1 }, { name: 'booking_time' });
+    },
+  },
+  {
+    id: '0054-doc-documents',
+    description: 'Booking documents: one per order, type and version; invoice numbers unique per series; by order; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(DOCUMENTS_COLLECTION);
+      await ctx.createIndex(DOCUMENTS_COLLECTION, { orderId: 1, type: 1, version: 1 }, { name: 'order_type_version_unique', unique: true });
+      await ctx.createIndex(
+        DOCUMENTS_COLLECTION,
+        { series: 1, number: 1 },
+        { name: 'invoice_number_unique', unique: true, partialFilterExpression: { number: { $type: 'string' }, version: 1 } },
+      );
+      await ctx.createIndex(DOCUMENTS_COLLECTION, { hasPendingEvents: 1 }, relayIndex);
+    },
+  },
+  {
+    id: '0055-doc-number-series',
+    description: 'Gap-free number series (GST invoices per registration and financial year)',
+    up: async (ctx) => {
+      await ctx.createCollection(NUMBER_SERIES_COLLECTION);
     },
   },
 ];

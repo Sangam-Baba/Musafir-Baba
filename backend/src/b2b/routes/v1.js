@@ -44,7 +44,16 @@ import { followCheck, stage06Routes } from './search-wiring.js';
 import { stage10Routes } from './client-wiring.js';
 import { paymentsFromEnv, stage07Routes } from './payments-wiring.js';
 import { bookingEngine, stage08Routes } from './orders-wiring.js';
-import { ORDER_SWEEP_EVERY_MS, orderConsumers, orderInvariants, orderReconcileRules, sweepOrders } from '../modules/orders/index.js';
+import {
+  EVENTS as ORDER_EVENTS,
+  ORDER_SWEEP_EVERY_MS,
+  orderConsumers,
+  orderInvariants,
+  orderReconcileRules,
+  sweepOrders,
+} from '../modules/orders/index.js';
+import { documentInvariants } from '../modules/documents/index.js';
+import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
@@ -334,6 +343,7 @@ const CALENDAR_WINDOW_SCHEDULE = {
 function startDatabase(env, log, hub, identity) {
   const config = loadConfig(env);
   const engine = bookingEngine(env, systemClock, log, identity);
+  const documents = documentJobs(engine.ordersDeps, ORDER_EVENTS.orderConfirmed);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
@@ -345,12 +355,13 @@ function startDatabase(env, log, hub, identity) {
         email,
         publicUrl: config.B2B_PUBLIC_URL,
         rules: orderReconcileRules(engine.ordersDeps),
-        consumers: orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
-        invariants: orderInvariants({ clock: systemClock }),
+        consumers: [...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS), documents.consumer],
+        invariants: [...orderInvariants({ clock: systemClock }), ...documentInvariants({ clock: systemClock })],
         schedules: [
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+          { name: 'documents-retry', everyMs: DOCUMENTS_RETRY_EVERY_MS, run: () => documents.retryMissing() },
           { name: 'orders-sweeper', everyMs: ORDER_SWEEP_EVERY_MS, run: () => sweepOrders(engine.ordersDeps) },
           { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
           { name: 'payments-poller', everyMs: POLL_EVERY_MS, run: () => pollPayments(paymentsFromEnv(env, systemClock, log).deps) },
