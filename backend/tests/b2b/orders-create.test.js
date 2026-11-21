@@ -250,3 +250,28 @@ describe('switch', () => {
     }
   });
 });
+
+describe('safety limits', () => {
+  it('3 open orders per buyer, 5 per IP; an order above ₹5,00,000 refused online; 20 order calls per IP per hour', async () => {
+    const h = await ready(9);
+    const token = async () => (await offer(h)).priceToken;
+    const a = 'guest-session-limits-00000001';
+    const b = 'guest-session-limits-00000002';
+    for (let i = 0; i < 3; i += 1)
+      expect((await app.srv.post('/api/v1/orders', body(await token(), { confirmDuplicate: true }), guest(a))).status).toBe(201);
+    const fourth = await app.srv.post('/api/v1/orders', body(await token(), { confirmDuplicate: true }), guest(a));
+    expect(fourth.body).toMatchObject({ code: 'TOO_MANY_OPEN_ORDERS', limit: 3 });
+    for (let i = 0; i < 2; i += 1)
+      expect((await app.srv.post('/api/v1/orders', body(await token(), { confirmDuplicate: true }), guest(b))).status).toBe(201);
+    const sixth = await app.srv.post('/api/v1/orders', body(await token(), { confirmDuplicate: true }), guest(b));
+    expect(sixth.body).toMatchObject({ code: 'TOO_MANY_OPEN_ORDERS', limit: 5 }); // same IP, 5 open
+    await OrderRecord.deleteMany({}).setOptions({ tenantScope: 'SYSTEM', tenantReason: 't' });
+    const dear = await sellableHotel(app, { price: 30_000_000 }); // ₹3,00,000 a night
+    const big = (await app.srv.post(`/api/v1/hotels/${dear.ref}/offers`, stay)).body.offers[0];
+    const refused = await app.srv.post('/api/v1/orders', body(big.priceToken), guest('guest-session-limits-00000003'));
+    expect(refused.body).toMatchObject({ code: 'ORDER_VALUE_LIMIT', maxPaise: 50_000_000 });
+    const calls = [];
+    for (let i = 0; i < 21; i += 1) calls.push(await app.srv.post('/api/v1/orders', {}, guest('guest-session-limits-00000004')));
+    expect(calls.at(-1)?.status).toBe(429); // every order call counts (6 above + these)
+  });
+});

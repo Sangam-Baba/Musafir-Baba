@@ -13,6 +13,7 @@ export {
   PAYMENT_WINDOW_MARGIN_MINUTES,
   MIN_HOLD_LEFT_TO_PAY_MINUTES,
   DUPLICATE_WINDOW_MINUTES,
+  ORDER_LIMITS,
   assertOrderTransition,
   paymentPlan,
   checkBuyerInput,

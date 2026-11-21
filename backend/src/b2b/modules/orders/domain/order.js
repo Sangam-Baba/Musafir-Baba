@@ -54,6 +54,17 @@ export const PAYMENT_WINDOW_MARGIN_MINUTES = 2;
 export const MIN_HOLD_LEFT_TO_PAY_MINUTES = 5;
 export const DUPLICATE_WINDOW_MINUTES = 2;
 
+/**
+ * Safety limits (plan Stage 08 §3.7; owner defaults, 19 Nov 2026 — changeable): open orders at once per buyer and per
+ * IP, the largest order taken online (bigger ones: "call us"), and when many orders from one IP raise an alert.
+ */
+export const ORDER_LIMITS = Object.freeze({
+  openPerBuyer: 3,
+  openPerIp: 5,
+  maxOrderPaise: 50_000_000, // ₹5,00,000
+  alertPerIpPerHour: 10,
+});
+
 /** @param {OrderStatus} from @param {OrderStatus} to */
 export function assertOrderTransition(from, to) {
   if (!ORDER_TRANSITIONS[from]?.includes(to)) throw new DomainError('ORDER_STATUS', { from, to });
