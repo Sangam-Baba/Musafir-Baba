@@ -28,6 +28,7 @@ import { ackEscalation, BookingRecord, bookingInvariants, createHotelFailures, c
 import { createOrderCancellations } from '../modules/orders/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
+import { walletParts } from './wallet-wiring.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
 
@@ -72,6 +73,7 @@ export function startDatabase(env, log, hub, identity) {
   const payables = payableJobs(engine.ordersDeps);
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   const emails = emailConsumers(engine, config, email);
+  const wallet = walletParts(systemClock);
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -89,10 +91,12 @@ export function startDatabase(env, log, hub, identity) {
           ...emails,
           summaries.consumer,
           ...payables.consumers,
+          wallet.consumer,
         ],
         invariants: [
           ...orderInvariants({ clock: systemClock }),
           ...documentInvariants({ clock: systemClock }),
+          ...wallet.invariants,
           ...bookingInvariants({ clock: systemClock, owners: () => bookedNightOwners(systemClock) }),
         ],
         schedules: [
@@ -100,6 +104,7 @@ export function startDatabase(env, log, hub, identity) {
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
           payables.completion,
+          wallet.schedule,
           { name: 'hotel-booking-no-show-settle', everyMs: 10 * 60_000, run: () => settleNoShows(engine.ordersDeps) },
           { name: 'hotel-booking-ack-reminders', everyMs: 60_000, run: () => ackEscalation({ clock: systemClock }) },
           { name: 'reporting-summaries-rebuild', everyMs: SUMMARIES_REBUILD_EVERY_MS, run: () => summaries.summaries.rebuild() },
