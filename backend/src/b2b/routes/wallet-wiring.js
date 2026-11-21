@@ -81,6 +81,7 @@ export function walletParts(clock) {
         ...(await holds.reconcile()),
         ...(await manualTopUps.creditDue()),
         ...(await creditLines.applyDue()),
+        ...(await creditLines.alertOverdue()),
         ...(await adjustments.finishDue()),
       }),
     },

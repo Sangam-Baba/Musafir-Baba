@@ -144,6 +144,31 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/bookings',
   },
+  // Stage 11: client wallets
+  'wallet.topup-credited': {
+    audience: 'ORG',
+    permission: 'wallet.account.read',
+    critical: false,
+    label: 'Money added to your wallet',
+    emailTo: 'OWNERS',
+    link: '/business/wallet',
+  },
+  'wallet.low-balance': {
+    audience: 'ORG',
+    permission: 'wallet.account.read',
+    critical: false,
+    label: 'Wallet balance is low',
+    emailTo: 'OWNERS',
+    link: '/business/wallet',
+  },
+  'wallet.credit-overdue': {
+    audience: 'ORG',
+    permission: 'wallet.account.read',
+    critical: true,
+    label: 'Credit payment overdue',
+    emailTo: 'OWNERS',
+    link: '/business/wallet',
+  },
 });
 
 /** @typedef {keyof typeof CATEGORIES} CategoryKey */
@@ -166,6 +191,9 @@ export const EVENT_CATEGORIES = Object.freeze({
   'hotel-booking.booking.ack-reminded': 'booking.reminder',
   'hotel-booking.booking.ack-escalated': 'booking.escalated',
   'hotel-booking.booking.cancelled': 'booking.cancelled',
+  'wallet.topup.credited': 'wallet.topup-credited',
+  'wallet.account.low-balance': 'wallet.low-balance',
+  'wallet.credit.overdue': 'wallet.credit-overdue',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */

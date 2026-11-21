@@ -9,9 +9,11 @@
  * balance = Σ the account's journal lines + ops still to post; held = Σ hold ops.
  * Only client wallets are LIVE; MusafirBaba's and hotels' accounts stay DERIVED (worked out from the journal).
  */
+import { newEvent } from '../../core/db/events.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
 import { availableOf, canTake, creditState, creditUsedOf } from './domain/live.js';
+import { EVENTS } from './events.js';
 import { AccountRecord } from './models/account.model.js';
 import { TransactionRecord } from './models/transaction.model.js';
 
@@ -64,14 +66,34 @@ export async function walletOf(clientOrgId) {
   return /** @type {Record<string, any>} */ (a);
 }
 
-/** Credit in use since — set when the balance goes below zero, cleared when it is back. @param {unknown} id @param {Date} now */
-export async function trackCredit(id, now) {
+/** `balance − held + credit limit` as a database expression. */
+const AVAILABLE = { $add: [{ $subtract: ['$balancePaise', '$heldPaise'] }, '$creditLimitPaise'] };
+
+/**
+ * After a balance moved: credit in use since (set below zero, cleared at zero or above — the overdue alert too); the
+ * low-balance alert once when available falls below the client's threshold, re-armed when it is back above.
+ * @param {{ clock: import('../../core/clock.js').Clock }} deps
+ * @param {unknown} id
+ */
+export async function trackCredit(deps, id) {
+  const now = deps.clock.now();
   await AccountRecord.updateOne({ _id: id, balancePaise: { $lt: 0 }, negativeSince: null }, { $set: { negativeSince: now } }).setOptions(
     LIVE,
   );
   await AccountRecord.updateOne(
-    { _id: id, balancePaise: { $gte: 0 }, negativeSince: { $ne: null } },
-    { $set: { negativeSince: null } },
+    { _id: id, balancePaise: { $gte: 0 }, $or: [{ negativeSince: { $ne: null } }, { creditOverdueAlerted: true }] },
+    { $set: { negativeSince: null, creditOverdueAlerted: false } },
+  ).setOptions(LIVE);
+  const a = /** @type {any} */ (await AccountRecord.findById(id, { ownerOrgId: 1, lowBalanceThresholdPaise: 1 }).setOptions(LIVE).lean());
+  if (!a) return;
+  const event = newEvent(EVENTS.lowBalance, { orgId: a.ownerOrgId, amountPaise: a.lowBalanceThresholdPaise ?? 0 }, deps);
+  await AccountRecord.updateOne(
+    { _id: id, lowBalanceAlerted: false, lowBalanceThresholdPaise: { $gt: 0 }, $expr: { $lt: [AVAILABLE, '$lowBalanceThresholdPaise'] } },
+    { $set: { lowBalanceAlerted: true, hasPendingEvents: true }, $push: { pendingEvents: event } },
+  ).setOptions(LIVE);
+  await AccountRecord.updateOne(
+    { _id: id, lowBalanceAlerted: true, $expr: { $gte: [AVAILABLE, '$lowBalanceThresholdPaise'] } },
+    { $set: { lowBalanceAlerted: false } },
   ).setOptions(LIVE);
 }
 
@@ -115,7 +137,16 @@ async function apply(deps, a) {
       doneOps: { $ne: a.opId },
       ...(a.amountPaise < 0 ? { $expr: canTake(-a.amountPaise) } : {}),
     },
-    { $inc: { balancePaise: a.amountPaise, version: 1 }, $push: { ops: op } },
+    a.type === 'TOPUP'
+      ? {
+          $inc: { balancePaise: a.amountPaise, version: 1 },
+          $set: { hasPendingEvents: true },
+          $push: {
+            ops: op,
+            pendingEvents: newEvent(EVENTS.topUpCredited, { orgId: a.clientOrgId, amountPaise: a.amountPaise, opId: a.opId }, deps),
+          },
+        }
+      : { $inc: { balancePaise: a.amountPaise, version: 1 }, $push: { ops: op } },
   ).setOptions(LIVE);
   if (res.modifiedCount !== 1) {
     const now2 = await walletOf(a.clientOrgId);
@@ -125,7 +156,7 @@ async function apply(deps, a) {
     throw new ConflictError('INSUFFICIENT_WALLET_BALANCE', { availablePaise: availableOf(/** @type {any} */ (now2)) });
   }
   await finishOp(deps, w, op, a.by);
-  await trackCredit(w._id, now);
+  await trackCredit(deps, w._id);
   return { applied: true };
 }
 

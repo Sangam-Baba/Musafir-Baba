@@ -6,6 +6,7 @@
  * balance here, changed only by conditional updates that record an op id (see `live.service.js`).
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
+import { eventFields } from '../../../core/db/events.js';
 import { defineTenantModel } from '../../../core/db/model.js';
 import { ACCOUNT_TYPES } from '../domain/accounts.js';
 import { LIVE_OP_TYPES } from '../domain/live.js';
@@ -49,6 +50,8 @@ const schema = new b2bMongoose.Schema(
     negativeSince: { type: Date, default: null }, // credit in use since (dues are counted from here)
     lowBalanceThresholdPaise: { type: Number, default: 1_000_000, min: 0 },
     lowBalanceAlerted: { type: Boolean, default: false },
+    creditOverdueAlerted: { type: Boolean, default: false },
+    ...eventFields(b2bMongoose), // Stage 11: wallet alerts (top-up credited, low balance, credit overdue)
     version: { type: Number, default: 0 },
   },
   { timestamps: true, versionKey: false },

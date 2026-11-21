@@ -8,9 +8,11 @@
  * blocked (live.service `assertNotOverdue`) until a top-up brings the wallet back to zero or above.
  * An approval cut short before the wallet was updated is finished by `applyDue`.
  */
+import { newEvent } from '../../core/db/events.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { ConflictError, DomainError, ForbiddenError, NotFoundError } from '../../core/errors.js';
 import { availableOf, creditState } from './domain/live.js';
+import { EVENTS } from './events.js';
 import { walletOf } from './live.service.js';
 import { AccountRecord } from './models/account.model.js';
 import { CreditLineRecord } from './models/credit-line.model.js';
@@ -114,6 +116,33 @@ export function createCreditLines(deps) {
         .limit(1000)
         .lean();
       return rows.map((a) => ({ clientOrgId: a.ownerOrgId, ...creditState(/** @type {any} */ (a), now) })).filter((r) => r.overdue);
+    },
+    /** Overdue credit → one alert per client until the wallet is back to zero (then re-armed). */
+    async alertOverdue() {
+      const now = deps.clock.now();
+      const rows = await AccountRecord.find({
+        type: 'WALLET',
+        balancePaise: { $lt: 0 },
+        negativeSince: { $ne: null },
+        creditOverdueAlerted: false,
+      })
+        .setOptions(SCOPE)
+        .limit(1000)
+        .lean();
+      let alerted = 0;
+      for (const a of rows) {
+        const c = creditState(/** @type {any} */ (a), now);
+        if (!c.overdue) continue;
+        const res = await AccountRecord.updateOne(
+          { _id: a._id, creditOverdueAlerted: false },
+          {
+            $set: { creditOverdueAlerted: true, hasPendingEvents: true },
+            $push: { pendingEvents: newEvent(EVENTS.creditOverdue, { orgId: a.ownerOrgId, amountPaise: c.usedPaise }, deps) },
+          },
+        ).setOptions(SCOPE);
+        alerted += res.modifiedCount;
+      }
+      return { overdueAlerted: alerted };
     },
     /** Approved but not yet on the wallet (cut short) → applied. */
     async applyDue() {

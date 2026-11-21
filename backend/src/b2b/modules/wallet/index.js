@@ -26,3 +26,4 @@ export { createCreditLines, creditLineDto, CREDIT_LIMIT_MAX_PAISE } from './cred
 export { creditState } from './domain/live.js';
 export { assertNotOverdue } from './live.service.js';
 export { createWalletAdjustments, refundToWallet, walletAdjustmentDto } from './wallet-adjustments.service.js';
+export { walletStatement, walletStatementCsv, PURPOSE_LABELS, STATEMENT_MAX_DAYS } from './statement.service.js';

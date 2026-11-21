@@ -190,6 +190,31 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your role changed — MusafirBaba Business',
     text: 'Hello,\n\nYour role in {{orgName}} was changed. What you can see and do there may be different now.\n\n{{link}}\n\nMusafirBaba Business',
   },
+  // Stage 11: client wallets
+  'wallet.topup-credited': {
+    version: 1,
+    vars: ['orgName', 'link', 'amount'],
+    title: 'Money added to your wallet',
+    body: '{{amount}} was added to the {{orgName}} wallet.',
+    subject: '{{amount}} added to your MusafirBaba wallet',
+    text: 'Hello,\n\n{{amount}} was added to the {{orgName}} wallet.\n\nSee your wallet: {{link}}\n\nMusafirBaba Business',
+  },
+  'wallet.low-balance': {
+    version: 1,
+    vars: ['orgName', 'link', 'amount'],
+    title: 'Wallet balance is low',
+    body: 'The {{orgName}} wallet has less than {{amount}} available. Add money so bookings are not stopped.',
+    subject: 'Your MusafirBaba wallet is below {{amount}}',
+    text: 'Hello,\n\nThe {{orgName}} wallet has less than {{amount}} available. Add money so bookings are not stopped.\n\nAdd money: {{link}}\n\nMusafirBaba Business',
+  },
+  'wallet.credit-overdue': {
+    version: 1,
+    vars: ['orgName', 'link', 'amount'],
+    title: 'Credit payment overdue',
+    body: '{{amount}} of credit used by {{orgName}} is past its due date. New bookings are paused until it is paid.',
+    subject: 'Credit payment overdue — new bookings paused',
+    text: 'Hello,\n\n{{amount}} of credit used by {{orgName}} is past its due date. New bookings are paused until the wallet is topped up.\n\nPay now: {{link}}\n\nMusafirBaba Business',
+  },
 });
 
 const PLACEHOLDER = /\{\{([a-zA-Z]+)\}\}/g;

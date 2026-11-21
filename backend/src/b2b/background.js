@@ -63,7 +63,7 @@ import { createSearchCacheSignals } from './modules/hotel-search/index.js';
 import { AmendmentRecord, BookingRecord, BookingRequestRecord, HotelFailureRecord, NoShowRecord } from './modules/hotel-booking/index.js';
 import { OrderRecord } from './modules/orders/index.js';
 import { DocumentRecord } from './modules/documents/index.js';
-import { createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
+import { AccountRecord, createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
@@ -217,6 +217,7 @@ export const eventSources = [
   AmendmentRecord,
   NoShowRecord,
   HotelFailureRecord,
+  AccountRecord, // Stage 11: client wallet alerts
 ];
 
 /**

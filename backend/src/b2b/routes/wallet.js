@@ -7,6 +7,8 @@
  *   GET  /wallet/manual-top-ups (`wallet.account.read`) the company's bank-transfer top-ups + where to send money
  *   POST /wallet/manual-top-ups (`wallet.account.topup`) {amountPaise, method, utr, paidOn, note} — finance checks it
  *   GET  /credit             (`wallet.account.read`)  credit limit, due days, used, due date, overdue
+ *   GET  /wallet/statement?from&to · /wallet/statement.csv (`wallet.account.read`) opening, entries, closing (Indian dates)
+ *   PATCH /wallet/settings   (`wallet.account.topup`) {lowBalanceThresholdPaise} — 0 switches the alert off
  * Switched off until the owner turns it on (`B2B_WALLET_ENABLED=true`) → 503 WALLET_NOT_ENABLED. Where clients send bank
  * transfers: `B2B_TOPUP_BANK_DETAILS` (MusafirBaba's account, plain text).
  */
@@ -29,7 +31,10 @@ import {
   MANUAL_TOPUP_MIN_PAISE,
   PERMISSIONS as WAL,
   TRANSFER_METHODS,
+  walletStatement,
+  walletStatementCsv,
 } from '../modules/wallet/index.js';
+import { AccountRecord } from '../modules/wallet/index.js';
 import { walletAdminRoutes } from './wallet-admin.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 
@@ -115,6 +120,7 @@ export function walletRoutes(deps) {
     },
   );
   manualRoutes(router, deps);
+  statementRoutes(router, deps);
   return router;
 }
 
@@ -151,6 +157,51 @@ function manualRoutes(router, deps) {
       deps.manualTopUps
         .submit({ ...res.locals.input.body, clientOrgId: orgId, by: `user:${userId}` })
         .then((t) => noStore(res).status(201).json(t), next);
+    },
+  );
+}
+
+const Day = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const IST_MS = 330 * 60_000;
+
+/** @param {import('express').Router} router @param {Parameters<typeof walletRoutes>[0]} deps */
+function statementRoutes(router, deps) {
+  /** Default: the last 30 days. @param {{ from?: string, to?: string }} q */
+  const period = (q) => {
+    const today = new Date(deps.clock.now().getTime() + IST_MS).toISOString().slice(0, 10);
+    const from = q.from ?? new Date(Date.parse(`${today}T00:00:00Z`) - 29 * 86_400_000).toISOString().slice(0, 10);
+    return { from, to: q.to ?? today };
+  };
+  const query = validate({ query: z.strictObject({ from: Day.optional(), to: Day.optional() }) });
+  router.get('/wallet/statement', requirePermission(WAL.walletRead), query, (_req, res, next) => {
+    const { orgId } = member(res);
+    walletStatement(orgId, period(res.locals.input.query)).then((s) => noStore(res).json(s), next);
+  });
+  router.get('/wallet/statement.csv', requirePermission(WAL.walletRead), query, (_req, res, next) => {
+    const { orgId } = member(res);
+    const p = period(res.locals.input.query);
+    walletStatement(orgId, p).then(
+      (s) => noStore(res).type('text/csv').attachment(`wallet-statement-${p.from}-to-${p.to}.csv`).send(walletStatementCsv(s)),
+      next,
+    );
+  });
+  router.patch(
+    '/wallet/settings',
+    requirePermission(WAL.walletTopUp),
+    validate({ body: z.strictObject({ lowBalanceThresholdPaise: z.number().int().min(0).max(100_000_000) }) }),
+    (_req, res, next) => {
+      const { orgId } = member(res);
+      const threshold = res.locals.input.body.lowBalanceThresholdPaise;
+      deps.wallets
+        .open(orgId)
+        .then(() =>
+          AccountRecord.updateOne(
+            { ownerOrgId: orgId, type: 'WALLET' },
+            { $set: { lowBalanceThresholdPaise: threshold, lowBalanceAlerted: false } },
+          ).setOptions({ tenantScope: 'SYSTEM', tenantReason: 'wallet: client settings' }),
+        )
+        .then(() => deps.wallets.read(orgId))
+        .then((w) => noStore(res).json(w), next);
     },
   );
 }

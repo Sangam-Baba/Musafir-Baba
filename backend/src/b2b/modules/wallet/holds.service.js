@@ -61,6 +61,7 @@ async function place(deps, h) {
   ).setOptions(SCOPE);
   const placed = res.modifiedCount === 1 || (await hasOp(h.accountId, opId, 'HOLD'));
   await step(deps, h, ['PLACING', placed ? 'HELD' : 'FAILED']);
+  if (placed) await trackCredit(deps, h.accountId); // holding money can bring it below the low-balance line
   return /** @type {Record<string, any>} */ (await load(h._id)); // a HOLD op left by a hold the reconciler failed is freed by it
 }
 
@@ -120,7 +121,7 @@ async function finishCapture(deps, h, by) {
   if (op?.type === 'CAPTURE') await finishOp(deps, a, op, by);
   else if (!(a.doneOps ?? []).includes(opId)) throw new DomainError('HOLD_OP_MISSING', { holdId: String(h._id) });
   await step(deps, h, ['CAPTURING', 'CAPTURED']);
-  await trackCredit(h.accountId, deps.clock.now());
+  await trackCredit(deps, h.accountId);
 }
 
 /**
@@ -153,6 +154,7 @@ async function finishRelease(deps, h) {
     { $inc: { heldPaise: -h.amountPaise, version: 1 }, $pull: { ops: { opId } } },
   ).setOptions(SCOPE);
   await step(deps, h, ['RELEASING', h.releaseAs ?? 'RELEASED']);
+  await trackCredit(deps, h.accountId);
 }
 
 /** Free a hold (repeat-safe). @param {LiveDeps} deps @param {string} holdId @param {'RELEASED' | 'EXPIRED'} [as] */
