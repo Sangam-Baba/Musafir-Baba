@@ -10,6 +10,7 @@ import { InventoryDayRecord } from '../../src/b2b/modules/hotel-inventory/index.
 import { createOrderCancellations } from '../../src/b2b/modules/orders/index.js';
 import { RefundRecord } from '../../src/b2b/modules/payments/index.js';
 import { AccountRecord, TransactionRecord } from '../../src/b2b/modules/wallet/index.js';
+import { asStaff } from './helpers/inventory-app.js';
 import { useOrderEngine } from './helpers/order-engine.js';
 
 const E = useOrderEngine();

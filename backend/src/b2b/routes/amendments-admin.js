@@ -8,6 +8,7 @@
  *   POST /admin/amendments/:id/apply-guest-names (`hotel-booking.admin.handle`) — the requested lead guest names
  *   GET  /admin/no-show-disputes             (`hotel-booking.admin.read`) · POST /admin/no-shows/:id/resolve {decision, note} (`…handle`)
  *   GET  /admin/hotel-failures?status        (`hotel-booking.admin.read`)
+ *   GET  /admin/cancellations                (`hotel-booking.admin.read`) — the latest cancellations
  *   POST /admin/bookings/:ref/hotel-failed   (`hotel-booking.admin.handle`) {reason} — reported by MusafirBaba
  *   POST /admin/hotel-failures/:id/resolve   (`hotel-booking.admin.handle`) {action: REFUND | RELOCATE, note, alternativeRef}
  */
@@ -18,7 +19,7 @@ import { ForbiddenError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
 import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { AMENDMENT_STATUSES, PERMISSIONS as HBK } from '../modules/hotel-booking/index.js';
+import { AMENDMENT_STATUSES, PERMISSIONS as HBK, recentCancellations } from '../modules/hotel-booking/index.js';
 
 const Id = z.strictObject({ id: z.string().regex(/^[a-f0-9]{24}$/) });
 
@@ -81,6 +82,11 @@ export function amendmentAdminRoutes(deps) {
     act,
     validate({ params: Id, body: z.strictObject({}) }),
     handle(async (_q, res) => deps.amendments.applyGuestNames(staff(res), res.locals.input.params.id)),
+  );
+  router.get(
+    '/admin/cancellations',
+    read,
+    handle(async () => ({ data: await recentCancellations() })),
   );
   router.get(
     '/admin/no-show-disputes',

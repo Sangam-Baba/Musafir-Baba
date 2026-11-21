@@ -121,3 +121,20 @@ export function cancelSteps(deps) {
     cancelDone: (_ctx, item) => cancelDone(deps, item),
   };
 }
+
+/** MusafirBaba's cancellations monitor: the latest cancellations (charge, refund, the hotel's share, who, why). */
+export async function recentCancellations() {
+  const rows = await CancellationRecord.find({}).setOptions(ENGINE).sort({ requestedAt: -1 }).limit(200).lean();
+  return rows.map((c) => ({
+    bookingRef: c.bookingRef,
+    orderRef: c.orderRef,
+    chargePaise: c.chargePaise,
+    refundPaise: c.refundPaise,
+    hotelSharePaise: c.hotelSharePaise,
+    requestedBy: c.requestedBy,
+    reason: c.reason ?? null,
+    status: c.status,
+    requestedAt: c.requestedAt,
+    completedAt: c.completedAt ?? null,
+  }));
+}
