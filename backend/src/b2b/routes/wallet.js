@@ -23,6 +23,7 @@ import { IntentRecord } from '../modules/payments/index.js';
 import {
   createCreditLines,
   createLiveWallets,
+  createWalletAdjustments,
   createManualTopUps,
   MANUAL_TOPUP_MAX_PAISE,
   MANUAL_TOPUP_MIN_PAISE,
@@ -168,7 +169,8 @@ export function stage11Routes(env, clock, logger) {
   const wallets = createLiveWallets({ clock, ledger: deps.ledger });
   const manualTopUps = createManualTopUps({ clock, ledger: deps.ledger, wallets });
   const creditLines = createCreditLines({ clock, ledger: deps.ledger });
-  router.use(walletAdminRoutes({ manualTopUps, creditLines }));
+  const adjustments = createWalletAdjustments({ clock, ledger: deps.ledger, wallets });
+  router.use(walletAdminRoutes({ manualTopUps, creditLines, adjustments }));
   router.use(
     walletRoutes({
       wallets,

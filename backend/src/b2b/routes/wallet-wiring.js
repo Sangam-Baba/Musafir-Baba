@@ -6,6 +6,7 @@
  * - every minute: wallets missing for active clients are opened (clients activated before Stage 11) and wallet ops left
  *   half-way (process stopped) are finished; holds past their time expire; holds stuck half-way are finished;
  *   approved bank transfers whose credit was cut short are credited; approved credit lines put on the wallet;
+ *   approved wallet adjustments cut short are posted;
  * - the hourly check: live balances match the journal.
  */
 import { systemScope } from '../core/db/tenant-plugin.js';
@@ -18,6 +19,7 @@ import {
   createLedger,
   createLiveWallets,
   createManualTopUps,
+  createWalletAdjustments,
   liveInvariants,
 } from '../modules/wallet/index.js';
 
@@ -46,6 +48,7 @@ export function walletParts(clock) {
   const holds = createHolds(deps);
   const manualTopUps = createManualTopUps({ ...deps, wallets });
   const creditLines = createCreditLines(deps);
+  const adjustments = createWalletAdjustments({ ...deps, wallets });
   return {
     wallets,
     holds,
@@ -78,6 +81,7 @@ export function walletParts(clock) {
         ...(await holds.reconcile()),
         ...(await manualTopUps.creditDue()),
         ...(await creditLines.applyDue()),
+        ...(await adjustments.finishDue()),
       }),
     },
   };
