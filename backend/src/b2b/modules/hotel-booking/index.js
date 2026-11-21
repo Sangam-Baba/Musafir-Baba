@@ -49,3 +49,5 @@ export { createAmendments, buyerAmendment, adminAmendment } from './amendments.s
 export { NO_SHOWS_COLLECTION, NO_SHOW_STATUSES, DISPUTE_HOURS, NoShowRecord } from './models/no-show.model.js';
 export { createNoShows, noShowDto } from './no-show.service.js';
 export { chargeFor, noShowWindow } from './domain/cancellation-charge.js';
+export { HOTEL_FAILURES_COLLECTION, HOTEL_FAILURE_STATUSES, HotelFailureRecord } from './models/hotel-failure.model.js';
+export { createHotelFailures, failureDto } from './hotel-failure.service.js';

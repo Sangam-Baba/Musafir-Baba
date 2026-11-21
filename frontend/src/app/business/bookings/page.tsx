@@ -46,7 +46,7 @@ type View = (typeof VIEWS)[number][0];
 const todayIndia = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
 const KEY = ["b2b", "hotel-bookings"];
 
-function Booking({ b, canAck }: { b: HotelBooking; canAck: boolean }) {
+function Booking({ b, canAck, canReport }: { b: HotelBooking; canAck: boolean; canReport: boolean }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const waiting = b.status === "CONFIRMED" && !b.acknowledgedAt;
@@ -56,6 +56,17 @@ function Booking({ b, canAck }: { b: HotelBooking; canAck: boolean }) {
     try {
       await b2b(`/hotel/bookings/${b.ref}/no-show`, { method: "POST", body: {} });
       toast.success(`Marked ${b.ref} as a no-show`);
+      void queryClient.invalidateQueries({ queryKey: KEY });
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  }
+  async function cannotHonour() {
+    const reason = window.prompt(`Why can't the property host ${b.ref}? (MusafirBaba will move the guest or refund them)`);
+    if (!reason || reason.trim().length < 5) return;
+    try {
+      await b2b(`/hotel/bookings/${b.ref}/cannot-honour`, { method: "POST", body: { reason: reason.trim() } });
+      toast.success("MusafirBaba has been told and will take care of the guest");
       void queryClient.invalidateQueries({ queryKey: KEY });
     } catch (e) {
       toast.error(errorMessage(e));
@@ -88,6 +99,7 @@ function Booking({ b, canAck }: { b: HotelBooking; canAck: boolean }) {
       <div className="flex gap-2 print:hidden">
         {waiting && canAck && <button disabled={busy} onClick={acknowledge} className="mt-1 rounded-lg bg-[#FE5300] px-3 py-1.5 text-[13px] font-semibold text-white disabled:opacity-60">Acknowledge</button>}
         {canMarkNoShow && <button onClick={markNoShow} className="mt-1 rounded-lg border border-red-200 px-3 py-1.5 text-[13px] text-red-600">Mark no-show</button>}
+        {canReport && b.status === "CONFIRMED" && <button onClick={cannotHonour} className="mt-1 rounded-lg border border-slate-200 px-3 py-1.5 text-[13px] text-slate-600">Can&apos;t honour</button>}
       </div>
     </div>
   );
@@ -98,6 +110,7 @@ function Bookings({ me }: { me: Me }) {
   const [date, setDate] = useState(todayIndia);
   const list = useQuery({ queryKey: [...KEY, me.currentOrgId, view, date], queryFn: () => b2b<{ data: HotelBooking[] }>(`/hotel/bookings?view=${view}&date=${date}`), refetchInterval: 60_000 });
   const canAck = me.permissions.includes("hotel-booking.booking.acknowledge") && !me.viewAs;
+  const canReport = me.permissions.includes("hotel-booking.booking.cannotHonour") && !me.viewAs;
   return (
     <div className="space-y-4">
       <PageHeader title="Your" highlight="bookings" subtitle="Confirmed and paid by the guest through MusafirBaba. Acknowledge each new booking — we remind you after 15 minutes and call you after an hour." />
@@ -112,7 +125,7 @@ function Bookings({ me }: { me: Me }) {
         {list.isLoading && <p className="p-6 text-center text-[13px] text-slate-500">Loading…</p>}
         {list.error && <p className="p-4 text-[13px] text-red-700">{errorMessage(list.error)}</p>}
         {list.data?.data.length === 0 && <p className="p-8 text-center text-[13px] text-slate-600">Nothing here.</p>}
-        {list.data?.data.map((b) => <Booking key={b.ref} b={b} canAck={canAck} />)}
+        {list.data?.data.map((b) => <Booking key={b.ref} b={b} canAck={canAck} canReport={canReport} />)}
       </div>
     </div>
   );

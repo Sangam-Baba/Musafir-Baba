@@ -221,7 +221,7 @@ export function bookingInvariants(deps) {
           .filter((id) => {
             const b = byId.get(id);
             if (!b) return true;
-            return !['CONFIRMED', 'CANCELLING'].includes(b.status) && b.statusChangedAt < recent;
+            return !['CONFIRMED', 'CANCELLING', 'HOTEL_FAILED'].includes(b.status) && b.statusChangedAt < recent; // a failed hotel's rooms stay out of sale
           })
           .map((id) => ({ id, detail: `nights booked for ${byId.get(id)?.ref ?? id}, which is ${byId.get(id)?.status ?? 'unknown'}` }));
       },

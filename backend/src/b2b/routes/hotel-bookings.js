@@ -6,6 +6,7 @@
  *   GET  /hotel/bookings/:ref                      (`hotel-booking.booking.read`)
  *   POST /hotel/bookings/:ref/acknowledge          (`hotel-booking.booking.acknowledge`) — stops the reminders
  *   POST /hotel/bookings/:ref/no-show              (`hotel-booking.booking.markNoShow`) — from 12:00 on the check-in day
+ *   POST /hotel/bookings/:ref/cannot-honour        (`hotel-booking.booking.cannotHonour`) {reason}
  */
 import express from 'express';
 import { z } from 'zod';
@@ -29,7 +30,7 @@ const ListQuery = z.strictObject({
     .optional(),
 });
 
-/** @param {{ bookings: ReturnType<typeof import('../modules/hotel-booking/index.js').createHotelBookingsService>, noShows: ReturnType<typeof import('../modules/hotel-booking/index.js').createNoShows> }} deps */
+/** @param {{ bookings: ReturnType<typeof import('../modules/hotel-booking/index.js').createHotelBookingsService>, noShows: ReturnType<typeof import('../modules/hotel-booking/index.js').createNoShows>, failures: ReturnType<typeof import('../modules/hotel-booking/index.js').createHotelFailures> }} deps */
 export function hotelBookingRoutes(deps) {
   const router = express.Router();
   const noStore = (/** @type {import('express').Response} */ res) => res.set('Cache-Control', 'private, no-store');
@@ -56,6 +57,16 @@ export function hotelBookingRoutes(deps) {
     validate({ params: Ref, body: z.strictObject({}) }),
     (_req, res, next) => {
       deps.noShows.mark(contextOf(res), res.locals.input.params.ref).then((n) => noStore(res).status(201).json(n), next);
+    },
+  );
+  router.post(
+    '/hotel/bookings/:ref/cannot-honour',
+    requirePermission(HBK.bookingCannotHonour),
+    validate({ params: Ref, body: z.strictObject({ reason: z.string().trim().min(5).max(500) }) }),
+    (_req, res, next) => {
+      deps.failures
+        .report(contextOf(res), res.locals.input.params.ref, res.locals.input.body.reason)
+        .then((f) => noStore(res).status(201).json(f), next);
     },
   );
   return router;

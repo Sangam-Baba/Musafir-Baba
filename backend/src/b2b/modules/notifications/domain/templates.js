@@ -100,6 +100,14 @@ export const TEMPLATES = Object.freeze({
     subject: 'The hotel reported a no-show for {{orderRef}}',
     text: 'Hello {{name}},\n\nThe hotel told us that nobody checked in for your booking {{orderRef}}. The no-show terms of your booking apply.\n\nIf you did stay, or this is wrong, tell us within 72 hours here: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
   },
+  'hotel-failed-customer': {
+    version: 1,
+    vars: ['name', 'orderRef', 'link'],
+    title: "The hotel can't host your stay",
+    body: "The hotel can't host booking {{orderRef}}. We're arranging an alternative or a full refund.",
+    subject: "Important: the hotel can't host your booking {{orderRef}}",
+    text: "Hello {{name}},\n\nWe're sorry: the hotel told us it can't host your booking {{orderRef}}. Our team is arranging a similar hotel for you, or a full refund — we'll contact you shortly.\n\nYour booking: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com",
+  },
   // Stage 09: cancellations
   'order.cancelled-customer': {
     version: 1,

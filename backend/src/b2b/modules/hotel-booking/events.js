@@ -29,6 +29,10 @@ export const EVENTS = /** @type {const} */ ({
   noShowDisputed: 'hotel-booking.no-show.disputed',
   /** a no-show is final (window over or upheld) or reversed */
   noShowResolved: 'hotel-booking.no-show.resolved',
+  /** the hotel can't honour a booking — MusafirBaba's queue; the buyer is told */
+  hotelFailed: 'hotel-booking.booking.hotel-failed',
+  /** a hotel failure was resolved (refunded or moved) */
+  hotelFailureResolved: 'hotel-booking.hotel-failure.resolved',
   /** not acknowledged after 15 minutes — the hotel is reminded */
   bookingAckReminded: 'hotel-booking.booking.ack-reminded',
   /** not acknowledged after 30 minutes — the hotel's owners are told */

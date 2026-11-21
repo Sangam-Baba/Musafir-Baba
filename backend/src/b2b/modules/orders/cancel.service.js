@@ -14,6 +14,7 @@ import { NotFoundError } from '../../core/errors.js';
 import { EVENTS } from './events.js';
 import { OrderRecord } from './models/order.model.js';
 import { ORDERS, orderInfo, pushHistory } from './orders.service.js';
+import { settleHotelFailure, settleNoShow } from './settlements.js';
 
 /** @typedef {import('./payment.service.js').PayDeps} PayDeps */
 
@@ -98,34 +99,10 @@ export function createOrderCancellations(deps) {
       const item = order?.items.find((/** @type {any} */ i) => i.bookingId === bookingId);
       if (order && item) await finish(deps, order, item);
     },
-    /**
-     * A final no-show (plan Stage 09 §3.6): the unused part refunded to the source, the ledger settled pro rata (D5) —
-     * once (reference `no-show/<booking>`, refund key `no-show:<booking>`). Rooms are past; nothing is given back.
-     * @param {string} orderId @param {string} bookingId @param {{ chargePaise: number, refundPaise: number }} amounts
-     */
-    async settleNoShow(orderId, bookingId, amounts) {
-      const order = /** @type {any} */ (await OrderRecord.findOne({ _id: orderId }).setOptions(ORDERS).lean());
-      const item = order?.items.find((/** @type {any} */ i) => i.bookingId === bookingId);
-      if (!order || !item || amounts.refundPaise <= 0) return;
-      const mode = deps.modes.get(order.paymentMode);
-      const { lines } = await deps.handlers.get(item.type).cancelLedgerLines(item, amounts);
-      await deps.ledger.post(
-        {
-          reference: { type: 'no-show', id: bookingId },
-          purpose: 'no-show-settled',
-          lines: [...lines, { accountId: await mode.debitAccount(order), creditPaise: amounts.refundPaise }],
-          memo: `${order.ref} ${item.bookingRef}`,
-        },
-        'system:orders',
-      );
-      if (order.payment?.verifiedIntentId)
-        await mode.refund(sys(deps, 'refund a no-show'), order, {
-          intentId: order.payment.verifiedIntentId,
-          key: `no-show:${bookingId}`,
-          reason: `No-show ${item.bookingRef}: unused part`,
-          amountPaise: amounts.refundPaise,
-        });
-    },
+    /** @param {string} orderId @param {string} bookingId @param {{ chargePaise: number, refundPaise: number }} amounts */
+    settleNoShow: (orderId, bookingId, amounts) => settleNoShow(deps, orderId, bookingId, amounts),
+    /** @param {string} orderId @param {string} bookingId @param {'REFUND' | 'RELOCATE'} action */
+    settleHotelFailure: (orderId, bookingId, action) => settleHotelFailure(deps, orderId, bookingId, action),
     orderInfo,
   };
 }

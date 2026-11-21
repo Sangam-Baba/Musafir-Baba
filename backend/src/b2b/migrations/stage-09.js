@@ -1,6 +1,11 @@
 // @ts-check
 /** Migrations of Stage 09 (after booking, hotel operations). Run after 0001–0057; ids never renamed or reused. */
-import { AMENDMENTS_COLLECTION, CANCELLATIONS_COLLECTION, NO_SHOWS_COLLECTION } from '../modules/hotel-booking/index.js';
+import {
+  AMENDMENTS_COLLECTION,
+  CANCELLATIONS_COLLECTION,
+  HOTEL_FAILURES_COLLECTION,
+  NO_SHOWS_COLLECTION,
+} from '../modules/hotel-booking/index.js';
 import { BOOKING_SUMMARIES_COLLECTION } from '../modules/reporting/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -71,6 +76,21 @@ export const STAGE_09 = [
       await ctx.createIndex(NO_SHOWS_COLLECTION, { hotelOrgId: 1, markedAt: -1 }, { name: 'hotel_recent' });
       await ctx.createIndex(
         NO_SHOWS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
+  {
+    id: '0062-hbk-hotel-failures',
+    description: 'Hotel failures: one per booking; queue by status and time; per hotel; relay index',
+    up: async (ctx) => {
+      await ctx.createCollection(HOTEL_FAILURES_COLLECTION);
+      await ctx.createIndex(HOTEL_FAILURES_COLLECTION, { bookingId: 1 }, { name: 'booking_unique', unique: true });
+      await ctx.createIndex(HOTEL_FAILURES_COLLECTION, { status: 1, reportedAt: 1 }, { name: 'queue' });
+      await ctx.createIndex(HOTEL_FAILURES_COLLECTION, { hotelOrgId: 1, reportedAt: -1 }, { name: 'hotel_recent' });
+      await ctx.createIndex(
+        HOTEL_FAILURES_COLLECTION,
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );

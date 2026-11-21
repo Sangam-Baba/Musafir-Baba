@@ -21,9 +21,9 @@ import {
 } from '../modules/orders/index.js';
 import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
-import { amendmentEmailConsumer, customerEmailConsumers, noShowEmailConsumer } from './customer-emails.js';
+import { amendmentEmailConsumer, customerEmailConsumers, hotelFailedEmailConsumer, noShowEmailConsumer } from './customer-emails.js';
 import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
-import { ackEscalation, BookingRecord, bookingInvariants, createNoShows } from '../modules/hotel-booking/index.js';
+import { ackEscalation, BookingRecord, bookingInvariants, createHotelFailures, createNoShows } from '../modules/hotel-booking/index.js';
 import { createOrderCancellations } from '../modules/orders/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
@@ -154,12 +154,14 @@ function emailConsumers(engine, config, email) {
     ...customerEmailConsumers(deps),
     amendmentEmailConsumer(deps, 'hotel-booking.amendment.staff-replied'),
     noShowEmailConsumer(deps, 'hotel-booking.no-show.marked'),
+    hotelFailedEmailConsumer(deps, 'hotel-booking.booking.hotel-failed'),
   ];
 }
 
 /**
  * Every 10 minutes: no-shows whose dispute window is over (or that MusafirBaba upheld) → the unused part refunded and the
- * ledger settled (once), then marked settled. One failing item never stops the others.
+ * ledger settled (once); hotel failures resolved but not settled (e.g. the process stopped) → settled. One failing item
+ * never stops the others.
  * @param {import('../modules/orders/payment.service.js').PayDeps} ordersDeps
  */
 async function settleNoShows(ordersDeps) {
@@ -173,6 +175,16 @@ async function settleNoShows(ordersDeps) {
       settled += 1;
     } catch (err) {
       ordersDeps.logger.warn({ err, ref: n.bookingRef }, 'no-show not settled yet');
+    }
+  }
+  const failures = createHotelFailures({ clock: ordersDeps.clock });
+  for (const f of await failures.dueToSettle()) {
+    try {
+      await cancellations.settleHotelFailure(f.orderId, f.bookingId, f.resolution?.action === 'RELOCATE' ? 'RELOCATE' : 'REFUND');
+      await failures.markSettled(String(f._id));
+      settled += 1;
+    } catch (err) {
+      ordersDeps.logger.warn({ err, ref: f.bookingRef }, 'hotel failure not settled yet');
     }
   }
   return { settled };
