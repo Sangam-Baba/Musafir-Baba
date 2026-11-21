@@ -9,7 +9,7 @@ import { eventFields } from '../../../core/db/events.js';
 import { defineTenantModel } from '../../../core/db/model.js';
 
 export const DOCUMENTS_COLLECTION = 'doc_documents';
-export const DOCUMENT_TYPES = /** @type {const} */ (['VOUCHER', 'TAX_INVOICE', 'RECEIPT']);
+export const DOCUMENT_TYPES = /** @type {const} */ (['VOUCHER', 'TAX_INVOICE', 'RECEIPT', 'CREDIT_NOTE']);
 
 const schema = new b2bMongoose.Schema(
   {
@@ -17,7 +17,9 @@ const schema = new b2bMongoose.Schema(
     orderRef: { type: String, required: true },
     type: { type: String, enum: DOCUMENT_TYPES, required: true },
     version: { type: Number, required: true, min: 1 },
-    number: { type: String, default: null }, // tax invoices only
+    number: { type: String, default: null }, // tax invoices and credit notes
+    againstNumber: { type: String, default: null }, // a credit note's original invoice
+    subjectId: { type: String, default: null }, // a credit note's booking
     series: { type: String, default: null },
     html: { type: String, required: true },
     sha256: { type: String, required: true },

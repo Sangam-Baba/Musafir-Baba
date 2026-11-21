@@ -86,7 +86,13 @@ export function startDatabase(env, log, hub, identity) {
         email,
         publicUrl: config.B2B_PUBLIC_URL,
         rules: [...orderReconcileRules(engine.ordersDeps), cancellingRule(engine.ordersDeps)],
-        consumers: [...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS), documents.consumer, ...customerEmails, summaries.consumer],
+        consumers: [
+          ...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
+          documents.consumer,
+          documents.creditNotes,
+          ...customerEmails,
+          summaries.consumer,
+        ],
         invariants: [
           ...orderInvariants({ clock: systemClock }),
           ...documentInvariants({ clock: systemClock }),

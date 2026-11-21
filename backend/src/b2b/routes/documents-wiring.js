@@ -76,9 +76,54 @@ async function factsFor(ordersDeps, orderId) {
   };
 }
 
+/**
+ * What a cancelled booking's credit note is made from (the booking's admin view: its price breakdown and cancellation).
+ * @param {import('../modules/orders/payment.service.js').PayDeps} ordersDeps
+ * @param {string} orderId
+ * @param {string} bookingId
+ * @returns {Promise<import('../modules/documents/documents.service.js').CreditFactsFor | null>}
+ */
+async function creditFactsFor(ordersDeps, orderId, bookingId) {
+  const o = /^[a-f0-9]{24}$/.test(orderId)
+    ? /** @type {any} */ (await OrderRecord.findOne({ _id: orderId }).setOptions(ORDERS).lean())
+    : null;
+  const item = o?.items?.find((/** @type {any} */ i) => i.bookingId === bookingId);
+  if (!o || !item) return null;
+  const v = /** @type {any} */ (await ordersDeps.handlers.get(item.type).view(item, 'ADMIN'));
+  if (v.status !== 'CANCELLED' || !v.cancelled) return null;
+  return { ...creditOrderPart(o, item), issuer: await issuerOf([v]), ...creditBookingPart(v) };
+}
+
+/** @param {any} o @param {any} item */
+const creditOrderPart = (o, item) => ({
+  orderRef: o.ref,
+  owners: { customerId: o.customerId, guestKey: o.guestKey, clientOrgId: o.clientOrgId, hotelOrgId: item.hotelOrgId ?? null },
+  contact: o.contact,
+});
+
+/** @param {any} v the booking's admin view */
+function creditBookingPart(v) {
+  const gst = v.priceBreakdown?.lines?.[0]?.gst ?? {};
+  return {
+    cancelledAt: v.cancelled.requestedAt,
+    bookingRef: v.ref,
+    propertyName: v.property?.name ?? 'Hotel',
+    refundPaise: v.cancelled.refundPaise,
+    totals: v.priceBreakdown.totals,
+    sac: gst.sac ?? '—',
+    rateBps: gst.rateBps ?? 0,
+    placeOfSupply: gst.placeOfSupply ?? '—',
+  };
+}
+
 /** @param {import('../modules/orders/payment.service.js').PayDeps} ordersDeps */
 export function documentsFor(ordersDeps) {
-  return createDocuments({ clock: ordersDeps.clock, logger: ordersDeps.logger, facts: (id) => factsFor(ordersDeps, id) });
+  return createDocuments({
+    clock: ordersDeps.clock,
+    logger: ordersDeps.logger,
+    facts: (id) => factsFor(ordersDeps, id),
+    creditFacts: (orderId, bookingId) => creditFactsFor(ordersDeps, orderId, bookingId),
+  });
 }
 
 /**
@@ -86,14 +131,22 @@ export function documentsFor(ordersDeps) {
  * receipt (or the invoice, once the GSTIN is set) → issued; still missing 5 minutes after confirmation → alert.
  * @param {import('../modules/orders/payment.service.js').PayDeps} ordersDeps
  * @param {string} orderConfirmed the orders event name
+ * @param {string} [bookingCancelled] the hotel-booking event name (credit notes)
  */
-export function documentJobs(ordersDeps, orderConfirmed) {
+export function documentJobs(ordersDeps, orderConfirmed, bookingCancelled = 'hotel-booking.booking.cancelled') {
   const docs = documentsFor(ordersDeps);
   const consumer = {
     consumer: 'documents-order-confirmed',
     types: [orderConfirmed],
     handler: async (/** @type {{ payload: any }} */ event) => {
       await docs.ensureForOrder(String(event.payload.orderId));
+    },
+  };
+  const creditNotes = {
+    consumer: 'documents-credit-note',
+    types: [bookingCancelled],
+    handler: async (/** @type {{ payload: any }} */ event) => {
+      await docs.issueCreditNote(String(event.payload.orderId), String(event.payload.bookingId));
     },
   };
   async function retryMissing() {
@@ -111,11 +164,13 @@ export function documentJobs(ordersDeps, orderConfirmed) {
         .ensureForOrder(String(o._id))
         .catch((err) => (ordersDeps.logger.warn({ err, ref: o.ref }, 'documents: not issued yet'), null));
       issued += r?.created.length ?? 0;
+      if (o.status === 'CANCELLED')
+        for (const it of o.items ?? []) await docs.issueCreditNote(String(o._id), it.bookingId).catch(() => null);
       const late = now - new Date(o.confirmedAt).getTime() > 5 * 60_000;
       if (late && (!r || r.created.length > 0))
         ordersDeps.logger.error({ ref: o.ref }, 'documents: issued late or still missing 5 minutes after confirmation');
     }
     return { checked: recent.length, issued };
   }
-  return { consumer, retryMissing, docs };
+  return { consumer, creditNotes, retryMissing, docs };
 }

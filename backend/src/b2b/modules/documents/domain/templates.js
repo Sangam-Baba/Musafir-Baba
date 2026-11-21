@@ -140,3 +140,28 @@ export function receiptHtml(f) {
 <footer>${esc(SUPPORT)}</footer>`;
   return page(`Receipt ${f.order.ref}`, body);
 }
+
+/**
+ * @typedef {{ orderRef: string, bookingRef: string, propertyName: string, contact: { name: string, email: string },
+ *   invoiceNumber: string, invoiceDate: Date | string, gstin: string, issuerState: string, placeOfSupply: string,
+ *   sac: string, rateBps: number, taxablePaise: number, cgstPaise: number, sgstPaise: number, igstPaise: number,
+ *   refundPaise: number, reason: string }} CreditFacts
+ */
+
+/**
+ * The GST credit note for a refund (plan Stage 09 §3.10): against the original tax invoice, the refunded taxable value
+ * and its GST — the same amounts the ledger reversed.
+ * @param {CreditFacts} c
+ * @param {{ number: string, issuedAt: Date }} n
+ */
+export function creditNoteHtml(c, n) {
+  const body = `${head('Credit note', `No. <strong>${esc(n.number)}</strong> · ${esc(moment(n.issuedAt))}`)}
+<div class="grid"><div class="box"><strong>Supplier</strong><br>MusafirBaba<br>GSTIN ${esc(c.gstin)}<br>State code ${esc(c.issuerState)}</div>
+<div class="box"><strong>Issued to</strong><br>${esc(c.contact.name)}<br>${esc(c.contact.email)}<br>Place of supply: state ${esc(c.placeOfSupply)}</div></div>
+<p>Against tax invoice <strong>${esc(c.invoiceNumber)}</strong> of ${esc(moment(c.invoiceDate))} · order ${esc(c.orderRef)} · booking ${esc(c.bookingRef)}</p>
+<table><tr><th>Description</th><th>SAC</th><th class="n">Taxable value</th><th class="n">Rate</th><th class="n">CGST</th><th class="n">SGST</th><th class="n">IGST</th></tr>
+<tr><td>${esc(c.reason)} — ${esc(c.propertyName)}</td><td>${esc(c.sac)}</td><td class="n">${rupees(c.taxablePaise)}</td><td class="n">${c.rateBps / 100}%</td><td class="n">${rupees(c.cgstPaise)}</td><td class="n">${rupees(c.sgstPaise)}</td><td class="n">${rupees(c.igstPaise)}</td></tr>
+<tr class="total"><td colspan="2">Total credited</td><td class="n">${rupees(c.taxablePaise)}</td><td></td><td class="n">${rupees(c.cgstPaise)}</td><td class="n">${rupees(c.sgstPaise)}</td><td class="n">${rupees(c.igstPaise)}</td></tr></table>
+<p><strong>Amount refunded (incl. GST): ${rupees(c.refundPaise)}</strong></p><footer>This is a computer-generated credit note. ${esc(SUPPORT)}</footer>`;
+  return page(`Credit note ${n.number}`, body);
+}
