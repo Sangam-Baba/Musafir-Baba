@@ -111,6 +111,31 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/booking-requests',
   },
+  // Stage 08: hotel booking alerts (critical — can't be switched off)
+  'booking.new': {
+    audience: 'ORG',
+    permission: 'hotel-booking.booking.read',
+    critical: true,
+    label: 'New booking',
+    emailTo: 'OWNERS',
+    link: '/business/bookings',
+  },
+  'booking.reminder': {
+    audience: 'ORG',
+    permission: 'hotel-booking.booking.read',
+    critical: true,
+    label: 'Booking waiting for acknowledgement',
+    emailTo: 'OWNERS',
+    link: '/business/bookings',
+  },
+  'booking.escalated': {
+    audience: 'ORG',
+    permission: 'hotel-booking.booking.read',
+    critical: true,
+    label: 'Booking not acknowledged',
+    emailTo: 'OWNERS',
+    link: '/business/bookings',
+  },
 });
 
 /** @typedef {keyof typeof CATEGORIES} CategoryKey */
@@ -129,6 +154,9 @@ export const EVENT_CATEGORIES = Object.freeze({
   'organizations.member.roles-changed': 'team.role-changed',
   'hotel-booking.request.confirmed': 'booking-request.confirmed',
   'hotel-booking.request.declined': 'booking-request.declined',
+  'hotel-booking.booking.confirmed': 'booking.new',
+  'hotel-booking.booking.ack-reminded': 'booking.reminder',
+  'hotel-booking.booking.ack-escalated': 'booking.escalated',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */
@@ -149,6 +177,8 @@ export const ADMIN_QUEUES = Object.freeze({
   'hotel-booking.request.cancelled': 'booking-requests',
   'hotel-booking.request.confirmed': 'booking-requests',
   'hotel-booking.request.declined': 'booking-requests',
+  'hotel-booking.booking.ack-overdue': 'hotel-ack', // 60 minutes: operations call the hotel
+  'hotel-booking.booking.acknowledged': 'hotel-ack',
 });
 
 /** @param {string} key @returns {Category | null} */

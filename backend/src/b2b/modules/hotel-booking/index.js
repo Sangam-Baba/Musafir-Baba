@@ -8,4 +8,5 @@ export { createBookingRequestService, requestDto } from './request.service.js';
 export { BOOKING_STATUSES, BOOKING_TRANSITIONS, assertBookingTransition, holdLinesOf, confirmationCredits } from './domain/booking.js';
 export { BOOKINGS_COLLECTION, BookingRecord } from './models/booking.model.js';
 export { STATUS_HISTORY_COLLECTION, BookingStatusRecord } from './models/status-history.model.js';
-export { createHotelItemHandler, tokenFingerprint } from './booking.service.js';
+export { createHotelItemHandler, tokenFingerprint, bookingView } from './booking.service.js';
+export { createHotelBookingsService, ackEscalation, hotelView, ACK_STEPS } from './hotel-bookings.service.js';

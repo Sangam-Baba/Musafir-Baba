@@ -63,7 +63,21 @@ async function loadBooking(id) {
  */
 async function moveBooking(deps, b, m) {
   const events = m.event
-    ? [newEvent(m.event, { orgId: b.hotelOrgId, bookingId: String(b._id), ref: b.ref, orderId: b.orderId, propertyId: b.propertyId }, deps)]
+    ? [
+        newEvent(
+          m.event,
+          {
+            orgId: b.hotelOrgId,
+            bookingId: String(b._id),
+            ref: b.ref,
+            orderId: b.orderId,
+            propertyId: b.propertyId,
+            name: b.snapshot?.property?.name ?? null,
+            checkIn: b.stay?.checkIn ?? null,
+          },
+          deps,
+        ),
+      ]
     : [];
   const moved = await transition(BookingRecord, {
     id: b._id,

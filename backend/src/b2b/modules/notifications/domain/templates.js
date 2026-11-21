@@ -67,6 +67,48 @@ export const TEMPLATES = Object.freeze({
     subject: 'Booking request declined — MusafirBaba Business',
     text: 'Hello,\n\nMusafirBaba could not arrange the booking request from {{orgName}} at {{propertyName}}.\n\nReason: {{reason}}\n\nSee it here: {{link}}\n\nMusafirBaba Business',
   },
+  // Stage 08: website customers (email only — they have no bell). Sent to the email given at checkout.
+  'order.confirmed-customer': {
+    version: 1,
+    vars: ['name', 'orderRef', 'propertyName', 'checkIn', 'checkOut', 'total', 'link'],
+    title: 'Booking confirmed',
+    body: 'Your booking {{orderRef}} at {{propertyName}} is confirmed.',
+    subject: 'Booking confirmed — {{propertyName}} ({{orderRef}})',
+    text: 'Hello {{name}},\n\nYour booking at {{propertyName}} is confirmed and paid.\n\nBooking: {{orderRef}}\nCheck-in: {{checkIn}}\nCheck-out: {{checkOut}}\nTotal paid: {{total}} (incl. GST)\n\nYour voucher, GST invoice and receipt: {{link}}\n\nPlease carry a government photo ID for every guest.\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
+  'order.refunding-customer': {
+    version: 1,
+    vars: ['name', 'orderRef', 'total', 'link'],
+    title: 'Rooms sold out — refund on the way',
+    body: 'The rooms for {{orderRef}} sold out before your payment reached us. Your {{total}} is being refunded.',
+    subject: 'Your payment of {{total}} is being refunded ({{orderRef}})',
+    text: 'Hello {{name}},\n\nWe are sorry: the rooms for your booking {{orderRef}} sold out before your payment reached us, so the booking could not be confirmed.\n\nYour payment of {{total}} is being refunded to the same card, UPI or bank account through PayU. Banks usually take a few working days to show it.\n\nSee the status: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
+  // Stage 08: bookings — the hotel's alert, reminders and the escalation to its owners
+  'booking.new': {
+    version: 1,
+    vars: ['orgName', 'link', 'propertyName'],
+    title: 'New booking',
+    body: 'New confirmed booking at {{propertyName}}. Open it and acknowledge.',
+    subject: 'New booking at {{propertyName}} — please acknowledge',
+    text: 'Hello,\n\nA new booking at {{propertyName}} is confirmed and paid. Please open it, check the guests, dates and room, and acknowledge it:\n\n{{link}}\n\nMusafirBaba Business',
+  },
+  'booking.reminder': {
+    version: 1,
+    vars: ['orgName', 'link', 'propertyName'],
+    title: 'Booking waiting for you',
+    body: 'A booking at {{propertyName}} is not acknowledged yet. Please open it and acknowledge.',
+    subject: 'Reminder: a booking at {{propertyName}} needs your acknowledgement',
+    text: 'Hello,\n\nA confirmed booking at {{propertyName}} has not been acknowledged yet. Please open it and acknowledge it:\n\n{{link}}\n\nMusafirBaba Business',
+  },
+  'booking.escalated': {
+    version: 1,
+    vars: ['orgName', 'link', 'propertyName'],
+    title: 'Booking not acknowledged for 30 minutes',
+    body: 'A booking at {{propertyName}} has waited 30 minutes. Please make sure someone acknowledges it.',
+    subject: 'Action needed: a booking at {{propertyName}} is not acknowledged',
+    text: 'Hello,\n\nA confirmed booking at {{propertyName}} ({{orgName}}) has waited 30 minutes without being acknowledged. Please make sure your team opens it now:\n\n{{link}}\n\nIf it is not acknowledged within the hour, MusafirBaba will call the hotel.\n\nMusafirBaba Business',
+  },
   'listing.published': {
     version: 1,
     vars: ['orgName', 'link', 'propertyName'],

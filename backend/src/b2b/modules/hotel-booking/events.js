@@ -13,4 +13,10 @@ export const EVENTS = /** @type {const} */ ({
   bookingConfirmed: 'hotel-booking.booking.confirmed',
   /** the hotel acknowledged a new booking — escalation stops */
   bookingAcknowledged: 'hotel-booking.booking.acknowledged',
+  /** not acknowledged after 15 minutes — the hotel is reminded */
+  bookingAckReminded: 'hotel-booking.booking.ack-reminded',
+  /** not acknowledged after 30 minutes — the hotel's owners are told */
+  bookingAckEscalated: 'hotel-booking.booking.ack-escalated',
+  /** not acknowledged after 60 minutes — MusafirBaba operations call the hotel */
+  bookingAckOverdue: 'hotel-booking.booking.ack-overdue',
 });

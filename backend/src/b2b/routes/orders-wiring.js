@@ -7,7 +7,7 @@ import express from 'express';
 
 import { ServiceUnavailableError } from '../core/errors.js';
 
-import { createHotelItemHandler } from '../modules/hotel-booking/index.js';
+import { createHotelBookingsService, createHotelItemHandler } from '../modules/hotel-booking/index.js';
 import { createHoldService } from '../modules/hotel-inventory/index.js';
 import {
   createGatewayMode,
@@ -18,6 +18,7 @@ import {
   orderView,
 } from '../modules/orders/index.js';
 import { documentsFor } from './documents-wiring.js';
+import { hotelBookingRoutes } from './hotel-bookings.js';
 import { orderRoutes } from './orders.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
@@ -76,5 +77,6 @@ export function stage08Routes(env, clock, logger, identity) {
       clock,
     }),
   );
+  router.use(hotelBookingRoutes({ bookings: createHotelBookingsService({ clock }) }));
   return router;
 }
