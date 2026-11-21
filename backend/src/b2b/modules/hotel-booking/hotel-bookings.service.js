@@ -171,3 +171,32 @@ export async function overdueAcknowledgements(deps) {
     };
   });
 }
+
+/**
+ * Check (every 10 min): every booked night belongs to a confirmed (or being-cancelled) booking. A booking that changed
+ * in the last 10 minutes is skipped (a confirm in progress books the nights a moment before the booking says so).
+ * @param {{ clock: import('../../core/clock.js').Clock, owners: () => Promise<string[]> }} deps
+ */
+export function bookingInvariants(deps) {
+  return [
+    {
+      name: 'hotel-booking-booked-nights-belong-to-confirmed-bookings',
+      check: async () => {
+        const ids = (await deps.owners()).filter((id) => /^[a-f0-9]{24}$/.test(id));
+        if (ids.length === 0) return [];
+        const recent = new Date(deps.clock.now().getTime() - 10 * 60_000);
+        const docs = await BookingRecord.find({ _id: { $in: ids } }, { status: 1, statusChangedAt: 1, ref: 1 })
+          .setOptions(ESCALATE)
+          .lean();
+        const byId = new Map(docs.map((d) => [String(d._id), d]));
+        return ids
+          .filter((id) => {
+            const b = byId.get(id);
+            if (!b) return true;
+            return !['CONFIRMED', 'CANCELLING'].includes(b.status) && b.statusChangedAt < recent;
+          })
+          .map((id) => ({ id, detail: `nights booked for ${byId.get(id)?.ref ?? id}, which is ${byId.get(id)?.status ?? 'unknown'}` }));
+      },
+    },
+  ];
+}

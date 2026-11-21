@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-21 — AI (Claude) — Stage 08 booking engine (S08-T01 to T12); Stages 05–08 live with hidden demo data
+
+- **Goal:** the website booking engine — order with rooms held, PayU, confirmation, documents, hotel alerts, admin.
+- **Done:** S08-T01…T12 → DONE. Modules `orders` (statuses, idempotent create, duplicate guard, limits, PayU mode, sweeper, reconciler, admin explorer with two-person actions), `hotel-booking` engine (bookings with snapshots, hotel bookings API, acknowledgement reminders 15 / 30 / 60 min), `documents` (voucher, GST invoice with gap-free numbers, receipt). Customer emails. Website checkout + order page, hotel Bookings page with alert sound, admin Orders tab. Migrations `0051`–`0057`. Earlier the same day (owner OK, merged by the owner): Stages 05–08 deployed, migrations `0035`–`0053` run on the server, hidden demo data added (`node src/b2b/demo.js add`).
+- **Not done / why:** online booking stays **off** on the live site until the owner turns on `B2B_ORDERS_ENABLED` (server), `NEXT_PUBLIC_FEATURE_HOTEL_BOOKING` (Vercel) and `B2B_API_PUBLIC_URL` (payments). The tax invoice needs MusafirBaba's GSTIN in Admin → Pricing → GST & settings. Server-side PDF deferred (DEF-034). Refunds of confirmed bookings → Stage 09 (cancellation).
+- **Files / PR:** `backend/src/b2b/modules/{orders,documents}/**`, `modules/hotel-booking/{booking,hotel-bookings}.service.js`, `routes/{orders,orders-wiring,orders-admin,hotel-bookings,documents-wiring,customer-emails,background-wiring}.js`, `migrations/stage-08.js`; `frontend/src/b2b/website/{checkout.ts,CheckoutView,BookingView}.tsx`, `frontend/src/app/(user)/hotels/{checkout,booking/[ref]}`, `frontend/src/app/business/bookings`, `frontend/src/b2b/components/admin/OrdersTab.tsx`. Local commits after the merge — not pushed.
+- **Tests run:** `lint:b2b` ✅, `typecheck:b2b` ✅, `test:b2b` ✅ 970/970 (114 files), `b2b:guards` ✅ (only the known `.DS_Store` / `screenui-desgine`), frontend `tsc` ✅ for B2B files. Screens not clicked through in a browser.
+- **Decisions / deferrals:** guests book without an account (browser id + order link key derived from the server secret); an order's late PayU payment lets the order try the rooms first (Stage 07 change); no GSTIN → no invoice and no number used; DEF-034 server PDF. Note for the owner: rate limits trust the `cf-connecting-ip` header — fine only while every request reaches the API through Cloudflare.
+- **Next step:** owner push + migrations `0054`–`0057` + switches when ready; then Stage 09 (after booking, hotel operations, cancellations).
+
 ## 2026-11-19 — AI (Claude) — Stage 07 payments (PayU) & ledger core (S07-T01 to T11)
 
 - **Goal:** the money foundation before bookings (D36): double-entry ledger, PayU on the existing merchant account, refunds, reconciliation, finance admin.

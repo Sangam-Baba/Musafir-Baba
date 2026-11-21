@@ -88,7 +88,21 @@ docker exec musafirbaba-backend node src/b2b/demo.js remove
 Deletes exactly the two demo companies and what belongs to them (properties, rooms, prices, requests, markups, logins) and
 switches the Demo category off. Nothing else is touched. Running `add` again recreates it.
 
-## 7. Roll back
+## 7. Later: switch on online booking (when the owner says so)
+
+1. Push the Stage 08 commits made after this demo deploy; run `docker exec musafirbaba-backend node src/b2b/migrate.js`
+   (expect 0054 … 0057).
+2. Admin → Pricing → GST & settings: fill MusafirBaba's GSTIN for the Delhi registration (without it no tax invoice is
+   issued; voucher and receipt still are).
+3. Server `.env`: `B2B_API_PUBLIC_URL=https://musafirbabaserver.3mongoose.online/api/v1` (payments) and
+   `B2B_ORDERS_ENABLED=true` (online booking) → `docker compose up -d`.
+4. Vercel: `NEXT_PUBLIC_FEATURE_HOTEL_BOOKING=true` (with `NEXT_PUBLIC_FEATURE_HOTELS=true`) → redeploy.
+5. Try a ₹1-priced demo room end to end (book → PayU → confirmed → voucher / invoice / receipt → hotel bell and
+   acknowledge), then refund it from Admin → Finance. Demo hotels stay hidden from the public website.
+
+Turning either switch off again stops new bookings at once; paid orders still finish (reconciler, poller, refunds).
+
+## 8. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.
 - Later, to switch on payments (₹1 test from Admin → Finance) or online booking, see the Stage 07 / 08 notes — not part of

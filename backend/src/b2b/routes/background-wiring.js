@@ -22,11 +22,11 @@ import {
 import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
 import { customerEmailConsumers } from './customer-emails.js';
-import { ackEscalation } from '../modules/hotel-booking/index.js';
+import { ackEscalation, bookingInvariants } from '../modules/hotel-booking/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
-import { extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
+import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
 
 /**
  * Unfinished registrations: reminder, then removal (S02-T11).
@@ -84,7 +84,11 @@ export function startDatabase(env, log, hub, identity) {
         publicUrl: config.B2B_PUBLIC_URL,
         rules: orderReconcileRules(engine.ordersDeps),
         consumers: [...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS), documents.consumer, ...customerEmails],
-        invariants: [...orderInvariants({ clock: systemClock }), ...documentInvariants({ clock: systemClock })],
+        invariants: [
+          ...orderInvariants({ clock: systemClock }),
+          ...documentInvariants({ clock: systemClock }),
+          ...bookingInvariants({ clock: systemClock, owners: () => bookedNightOwners(systemClock) }),
+        ],
         schedules: [
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
