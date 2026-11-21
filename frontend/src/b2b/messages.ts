@@ -2,6 +2,20 @@
 import { B2BError } from "./api";
 
 const MESSAGES: Record<string, string> = {
+  SOLD_OUT: "Sorry — this room was just sold out for your dates. Please pick another room or dates.",
+  PRICE_CHANGED: "The price changed since you looked. Please check the new price.",
+  TOO_MANY_OPEN_ORDERS: "You already have bookings waiting for payment. Finish or let them expire first.",
+  ORDER_VALUE_LIMIT: "This booking is too large to pay online. Please call us at +91 92896 02447 and we'll arrange it.",
+  HOLD_ENDING: "The time to pay for these rooms has run out. Please start again from the hotel page.",
+  HOLD_NOT_EXTENDABLE: "The rooms can only be held longer once.",
+  ORDER_NOT_PAYABLE: "This booking can't be paid now — refresh to see where it stands.",
+  PAYMENT_ATTEMPTS_EXCEEDED: "Too many payment attempts for this booking. Please start again or call us.",
+  ORDERS_NOT_ENABLED: "Online booking opens soon. Please call us at +91 92896 02447 to book.",
+  PAYMENTS_NOT_CONFIGURED: "Online payment isn't available right now. Please call us at +91 92896 02447.",
+  ROOMS_DONT_MATCH_STAY: "Please give a lead guest name for each room.",
+  ORDER_NOT_FOUND: "We couldn't find this booking. Open the link from your email again.",
+  GUEST_SESSION_REQUIRED: "Please allow this site to store data in your browser, then try again.",
+  DUPLICATE_ORDER_SUSPECTED: "You already have the same booking in progress.",
   LOGIN_FAILED: "That email/phone and password don't match.",
   ACCOUNT_LOCKED: "Too many wrong attempts. The account is locked for a while — try again later or reset your password.",
   ACCOUNT_DISABLED: "This account is disabled. Please contact MusafirBaba support.",

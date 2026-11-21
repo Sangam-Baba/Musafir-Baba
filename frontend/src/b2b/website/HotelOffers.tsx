@@ -1,7 +1,7 @@
 "use client";
 // The rooms of one hotel for the chosen stay: final price incl. GST, meals, cancellation terms, rooms left.
 // Live: follows `availability:property:<id>`; when the hotel's rooms or prices change the list refreshes and says so.
-// "Reserve" checks the price again (price token) — booking itself opens with Stage 08.
+// "Reserve" checks the price again (price token); with online booking on (Stage 08) it then opens checkout.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { errorMessage } from "../messages";
 import { useRealtime } from "../realtime";
 import { addDays, guestsText, inr, MEAL_LABEL, publicCall, roomsToParam, today, type HotelsCall, type Offer, type OffersResult, type PriceCheck, type RoomAsk } from "./hotels";
+import { BOOKING_ENABLED, saveCheckoutOffer } from "./checkout";
 
 /** B2B clients: price before GST, the GST lines and the total, and their own selling price when switched on. */
 function B2BPrice({ o, showSelling }: { o: Offer; showSelling: boolean }) {
@@ -55,13 +56,16 @@ export function HotelOffers({ refOrSlug, initial, call = publicCall, getToken = 
     router.replace(`?checkIn=${inDate}&checkOut=${outDate}&rooms=${roomsToParam(rooms)}`, { scroll: false });
   }
 
-  async function reserve(token: string, id: string) {
+  async function reserve(token: string, id: string, offer?: Offer) {
     setChecking(id);
     try {
       const r = await call<PriceCheck>("/hotels/offers/price-check", { priceToken: token });
       if (r.status === "SOLD_OUT") toast.error("Sorry — this room was just sold out for your dates.");
       else if (r.status === "PRICE_CHANGED") toast.warning(`The price changed from ${inr(r.quotedTotalPaise)} to ${inr(r.price?.totalPaise ?? 0)}.`);
-      else toast.success(`Price confirmed: ${inr(r.price?.totalPaise ?? 0)} incl. GST. Online booking opens soon — call us to book this room${b2b ? " for your customer" : ""}.`);
+      else if (BOOKING_ENABLED && !b2b && offer) {
+        saveCheckoutOffer({ hotelName: offers.data?.property.name ?? "Hotel", hotelSlug: refOrSlug, checkIn, checkOut, rooms, offer: { ...offer, priceToken: r.priceToken ?? offer.priceToken } });
+        router.push("/hotels/checkout");
+      } else toast.success(`Price confirmed: ${inr(r.price?.totalPaise ?? 0)} incl. GST. Online booking opens soon — call us to book this room${b2b ? " for your customer" : ""}.`);
       if (r.status !== "OK") void queryClient.invalidateQueries({ queryKey: key });
     } catch (e) {
       toast.error(errorMessage(e));
@@ -101,7 +105,7 @@ export function HotelOffers({ refOrSlug, initial, call = publicCall, getToken = 
             <p className="text-xs text-slate-500">{o.price.nights} night{o.price.nights > 1 ? "s" : ""}, {o.price.rooms} room{o.price.rooms > 1 ? "s" : ""} · incl. {inr(o.price.gstPaise)} GST</p>
             {b2b && <B2BPrice o={o} showSelling={showSelling} />}
 {action ? action(o) : (
-                        <button disabled={checking !== null} onClick={() => reserve(o.priceToken, `${o.roomTypeId}-${o.ratePlanId}`)} className="mt-2 rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                        <button disabled={checking !== null} onClick={() => reserve(o.priceToken, `${o.roomTypeId}-${o.ratePlanId}`, o)} className="mt-2 rounded-lg bg-[#FE5300] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
               {checking === `${o.roomTypeId}-${o.ratePlanId}` ? "Checking…" : "Reserve"}
             </button>
             )}

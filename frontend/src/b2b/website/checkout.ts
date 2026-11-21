@@ -1,0 +1,127 @@
+// Website booking (Stage 08): the guest's browser id, the order API calls and their shapes.
+// Guests book without an account: the browser keeps a random id (sent as X-Guest-Session) so the same browser sees its
+// orders; the order link from the email carries its own key. Online booking is behind NEXT_PUBLIC_FEATURE_HOTEL_BOOKING
+// (off by default) — with it off the Reserve button stays "call us", as today.
+import { hotelsApi, type Offer, type RoomAsk } from "./hotels";
+
+export const BOOKING_ENABLED = process.env.NEXT_PUBLIC_FEATURE_HOTEL_BOOKING === "true";
+
+export type OrderStatus = "HOLDING" | "AWAITING_PAYMENT" | "PAYMENT_PENDING" | "CONFIRMING" | "CONFIRMED" | "FAILED" | "EXPIRED" | "CANCELLED" | "COMPLETED";
+export type OrderItem = {
+  ref: string;
+  status: string;
+  property: { name: string; address: { line1: string | null; line2: string | null; pin: string | null }; city: string | null; area: string | null; checkInTime: string | null; checkOutTime: string | null };
+  roomTypeName: string;
+  ratePlanName: string;
+  mealPlanKey: string | null;
+  cancellation: { summary: string; nonRefundable: boolean };
+  stay: { checkIn: string; checkOut: string; nights: number; occupancies: { adults: number; children: number }[] };
+  rooms: { leadGuest: string; guests: string[] }[];
+  specialRequests: string | null;
+  price: { totalPaise: number; gstPaise: number };
+};
+export type Order = {
+  ref: string;
+  status: OrderStatus;
+  totalPaise: number;
+  gstPaise: number;
+  holdExpiresAt: string | null;
+  holdExtended: boolean;
+  payment: { txnId: string | null; windowEndsAt: string | null; verified: boolean };
+  contact: { name: string; email: string; phone: string };
+  items: OrderItem[];
+  failure: { code: string } | null;
+  createdAt: string;
+  confirmedAt: string | null;
+  linkKey?: string;
+};
+export type PayuForm = { txnId: string; action: string; fields: Record<string, string>; windowEndsAt: string };
+export type OrderDocument = { id: string; type: "VOUCHER" | "TAX_INVOICE" | "RECEIPT"; version: number; number: string | null; issuedAt: string };
+
+/** What the hotel page hands to checkout (kept in this browser tab only). */
+export type CheckoutOffer = { hotelName: string; hotelSlug: string; checkIn: string; checkOut: string; rooms: RoomAsk[]; offer: Offer };
+const OFFER_KEY = "mb-checkout-offer";
+const SESSION_KEY = "mb-guest-session";
+
+export function saveCheckoutOffer(o: CheckoutOffer) {
+  try {
+    sessionStorage.setItem(OFFER_KEY, JSON.stringify(o));
+  } catch {
+    /* private mode: checkout shows "start again" */
+  }
+}
+export function loadCheckoutOffer(): CheckoutOffer | null {
+  try {
+    const raw = sessionStorage.getItem(OFFER_KEY);
+    return raw ? (JSON.parse(raw) as CheckoutOffer) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A random id for request keys and the guest session (URL-safe). */
+export function randomId(bytes = 18): string {
+  const a = new Uint8Array(bytes);
+  crypto.getRandomValues(a);
+  return btoa(String.fromCharCode(...a)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/** This browser's guest id (created once; kept in localStorage). */
+export function guestSession(): string {
+  try {
+    const have = localStorage.getItem(SESSION_KEY);
+    if (have && /^[A-Za-z0-9_-]{20,100}$/.test(have)) return have;
+    const id = randomId(24);
+    localStorage.setItem(SESSION_KEY, id);
+    return id;
+  } catch {
+    return randomId(24); // storage blocked: this page still works; the order link opens it later
+  }
+}
+
+const headers = (extra: Record<string, string> = {}) => ({ "X-Guest-Session": guestSession(), ...extra });
+const withKey = (path: string, key?: string | null) => (key ? `${path}${path.includes("?") ? "&" : "?"}key=${encodeURIComponent(key)}` : path);
+
+export type CreateOrderInput = {
+  priceToken: string;
+  rooms: { leadGuest: string; guests?: string[] }[];
+  contact: { name: string; email: string; phone: string };
+  specialRequests?: string | null;
+  confirmDuplicate?: boolean;
+};
+
+export const createOrder = (input: CreateOrderInput, requestKey: string) =>
+  hotelsApi<Order>("/orders", input, { headers: { "Content-Type": "application/json", ...headers({ "Idempotency-Key": requestKey }) } });
+
+export const getOrder = (ref: string, key?: string | null) => hotelsApi<Order>(withKey(`/orders/${encodeURIComponent(ref)}`, key), undefined, { headers: headers(), cache: "no-store" });
+
+export const startPayment = (ref: string, key: string | null, requestKey: string) =>
+  hotelsApi<PayuForm>(withKey(`/orders/${encodeURIComponent(ref)}/payments`, key), {}, { headers: { "Content-Type": "application/json", ...headers({ "Idempotency-Key": requestKey }) } });
+
+export const extendHold = (ref: string, key: string | null) =>
+  hotelsApi<Order>(withKey(`/orders/${encodeURIComponent(ref)}/extend-hold`, key), {}, { headers: { "Content-Type": "application/json", ...headers() } });
+
+export const orderDocuments = (ref: string, key?: string | null) =>
+  hotelsApi<{ data: OrderDocument[] }>(withKey(`/orders/${encodeURIComponent(ref)}/documents`, key), undefined, { headers: headers(), cache: "no-store" });
+
+/** The link to a document page (opens in a new tab; works with the order link key). */
+export const documentUrl = (base: string, ref: string, id: string, key?: string | null) => withKey(`${base}/orders/${encodeURIComponent(ref)}/documents/${id}`, key);
+
+/** Sends the browser to PayU's hosted page with the signed fields from our server. */
+export function submitToPayu(form: PayuForm) {
+  const el = document.createElement("form");
+  el.method = "POST";
+  el.action = form.action;
+  for (const [name, value] of Object.entries(form.fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    el.appendChild(input);
+  }
+  document.body.appendChild(el);
+  el.submit();
+}
+
+export const NAME_RE = /^[\p{L}][\p{L} .'-]{0,59}$/u;
+export const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER: "Hotel voucher", TAX_INVOICE: "GST tax invoice", RECEIPT: "Payment receipt" };
