@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Status** | IN_PROGRESS |
+| **Status** | AWAITING_SIGN_OFF |
 | **Phase · Track** | B · clients |
 | **Owner(s)** | |
 | **Started** | 2026-11-21 |
@@ -38,7 +38,7 @@
 | S11-T08 | Refund to wallet (service) + wallet adjustments (two people, reason codes); corrections blocked on live accounts | §3.7, §3.9 | DONE | AI (Claude) | | wallet-adjustments.test.js | `refundToWallet` (instant, once per reference — for Stage 12B cancellations); wallet adjustments in `wal_adjustments` (kind WALLET, reason codes + GOODWILL_CREDIT / TOPUP_CORRECTION): `wallet.adjustment.propose` → a different person approves → PROPOSED → POSTING → POSTED; uncovered debit refused and stays open; Stage 07 entries touching a live wallet refused (LIVE_ACCOUNT_NEEDS_WALLET_ADJUSTMENT) |
 | S11-T09 | Client wallet API + page: balance, transactions, statement (CSV), low-balance alerts | §3.8 | DONE | AI (Claude) | | wallet-statement.test.js (+ frontend tsc) | GET /wallet/statement(.csv) — opening, entries with running balance, closing from the journal (Indian dates, ≤ 1 year, no CSV formulas); PATCH /wallet/settings (threshold, default ₹10,000, 0 = off); events on the wallet document (migration 0068, relay source): `wallet.topup.credited`, `wallet.account.low-balance` (once until back above), `wallet.credit.overdue` (once until paid) → bell + owners' email; page /business/wallet (balance cards, PayU, bank transfer, top-ups, statement, setting) + menu item for `wallet.account.read` |
 | S11-T10 | Admin: client accounts explorer, top-up approvals, credit lines, wallet adjustments, daily manual-credits report | §3.9 | DONE | AI (Claude) | | wallet-admin.test.js (+ frontend tsc) | GET /admin/wallet/clients (names, balance, held, credit, overdue first), /admin/wallet/clients/:orgId/statement, /admin/wallet/manual-credits?date (bank transfers approved + adjustments posted, who checked / approved) — `wallet.ledger.read`; admin tab Wallets: clients + statement, approvals (bank transfers, credit lines, adjustments), manual credits report |
-| S11-T11 | Mandatory test suite | §8 | DOING | AI (Claude) | |  |  |
+| S11-T11 | Mandatory test suite | §8 | DONE | AI (Claude) | | stage-11-mandatory.test.js (+ all wallet-*.test.js) | randomised: 20 rounds × 40 concurrent top-ups / spends / holds / captures / releases with credit — never past the floor, live balances = journal, held = HELD holds, ledger invariants clean; index of where each §8 test lives in the file header. Full suite 1 033 tests ✅ (one Stage 01 expectation updated: a client Admin can no longer invite an Accountant — the Accountant holds wallet powers the Admin doesn't; the Owner can) |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 

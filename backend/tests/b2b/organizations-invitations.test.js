@@ -134,7 +134,11 @@ describe('invite → accept as a new user', () => {
     expect((await srv.post('/api/v1/invitations', { email: 'boss@x.in', roles: ['client.owner'] }, auth(admin))).body.code).toBe(
       'CANNOT_GRANT_MORE_THAN_YOU_HAVE',
     );
-    expect((await srv.post('/api/v1/invitations', { email: 'a@x.in', roles: ['client.accountant'] }, auth(admin))).status).toBe(201);
+    // Stage 11: the Accountant can add money to the wallet, which an Admin can't — so only the Owner invites Accountants
+    expect((await srv.post('/api/v1/invitations', { email: 'a@x.in', roles: ['client.accountant'] }, auth(admin))).body.code).toBe(
+      'CANNOT_GRANT_MORE_THAN_YOU_HAVE',
+    );
+    expect((await srv.post('/api/v1/invitations', { email: 'a@x.in', roles: ['client.accountant'] }, auth(owner))).status).toBe(201);
     expect((await srv.post('/api/v1/invitations', { email: 'b@x.in', roles: ['client.superhero'] }, auth(owner))).body.code).toBe(
       'ROLE_UNKNOWN',
     );

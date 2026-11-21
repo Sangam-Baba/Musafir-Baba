@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-21 — AI (Claude) — Stage 11 client wallet & credit (S11-T01 to T11)
+
+- **Goal:** client wallets with live balances, holds, top-ups (PayU + bank transfer), credit lines, refunds to wallet, wallet adjustments, statement and alerts, admin screens.
+- **Done:** S11-T01 … T11 → DONE. Engine `wallet/live.service.js` (conditional updates with op ids: pending `ops`, last 500 `doneOps`, journal checked first; reconciler; hourly check), holds `wal_holds` (PLACING / CAPTURING / RELEASING finished after 60 s, orphan hold ops freed), PayU top-ups (paid late → credited, never auto-refunded — payments `lateSuccess` lets TOPUP decide), bank-transfer top-ups `wal_manual_topups` (check + different approver), credit lines `wal_credit_lines` (two people; dues from when the wallet went below zero; overdue blocks spending and holds), `refundToWallet`, wallet adjustments (two people, reason codes; Stage 07 corrections refused on live wallets), statement + CSV, alerts (money added, low balance once, credit overdue once) via the wallet document's events, client page `/business/wallet`, admin tab Wallets with the daily manual-credits report. Migrations 0065–0068.
+- **Not done / why:** proof upload on bank transfers (DEF-037); staff step-up (DEF-036). Wallet payment at B2B checkout (holds → capture on confirmation) is wired in Stage 12 part B, which uses these services.
+- **Files / PR:** `backend/src/b2b/modules/wallet/**`, `routes/wallet*.js`, notifications catalogue/templates, `frontend/src/app/business/wallet`, `frontend/src/b2b/components/wallet`, admin `wallets/` — local commits only, nothing pushed.
+- **Tests run:** wallet-live, wallet-holds, wallet-topups, wallet-manual-topups, wallet-credit, wallet-adjustments, wallet-statement, wallet-admin, stage-11-mandatory ✅; lint, typecheck ✅; full suite 1 033 ✅; frontend `tsc` ✅ (frontend ESLint config fails to load — existing, not touched).
+- **Decisions / deferrals:** new server switch `B2B_WALLET_ENABLED` (off), `B2B_TOPUP_BANK_DETAILS`; D6/D9 defaults recorded in the stage file; DEF-037. A client Admin can no longer invite an Accountant (the Accountant now holds wallet powers; "can't grant more than you hold") — the Owner can; owner may choose to give Admins wallet access instead.
+- **Next step:** owner: OK to push; then migrations 0054–0068 on the server. Build: Stage 12 part B (B2B checkout paying from the wallet / credit, B2B cancellations refunding to the wallet).
+
+
 ## 2026-11-21 — AI (Claude) — Stage 09 after booking & hotel operations (S09-T01 to T13)
 
 - **Goal:** the working system complete for Pilot 1 — customers see, cancel and get refunded; hotels run arrivals, no-shows and problems; ops handle exceptions; payables tracked and paid.

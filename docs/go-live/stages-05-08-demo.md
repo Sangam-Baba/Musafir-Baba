@@ -109,6 +109,21 @@ payouts). Nothing new to set. Behind the same online-booking switch for customer
 roles that have the permissions (hotel Owner: Statement; Front Desk: no-shows; Finance: payouts — approving needs the
 exact permission `wallet.payout.approve` or Super Admin).
 
+## 8b. Stage 11 (client wallets & credit) — with the next push
+
+Migrations `0065` … `0068` (money holds, bank-transfer top-ups, credit lines, wallet indexes). Client wallets open by
+themselves for verified clients (a job every minute). **Switched off for clients** until the owner decides:
+
+| Setting (new, server env) | Meaning |
+| --- | --- |
+| `B2B_WALLET_ENABLED=true` | clients see `/business/wallet` working (off → "the business wallet opens soon") |
+| `B2B_TOPUP_BANK_DETAILS` | MusafirBaba's bank account shown to clients for NEFT / RTGS / IMPS (plain text, e.g. `HDFC Bank · A/c 00000000 · IFSC HDFC0000001 · MusafirBaba Pvt Ltd`) — the owner gives it |
+
+PayU top-ups also need the Stage 07 PayU settings (`B2B_API_PUBLIC_URL`). Admin → B2B → **Wallets**: approvals need two
+different people — checking a bank transfer (`wallet.topup.check`), approving it (`wallet.topup.approve`), credit lines
+(`wallet.credit.propose` / `wallet.credit.approve`), wallet adjustments (`wallet.adjustment.propose` / `.approve`).
+Approve permissions are never given by wildcards: Super Admin, or a role listing the exact code.
+
 ## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.
