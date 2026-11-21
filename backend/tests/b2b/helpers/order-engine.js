@@ -40,6 +40,7 @@ import { AmendmentRecord, CancellationRecord, HotelFailureRecord, NoShowRecord }
 import {
   BalanceSnapshotRecord,
   createLedger,
+  ManualPayoutRecord,
   PayableRecord,
   seedPlatformAccounts,
   TransactionRecord,
@@ -80,6 +81,7 @@ export function useOrderEngine() {
       NoShowRecord,
       HotelFailureRecord,
       PayableRecord,
+      ManualPayoutRecord,
       BalanceSnapshotRecord,
     ],
   });

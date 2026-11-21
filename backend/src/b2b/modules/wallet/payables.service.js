@@ -36,7 +36,7 @@ async function sync(deps, bookingId) {
   if (!s) return null;
   const now = deps.clock.now();
   const current = /** @type {any} */ (await PayableRecord.findOne({ bookingId }).setOptions(SCOPE).lean());
-  if (current?.status === 'PAID') {
+  if (current?.status === 'PAID' || current?.payoutId) {
     if (current.amountPaise !== s.amountPaise)
       deps.logger.warn(
         { bookingRef: s.bookingRef, paid: current.amountPaise, now: s.amountPaise },
@@ -47,7 +47,7 @@ async function sync(deps, bookingId) {
   if (current && current.amountPaise === s.amountPaise && current.status === s.state) return payableDto(current);
   const { state, ...fields } = s;
   await PayableRecord.updateOne(
-    { bookingId, status: { $ne: 'PAID' } },
+    { bookingId, status: { $ne: 'PAID' }, payoutId: null },
     {
       $set: { ...fields, status: state, ...(state === 'ELIGIBLE' && current?.status !== 'ELIGIBLE' ? { eligibleAt: now } : {}) },
       $push: { history: { at: now, status: s.state, amountPaise: s.amountPaise } },

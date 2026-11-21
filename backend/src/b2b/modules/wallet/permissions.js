@@ -23,4 +23,20 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     orgTypes: ['PLATFORM'],
     sensitive: true,
   },
+  payoutRecord: {
+    code: 'wallet.payout.record',
+    description: 'MusafirBaba admin: see hotel payables and record a payout made by bank transfer (a second person approves)',
+    orgTypes: ['PLATFORM'],
+  },
+  payoutApprove: {
+    code: 'wallet.payout.approve',
+    description: "MusafirBaba admin: approve another person's recorded hotel payout",
+    orgTypes: ['PLATFORM'],
+    sensitive: true,
+  },
+  statementRead: {
+    code: 'wallet.statement.read',
+    description: 'See the statement of what MusafirBaba owes and paid (download as CSV)',
+    orgTypes: ['HOTEL'],
+  },
 });

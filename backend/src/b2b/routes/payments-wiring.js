@@ -7,8 +7,10 @@
 import express from 'express';
 
 import { createPayments, createPaymentsAdmin, createPayuClient, merchantFromEnv } from '../modules/payments/index.js';
-import { balancesOf, createAdjustments, createLedger, entriesOf } from '../modules/wallet/index.js';
+import { balancesOf, createAdjustments, createLedger, createPayouts, entriesOf } from '../modules/wallet/index.js';
 import { financeAdminRoutes } from './finance-admin.js';
+import { payablesFor } from './payables-wiring.js';
+import { payoutRoutes } from './payouts.js';
 import { payuCallbackRoutes } from './payments-payu.js';
 
 /**
@@ -49,5 +51,6 @@ export function stage07Routes(env, clock, logger) {
       publicUrl,
     }),
   );
+  router.use(payoutRoutes({ payables: payablesFor({ clock, logger }), payouts: createPayouts({ clock, ledger: deps.ledger }) }));
   return router;
 }

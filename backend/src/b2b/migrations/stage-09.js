@@ -7,7 +7,7 @@ import {
   NO_SHOWS_COLLECTION,
 } from '../modules/hotel-booking/index.js';
 import { BOOKING_SUMMARIES_COLLECTION } from '../modules/reporting/index.js';
-import { PAYABLES_COLLECTION } from '../modules/wallet/index.js';
+import { MANUAL_PAYOUTS_COLLECTION, PAYABLES_COLLECTION } from '../modules/wallet/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_09 = [
@@ -110,6 +110,16 @@ export const STAGE_09 = [
         { payoutId: 1 },
         { name: 'payout', partialFilterExpression: { payoutId: { $type: 'string' } } },
       );
+    },
+  },
+  {
+    id: '0064-wal-manual-payouts',
+    description: 'Recorded hotel payouts: unique reference; per hotel by bank date; by status',
+    up: async (ctx) => {
+      await ctx.createCollection(MANUAL_PAYOUTS_COLLECTION);
+      await ctx.createIndex(MANUAL_PAYOUTS_COLLECTION, { ref: 1 }, { name: 'ref_unique', unique: true });
+      await ctx.createIndex(MANUAL_PAYOUTS_COLLECTION, { hotelOrgId: 1, paidOn: -1 }, { name: 'hotel_paid' });
+      await ctx.createIndex(MANUAL_PAYOUTS_COLLECTION, { status: 1, createdAt: -1 }, { name: 'status_recent' });
     },
   },
 ];

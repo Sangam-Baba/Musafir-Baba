@@ -13,3 +13,5 @@ export { ADJUSTMENTS_COLLECTION, REASON_CODES, AdjustmentRecord } from './models
 export { createAdjustments, entriesOf } from './adjustments.service.js';
 export { PAYABLES_COLLECTION, PAYABLE_STATUSES, PayableRecord } from './models/payable.model.js';
 export { createPayables, payableDto } from './payables.service.js';
+export { MANUAL_PAYOUTS_COLLECTION, ManualPayoutRecord } from './models/manual-payout.model.js';
+export { createPayouts, payoutDto, statementCsv } from './payouts.service.js';
