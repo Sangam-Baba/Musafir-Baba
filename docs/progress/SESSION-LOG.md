@@ -4,6 +4,16 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-21 — AI (Claude) — Stage 09 after booking & hotel operations (S09-T01 to T13)
+
+- **Goal:** the working system complete for Pilot 1 — customers see, cancel and get refunded; hotels run arrivals, no-shows and problems; ops handle exceptions; payables tracked and paid.
+- **Done:** S09-T01…T13 → DONE. Owner decisions: D5 pro rata (for now, CA to review); customers' hotel bookings on a **new page** `/hotels/my-bookings` (E2 not used). Built: booking summaries read model; customer bookings with cancellation terms; signed 5-minute cancellation quote; cancel flow (rooms back once, ledger reversal, refund to source, reconciler); GST credit notes (`C2627DL…`); change requests (website threads, admin SLA queue, guest-name corrections); hotel inbox views + no-shows (72 h dispute, ops decide, settled once); hotel can't honour (refund or move, suspense); completion job + payables; recorded payouts (two people, locked, ledger payable → bank) + hotel statement CSV; admin Operations tab. Migrations `0058`–`0064`.
+- **Not done / why:** email replies to change requests (DEF-035 — needs inbound mail on the existing email account); the bank-detail change hold comes with Stage 15's payouts; Definition of Done / Pilot 1 checklist need the live system, contracted hotels and the CA. Online booking still switched off on the live site.
+- **Files / PR:** `backend/src/b2b/modules/{reporting,hotel-booking,orders,wallet,documents}/**`, routes `customer-bookings`, `customer-amendments`, `amendments-admin`, `payouts`, `payables-wiring`, `reporting-wiring`, `background-wiring`, `migrations/stage-09.js`; frontend `/hotels/my-bookings`, booking page (cancel, change requests, no-show dispute), business Bookings (views, no-show, can't honour) and Statement, admin Operations tab. Local commits — not pushed.
+- **Tests run:** `lint:b2b` ✅, `typecheck:b2b` ✅, `test:b2b` ✅ (see the T13 commit), frontend `tsc` ✅ for B2B files. One full run hung once (stuck test worker, no failure); reruns with explicit test / hook timeouts pass.
+- **Decisions / deferrals:** D5 recorded; DEF-035 (email replies). Charges follow the policy copy kept at booking time; a deadline counts only after its exact moment; failed hotels' rooms stay out of sale.
+- **Next step:** owner: push + migrations `0054`–`0064`, GSTIN, switches for a ₹1 test, sign-off; then Pilot 1 or Stage 11 (client wallet & credit) per D36.
+
 ## 2026-11-21 — AI (Claude) — Stage 08 booking engine (S08-T01 to T12); Stages 05–08 live with hidden demo data
 
 - **Goal:** the website booking engine — order with rooms held, PayU, confirmation, documents, hotel alerts, admin.

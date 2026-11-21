@@ -77,6 +77,9 @@ describe('cancel', () => {
         .setOptions(S)
         .lean(),
     ).toMatchObject({ status: 'CANCELLED', chargePaise: 0, hotelSharePaise: 0, orderRef: o.ref });
+    const monitor = await app.admin.get('/api/v1/admin/cancellations', asStaff('o1:hotel-booking.admin.read'));
+    expect(monitor.body.data).toEqual([expect.objectContaining({ bookingRef: b.ref, status: 'CANCELLED', refundPaise: order.totalPaise })]);
+    expect((await app.admin.get('/api/v1/admin/cancellations', asStaff('x:hotel-catalog.listing.read'))).status).toBe(403);
   });
 
   it('with a charge: refund + charge = paid; the hotel keeps its share (D5), the refunded part is reversed', async () => {

@@ -41,7 +41,7 @@
 | S09-T10 | Completion job + payables `wal_payables` (pending → eligible → paid, adjustments) | §3.8, §3.9 | DONE | AI (Claude) | | 2 ✅ | **Completion** (hourly): confirmed bookings whose check-out day is over in the hotel's time → **COMPLETED** (+ `hotel-booking.booking.completed`); the order COMPLETED when all its stays are. **Payables** (`wal_payables` `0063`, wallet module): one per booking, kept in step with the booking on every event (confirmed, cancelled, completed, no-show marked / resolved, hotel failure) and after a no-show is settled — **PENDING** (stay not over, no-show open) → **ELIGIBLE** (completed; cancellation done; no-show final) → **PAID** (S09-T11; locked — never changed, a later difference is logged for finance); **VOID** when nothing is owed. Amounts = what the ledger's hotel payable account holds (tested): its rate + its GST; cancelled → its share of the charge (D5); no-show → its share of the no-show charge; hotel failed → nothing. Finance's "due" summary per hotel (amount, bookings, oldest). Also: a second cancel arriving at the same moment now gets 409 with the current state (one wins) instead of a repeated success |
 | S09-T11 | Recorded payouts (two people, journal payable → bank, payables locked) + hotel statement with CSV | §3.9 | DONE | AI (Claude) | | 2 ✅ + tsc ✅ | `wal_manual_payouts` (`0064`); permissions `wallet.payout.record` (Finance), `wallet.payout.approve` (**sensitive** — Super Admin or a role listing the exact code), `wallet.statement.read` (hotel Owner). Finance: `GET /admin/payables/due`, `GET /admin/payables?hotelOrgId&status`, `POST /admin/manual-payouts` {hotel, payables, amount, UTR, bank date} — the payables must be ready to pay and the **amount must equal their total**; they are **locked** to the payout in one update (all or none — a payout can't exceed what is ready, a payable can't be in two payouts); `POST /admin/manual-payouts/:id/approve | /reject` by a **different person** → approve: one ledger entry hotel payable → bank (UTR in the memo, unique by payout), payables **PAID** (locked for good); reject: payables unlocked. Hotel: `GET /hotel/statements?from&to` and `/hotel/statements.csv` (payables by check-out, payouts by bank date with UTR, totals) + **Statement** page in the business area. After approval the hotel's payable balance in the ledger is 0 (tested). Bank-detail change hold (§7) comes with Stage 15's payout runs |
 | S09-T12 | Admin queues: cancellations, amendments (SLA), no-show disputes, hotel failures, payables, payouts | §3.11 | DONE | AI (Claude) | | 1 ✅ (+ all queues' API tests) + tsc ✅ | Admin → **Operations** tab in `/admin/b2b`: **Queues** — change requests (first answer due within 4 hours, **red when late**; thread with staff names; reply / ask the buyer / resolve; apply requested guest names), **no-show disputes** (uphold / reverse with what the hotel said), **hotels that couldn't honour** (moved — with the new hotel's reference — or refund everything), **cancellations** monitor (new `GET /admin/cancellations`: charge, refund, the hotel's share, who, why); **Hotel payouts** — hotels ready to pay (amount, bookings, oldest), record a payout against a hotel's ready payables (UTR, bank date), recorded payouts with approve / reject (a different person). Plus earlier screens: Orders (order explorer, actions with two people, hotels not answering for an hour), Finance (ledger, corrections, PayU). The queues refresh every minute and on the admin bell's queue pushes. Type-checked; not clicked through in a browser by me |
-| S09-T13 | Mandatory test suite | §8 | DOING | AI (Claude) | |  |  |
+| S09-T13 | Mandatory test suite | §8 | DONE | AI (Claude) | | 3 ✅ | `stage-09-mandatory.test.js` maps every §8 test to where it lives and adds: **2 000 randomised policies × 9 moments** (percent / nights / fixed, buffers, non-refundable) → charge + refund = paid, never above paid, never cheaper closer to check-in; **40 credit note numbers at once** → 1…40 in their own series, no gaps or doubles, the same booking → its number; **payables** on a no-show (pending while disputable → the hotel's share once final and settled) and on a hotel failure (nothing owed). Full suite 997 / 997 with explicit test / hook timeouts |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 
@@ -55,10 +55,12 @@ Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (need
 
 ## Mandatory tests (copied from the stage file)
 
-- [ ] Cancellation table tests (all penalty types, buffer, `Asia/Kolkata` deadline ± 1 s)
-- [ ] Cancellation returns rooms exactly once
-- [ ] Refund + charge = paid
-- [ ] Credit note numbering
-- [ ] Read-model rebuild from events gives same rows
-- [ ] Payables adjust correctly on cancel / no-show / failure
-- [ ] Recorded payout can't exceed eligible payables
+- [x] Cancellation table tests (all penalty types, buffer, `Asia/Kolkata` deadline ± 1 s) — `cancellation-terms.test.js`, `stage-09-mandatory.test.js` (randomised)
+- [x] Cancellation returns rooms exactly once — `cancellations.test.js`
+- [x] Refund + charge = paid — `cancellation-terms.test.js`, `cancellations.test.js`, `stage-09-mandatory.test.js`
+- [x] Credit note numbering — `credit-notes.test.js`, `stage-09-mandatory.test.js`
+- [x] Read-model rebuild from events gives same rows — `booking-summaries.test.js`
+- [x] Payables adjust correctly on cancel / no-show / failure — `payables.test.js`, `stage-09-mandatory.test.js`
+- [x] Recorded payout can't exceed eligible payables — `payouts.test.js`
+
+Definition of Done and the Pilot 1 checklist need the live system and people (hotels contracted, switches on, ops trained, CA answers) — a human ticks them.

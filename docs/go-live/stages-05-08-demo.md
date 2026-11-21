@@ -102,7 +102,14 @@ switches the Demo category off. Nothing else is touched. Running `add` again rec
 
 Turning either switch off again stops new bookings at once; paid orders still finish (reconciler, poller, refunds).
 
-## 8. Roll back
+## 8. Stage 09 (after booking) — with the next push
+
+Migrations `0058` … `0064` (booking summaries, cancellations, change requests, no-shows, hotel failures, payables, recorded
+payouts). Nothing new to set. Behind the same online-booking switch for customers; hotel and admin screens appear for the
+roles that have the permissions (hotel Owner: Statement; Front Desk: no-shows; Finance: payouts — approving needs the
+exact permission `wallet.payout.approve` or Super Admin).
+
+## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.
 - Later, to switch on payments (₹1 test from Admin → Finance) or online booking, see the Stage 07 / 08 notes — not part of
