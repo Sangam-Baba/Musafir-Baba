@@ -7,7 +7,12 @@ import express from 'express';
 
 import { ServiceUnavailableError } from '../core/errors.js';
 
-import { createHotelBookingsService, createHotelItemHandler, overdueAcknowledgements } from '../modules/hotel-booking/index.js';
+import {
+  createCustomerBookings,
+  createHotelBookingsService,
+  createHotelItemHandler,
+  overdueAcknowledgements,
+} from '../modules/hotel-booking/index.js';
 import { IntentRecord, RefundRecord } from '../modules/payments/index.js';
 import { createHoldService } from '../modules/hotel-inventory/index.js';
 import {
@@ -21,7 +26,9 @@ import {
 } from '../modules/orders/index.js';
 import { documentsFor } from './documents-wiring.js';
 import { hotelBookingRoutes } from './hotel-bookings.js';
+import { customerBookingRoutes } from './customer-bookings.js';
 import { orderAdminRoutes } from './orders-admin.js';
+import { summariesFor } from './reporting-wiring.js';
 import { orderRoutes } from './orders.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
@@ -53,6 +60,27 @@ export function bookingEngine(env, clock, logger, identity) {
   modes.register('GATEWAY', createGatewayMode({ payments, paymentsDeps, ledger: paymentsDeps.ledger }));
   const ordersDeps = { clock, logger, handlers, modes, ledger: paymentsDeps.ledger };
   return { parts, handlers, modes, payments, paymentsDeps, ordersDeps, orders: createOrderService(ordersDeps) };
+}
+
+/**
+ * The buyer's view of an order's money: payments (PayU) and refunds — amounts, states and when; no internal ids.
+ * @param {string} orderId
+ */
+async function buyerMoney(orderId) {
+  const intents = await IntentRecord.find(
+    { 'reference.type': 'order', 'reference.id': orderId },
+    { txnId: 1, status: 1, amountPaise: 1, mode: 1, createdAt: 1, gatewayPaymentId: 1 },
+  ).lean();
+  const refunds = await RefundRecord.find(
+    { intentId: { $in: intents.map((i) => String(i._id)) } },
+    { status: 1, amountPaise: 1, reason: 1, createdAt: 1 },
+  ).lean();
+  return {
+    payments: intents
+      .filter((i) => i.gatewayPaymentId || i.status === 'PENDING')
+      .map((i) => ({ txnId: i.txnId, status: i.status, amountPaise: i.amountPaise, mode: i.mode ?? null, at: i.createdAt })),
+    refunds: refunds.map((r) => ({ status: r.status, amountPaise: r.amountPaise, reason: r.reason, at: r.createdAt })),
+  };
 }
 
 /**
@@ -109,7 +137,7 @@ export function stage08Routes(env, clock, logger, identity) {
   // Online booking stays switched off on a server until the owner turns it on (`B2B_ORDERS_ENABLED=true`):
   // the rest of the system can go live first, and nobody can hold rooms before checkout and limits are ready.
   if (env.B2B_ORDERS_ENABLED !== 'true')
-    router.use('/orders', (_req, _res, next) => next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')));
+    router.use(['/orders', '/bookings'], (_req, _res, next) => next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')));
   const engine = bookingEngine(env, clock, logger, identity);
   router.use(
     orderRoutes({
@@ -124,6 +152,16 @@ export function stage08Routes(env, clock, logger, identity) {
     }),
   );
   router.use(hotelBookingRoutes({ bookings: createHotelBookingsService({ clock }) }));
+  router.use(
+    customerBookingRoutes({
+      summaries: summariesFor(engine.ordersDeps),
+      bookings: createCustomerBookings({ clock }),
+      orders: engine.orders,
+      money: (orderId) => buyerMoney(orderId),
+      documents: documentsFor(engine.ordersDeps),
+      linkSecret: env.B2B_AUTH_SECRET ?? '',
+    }),
+  );
   const admin = createOrderAdmin(engine.ordersDeps);
   router.use(orderAdminRoutes({ admin, detail: (o) => adminDetail(engine, admin, o), overdue: () => overdueAcknowledgements({ clock }) }));
   return router;

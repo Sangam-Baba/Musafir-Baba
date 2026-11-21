@@ -17,3 +17,13 @@ export {
   bookingInvariants,
   ACK_STEPS,
 } from './hotel-bookings.service.js';
+export {
+  DEFAULT_CHECK_IN_TIME,
+  checkInAt,
+  deadlines,
+  penaltyNow,
+  nightAmounts,
+  cancellationCharge,
+  splitCharge,
+} from './domain/cancellation-charge.js';
+export { createCustomerBookings, termsOf, bookingByRef, BUFFER_HOURS } from './cancellation.service.js';

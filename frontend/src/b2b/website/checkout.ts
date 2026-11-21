@@ -2,6 +2,8 @@
 // Guests book without an account: the browser keeps a random id (sent as X-Guest-Session) so the same browser sees its
 // orders; the order link from the email carries its own key. Online booking is behind NEXT_PUBLIC_FEATURE_HOTEL_BOOKING
 // (off by default) — with it off the Reserve button stays "call us", as today.
+import { useAuthStore } from "@/store/useAuthStore"; // the existing website login — read only
+
 import { hotelsApi, type Offer, type RoomAsk } from "./hotels";
 
 export const BOOKING_ENABLED = process.env.NEXT_PUBLIC_FEATURE_HOTEL_BOOKING === "true";
@@ -79,7 +81,20 @@ export function guestSession(): string {
   }
 }
 
-const headers = (extra: Record<string, string> = {}) => ({ "X-Guest-Session": guestSession(), ...extra });
+/** A signed-in website customer's existing login token (read only), so their bookings belong to their account. */
+function customerToken(): string | null {
+  try {
+    const a = useAuthStore.getState();
+    return a.isAuthenticated && a.role === "user" && a.accessToken ? a.accessToken : null;
+  } catch {
+    return null;
+  }
+}
+
+const headers = (extra: Record<string, string> = {}): Record<string, string> => {
+  const token = customerToken();
+  return { "X-Guest-Session": guestSession(), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };
+};
 const withKey = (path: string, key?: string | null) => (key ? `${path}${path.includes("?") ? "&" : "?"}key=${encodeURIComponent(key)}` : path);
 
 export type CreateOrderInput = {
@@ -125,3 +140,20 @@ export function submitToPayu(form: PayuForm) {
 
 export const NAME_RE = /^[\p{L}][\p{L} .'-]{0,59}$/u;
 export const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER: "Hotel voucher", TAX_INVOICE: "GST tax invoice", RECEIPT: "Payment receipt" };
+
+// Stage 09: the customer's hotel bookings (a new page — the existing website bookings page is not touched).
+export type BookingRow = { bookingRef: string; orderRef: string; propertyName: string | null; destination: string | null; leadGuest: string | null; checkIn: string | null; checkOut: string | null; bookingStatus: string; orderStatus: string; paymentState: "UNPAID" | "PAID" | "PARTLY_REFUNDED" | "REFUNDED"; totalPaise: number; refundedPaise: number; orderCreatedAt: string };
+export type Moment = { at: string; hotelTime: string };
+export type Terms = { timeZone: string; checkInAt: string; checkInHotelTime: string; nonRefundable: boolean; freeUntil: Moment | null; steps: { from: Moment | null; text: string }[]; summary: string; ifCancelledNow: { chargePaise: number; refundPaise: number }; canCancelOnline: boolean };
+export type BookingDetail = {
+  booking: OrderItem & { confirmedAt: string | null };
+  terms: Terms;
+  order: { ref: string; status: OrderStatus; totalPaise: number; gstPaise: number; createdAt: string; confirmedAt: string | null };
+  payments: { txnId: string; status: string; amountPaise: number; mode: string | null; at: string }[];
+  refunds: { status: string; amountPaise: number; reason: string; at: string }[];
+  documents: OrderDocument[];
+};
+
+export const myHotelBookings = () => hotelsApi<{ data: BookingRow[] }>("/bookings/hotels", undefined, { headers: headers(), cache: "no-store" });
+export const hotelBooking = (ref: string, key?: string | null) => hotelsApi<BookingDetail>(withKey(`/bookings/hotels/${encodeURIComponent(ref)}`, key), undefined, { headers: headers(), cache: "no-store" });
+export const STATUS_TEXT: Record<string, string> = { CONFIRMED: "Confirmed", HELD: "Waiting for payment", EXPIRED: "Not paid in time", FAILED: "Not completed", CANCELLING: "Cancelling", CANCELLED: "Cancelled", COMPLETED: "Stayed", NO_SHOW: "No-show", HOTEL_FAILED: "Hotel couldn't honour" };
