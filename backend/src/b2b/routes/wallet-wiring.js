@@ -5,12 +5,20 @@
  * - a PayU top-up is paid (on time or late) → the wallet is credited once;
  * - every minute: wallets missing for active clients are opened (clients activated before Stage 11) and wallet ops left
  *   half-way (process stopped) are finished; holds past their time expire; holds stuck half-way are finished;
+ *   approved bank transfers whose credit was cut short are credited;
  * - the hourly check: live balances match the journal.
  */
 import { systemScope } from '../core/db/tenant-plugin.js';
 import { EVENTS as ORG_EVENTS, OrganizationRecord } from '../modules/organizations/index.js';
 import { EVENTS as PAYMENT_EVENTS } from '../modules/payments/index.js';
-import { AccountRecord, createHolds, createLedger, createLiveWallets, liveInvariants } from '../modules/wallet/index.js';
+import {
+  AccountRecord,
+  createHolds,
+  createLedger,
+  createLiveWallets,
+  createManualTopUps,
+  liveInvariants,
+} from '../modules/wallet/index.js';
 
 const SCOPE = systemScope('wallet: open client wallets', { routine: true });
 export const WALLET_OPS_EVERY_MS = 60_000;
@@ -35,6 +43,7 @@ export function walletParts(clock) {
   const deps = { clock, ledger: createLedger({ clock }) };
   const wallets = createLiveWallets(deps);
   const holds = createHolds(deps);
+  const manualTopUps = createManualTopUps({ ...deps, wallets });
   return {
     wallets,
     holds,
@@ -65,6 +74,7 @@ export function walletParts(clock) {
         ...(await wallets.reconcileOps()),
         ...(await holds.sweep()),
         ...(await holds.reconcile()),
+        ...(await manualTopUps.creditDue()),
       }),
     },
   };

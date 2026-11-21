@@ -35,6 +35,28 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     orgTypes: ['PLATFORM'],
     sensitive: true,
   },
+  topUpCheck: {
+    code: 'wallet.topup.check',
+    description: "MusafirBaba admin: check a client's bank-transfer top-up against the bank statement (a second person approves)",
+    orgTypes: ['PLATFORM'],
+  },
+  topUpApprove: {
+    code: 'wallet.topup.approve',
+    description: "MusafirBaba admin: approve a bank-transfer top-up checked by someone else (credits the client's wallet)",
+    orgTypes: ['PLATFORM'],
+    sensitive: true,
+  },
+  creditPropose: {
+    code: 'wallet.credit.propose',
+    description: "MusafirBaba admin: propose a client's credit limit and due days (a second person approves)",
+    orgTypes: ['PLATFORM'],
+  },
+  creditApprove: {
+    code: 'wallet.credit.approve',
+    description: "MusafirBaba admin: approve another person's credit limit for a client",
+    orgTypes: ['PLATFORM'],
+    sensitive: true,
+  },
   walletRead: {
     code: 'wallet.account.read',
     description: "See the company's wallet: balance, money held for checkouts, credit, top-ups",

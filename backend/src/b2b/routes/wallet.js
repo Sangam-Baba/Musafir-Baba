@@ -4,7 +4,10 @@
  *   GET  /wallet             (`wallet.account.read`)  balance, held, credit limit, available, credit used
  *   GET  /wallet/top-ups     (`wallet.account.read`)  the latest PayU top-ups and their status
  *   POST /wallet/top-ups     (`wallet.account.topup`) {amountPaise} + Idempotency-Key → the PayU form to post
- * Switched off until the owner turns it on (`B2B_WALLET_ENABLED=true`) → 503 WALLET_NOT_ENABLED.
+ *   GET  /wallet/manual-top-ups (`wallet.account.read`) the company's bank-transfer top-ups + where to send money
+ *   POST /wallet/manual-top-ups (`wallet.account.topup`) {amountPaise, method, utr, paidOn, note} — finance checks it
+ * Switched off until the owner turns it on (`B2B_WALLET_ENABLED=true`) → 503 WALLET_NOT_ENABLED. Where clients send bank
+ * transfers: `B2B_TOPUP_BANK_DETAILS` (MusafirBaba's account, plain text).
  */
 import express from 'express';
 import { z } from 'zod';
@@ -16,7 +19,15 @@ import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import { UserRecord } from '../modules/identity/index.js';
 import { IntentRecord } from '../modules/payments/index.js';
-import { createLiveWallets, PERMISSIONS as WAL } from '../modules/wallet/index.js';
+import {
+  createLiveWallets,
+  createManualTopUps,
+  MANUAL_TOPUP_MAX_PAISE,
+  MANUAL_TOPUP_MIN_PAISE,
+  PERMISSIONS as WAL,
+  TRANSFER_METHODS,
+} from '../modules/wallet/index.js';
+import { walletAdminRoutes } from './wallet-admin.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 
 const KEY = /^[A-Za-z0-9_-]{16,64}$/;
@@ -43,7 +54,8 @@ const topUpDto = (i) => ({
 
 /**
  * @param {{ wallets: ReturnType<typeof import('../modules/wallet/index.js').createLiveWallets>,
- *   payments: ReturnType<typeof import('../modules/payments/index.js').createPayments>, publicUrl: string,
+ *   payments: ReturnType<typeof import('../modules/payments/index.js').createPayments>, publicUrl: string, bankDetails: string | null,
+ *   manualTopUps: ReturnType<typeof createManualTopUps>,
  *   clock: import('../core/clock.js').Clock }} deps
  */
 export function walletRoutes(deps) {
@@ -99,7 +111,38 @@ export function walletRoutes(deps) {
       })().catch(next);
     },
   );
+  manualRoutes(router, deps);
   return router;
+}
+
+/** @param {import('express').Router} router @param {Parameters<typeof walletRoutes>[0]} deps */
+function manualRoutes(router, deps) {
+  router.get('/wallet/manual-top-ups', requirePermission(WAL.walletRead), (_req, res, next) => {
+    const { orgId } = member(res);
+    deps.manualTopUps.list({ clientOrgId: orgId }).then((data) => noStore(res).json({ data, bankDetails: deps.bankDetails }), next);
+  });
+  router.post(
+    '/wallet/manual-top-ups',
+    requirePermission(WAL.walletTopUp),
+    validate({
+      body: z.strictObject({
+        amountPaise: z.number().int().min(MANUAL_TOPUP_MIN_PAISE).max(MANUAL_TOPUP_MAX_PAISE),
+        method: z.enum(TRANSFER_METHODS),
+        utr: z
+          .string()
+          .trim()
+          .regex(/^[A-Za-z0-9]{6,30}$/),
+        paidOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        note: z.string().trim().max(500).nullish(),
+      }),
+    }),
+    (_req, res, next) => {
+      const { orgId, userId } = member(res);
+      deps.manualTopUps
+        .submit({ ...res.locals.input.body, clientOrgId: orgId, by: `user:${userId}` })
+        .then((t) => noStore(res).status(201).json(t), next);
+    },
+  );
 }
 
 /**
@@ -113,10 +156,15 @@ export function stage11Routes(env, clock, logger) {
   if (env.B2B_WALLET_ENABLED !== 'true')
     router.use('/wallet', (_req, _res, next) => next(new ServiceUnavailableError('WALLET_NOT_ENABLED')));
   const { deps, payments } = paymentsFromEnv(env, clock, logger);
+  const wallets = createLiveWallets({ clock, ledger: deps.ledger });
+  const manualTopUps = createManualTopUps({ clock, ledger: deps.ledger, wallets });
+  router.use(walletAdminRoutes({ manualTopUps }));
   router.use(
     walletRoutes({
-      wallets: createLiveWallets({ clock, ledger: deps.ledger }),
+      wallets,
       payments,
+      manualTopUps,
+      bankDetails: env.B2B_TOPUP_BANK_DETAILS || null,
       clock,
       publicUrl: (env.B2B_PUBLIC_URL || 'https://musafirbaba.com').replace(/\/$/, ''),
     }),

@@ -33,7 +33,7 @@
 | 09 | After booking & hotel operations | A | AWAITING_SIGN_OFF | 13 / 13 | 0 | 100 % | 2026-11-21 | — | [stage-09](stages/stage-09.md) |
 | — | **Pilot 1 — hotels + website** (2–3 weeks) | A | NOT_STARTED | — | — | — | — | — | Stage 09 §10 checklist |
 | 10 | B2B client onboarding & KYC | B | AWAITING_SIGN_OFF | 8 / 8 | 0 | 100 % | 2026-11-19 | — | [stage-10](stages/stage-10.md) |
-| 11 | Client wallet & credit | B | IN_PROGRESS | 5 / 11 | 0 | 45 % | 2026-11-21 | — | [stage-11](stages/stage-11.md) |
+| 11 | Client wallet & credit | B | IN_PROGRESS | 6 / 11 | 0 | 55 % | 2026-11-21 | — | [stage-11](stages/stage-11.md) |
 | 12 | B2B dashboard: search, booking & bookings | B | AWAITING_SIGN_OFF | 11 / 11 | 0 | 100 % | 2026-11-19 | — | [stage-12](stages/stage-12.md) |
 | 13 | Subscriptions & usage billing | B | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | — | **Pilot 2 — B2B clients** (2–3 weeks) | B | NOT_STARTED | — | — | — | — | — | Stage 12 §10 checklist |
@@ -41,7 +41,7 @@
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 166 of 172 tasks done (97 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 167 of 172 tasks done (97 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

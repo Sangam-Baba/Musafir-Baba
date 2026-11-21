@@ -19,3 +19,5 @@ export { availableOf, creditUsedOf, canTake, LIVE_OP_TYPES } from './domain/live
 export { createLiveWallets, liveInvariants, walletDto, walletOf, finishOp, OP_STUCK_MS } from './live.service.js';
 export { HOLDS_COLLECTION, HOLD_STATUSES, WalletHoldRecord } from './models/hold.model.js';
 export { createHolds, holdDto } from './holds.service.js';
+export { MANUAL_TOPUPS_COLLECTION, MANUAL_TOPUP_STATUSES, TRANSFER_METHODS, ManualTopUpRecord } from './models/manual-topup.model.js';
+export { createManualTopUps, manualTopUpDto, MANUAL_TOPUP_MIN_PAISE, MANUAL_TOPUP_MAX_PAISE } from './manual-topups.service.js';
