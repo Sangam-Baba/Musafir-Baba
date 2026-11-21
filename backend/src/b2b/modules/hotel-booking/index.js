@@ -26,4 +26,12 @@ export {
   cancellationCharge,
   splitCharge,
 } from './domain/cancellation-charge.js';
-export { createCustomerBookings, termsOf, bookingByRef, BUFFER_HOURS } from './cancellation.service.js';
+export {
+  createCustomerBookings,
+  termsOf,
+  bookingByRef,
+  signQuote,
+  readQuote,
+  BUFFER_HOURS,
+  QUOTE_MINUTES,
+} from './cancellation.service.js';

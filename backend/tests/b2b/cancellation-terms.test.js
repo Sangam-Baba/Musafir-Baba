@@ -2,7 +2,15 @@
 /** Cancellation terms (S09-T03/T04 domain) and the customer's bookings (S09-T03): charge table, deadlines ± 1 s in Indian time, split; list and detail for the buyer only. */
 import { describe, expect, it } from 'vitest';
 
-import { cancellationCharge, checkInAt, deadlines, nightAmounts, splitCharge } from '../../src/b2b/modules/hotel-booking/index.js';
+import {
+  BookingRecord,
+  cancellationCharge,
+  checkInAt,
+  deadlines,
+  nightAmounts,
+  readQuote,
+  splitCharge,
+} from '../../src/b2b/modules/hotel-booking/index.js';
 import { useOrderEngine } from './helpers/order-engine.js';
 
 const E = useOrderEngine();
@@ -92,5 +100,47 @@ describe("the customer's bookings", () => {
     expect(JSON.stringify(d.body)).not.toMatch(/orderId|hotelOrgId|netPaise|marginPaise/);
     expect((await app.srv.get(`/api/v1/bookings/hotels/${ref}`, { 'x-guest-session': 'someone-else-session-0000009' })).status).toBe(404);
     expect((await app.srv.get(`/api/v1/bookings/hotels/${ref}?key=${order.linkKey}`)).status).toBe(200);
+  });
+});
+
+describe('the quote', () => {
+  it('signed by the server, 5 minutes, this booking only, refused if edited or the booking changed; online cancel closes on the check-in day', async () => {
+    const { order } = await bookedOrder();
+    const e = await engine();
+    const form = await e.orderPay.start(ctx(), await stored(order.ref), { returnUrl: 'https://x' });
+    payuSays.set(form.txnId, { status: 'SUCCESS', amountPaise: order.totalPaise });
+    await e.payments.handleCallback(signed(form));
+    await e.deliver(form.txnId);
+    const o = await stored(order.ref);
+    const ref = o.items[0].bookingRef;
+    const me = { 'x-guest-session': 'guest-session-0000000000001' };
+    const q = await app.srv.post(`/api/v1/bookings/hotels/${ref}/cancellation-quote`, {}, me);
+    expect(q.body).toMatchObject({
+      chargePaise: 0,
+      refundPaise: order.totalPaise,
+      quoteToken: expect.any(String),
+      paidPaise: order.totalPaise,
+    });
+    expect(
+      (await app.srv.post(`/api/v1/bookings/hotels/${ref}/cancellation-quote`, {}, { 'x-guest-session': 'someone-else-session-0000009' }))
+        .status,
+    ).toBe(404);
+    const S2 = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 't' };
+    const b = /** @type {any} */ (await BookingRecord.findOne({ ref }).setOptions(S2).lean());
+    const secret = ['b2b', 'inventory', 'test', 'secret', 'long-enough-1'].join('-');
+    const now = () => new Date(E.nowMs);
+    expect(readQuote(q.body.quoteToken, b, { now: now(), secret })).toEqual({ chargePaise: 0, refundPaise: order.totalPaise });
+    const [body, mac] = q.body.quoteToken.split('.');
+    const edited = Buffer.from(
+      JSON.stringify({ ...JSON.parse(Buffer.from(body, 'base64url').toString()), chargePaise: 0, refundPaise: order.totalPaise + 1 }),
+    ).toString('base64url');
+    expect(() => readQuote(`${edited}.${mac}`, b, { now: now(), secret })).toThrow(/QUOTE_INVALID/);
+    expect(() => readQuote(q.body.quoteToken, { ...b, _id: '64b0000000000000000000aa' }, { now: now(), secret })).toThrow(/QUOTE_INVALID/);
+    expect(() => readQuote(q.body.quoteToken, b, { now: new Date(E.nowMs + 5 * 60_000 + 1), secret })).toThrow(/QUOTE_EXPIRED/);
+    expect(() => readQuote(q.body.quoteToken, { ...b, statusChangedAt: new Date(E.nowMs + 1) }, { now: now(), secret })).toThrow(
+      /BOOKING_CHANGED/,
+    );
+    E.nowMs = Date.parse(`${b.stay.checkIn}T00:30:00+05:30`); // the check-in day in hotel time
+    expect((await app.srv.post(`/api/v1/bookings/hotels/${ref}/cancellation-quote`, {}, me)).body.code).toBe('CANCEL_ONLINE_CLOSED');
   });
 });

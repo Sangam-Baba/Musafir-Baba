@@ -5,6 +5,7 @@
  *   GET /bookings/hotels        the signed-in customer's bookings (existing website login), or this browser's (guest id)
  *   GET /bookings/hotels/:ref   one booking (MBH-…): the buyer only — signed-in customer, same guest id, or the order
  *                               link key (`?key=`); others 404. Terms with deadlines, payments, refunds, documents.
+ *   POST /bookings/hotels/:ref/cancellation-quote   the buyer: charge and refund now, signed, valid 5 minutes
  * Public routes (guests have no login); every read is checked against the order's buyer.
  */
 import express from 'express';
@@ -43,6 +44,25 @@ const listRow = (r) => ({
 });
 
 /**
+ * The booking and its order, if the caller is the buyer (signed-in customer, same guest id, or the order link key) —
+ * otherwise 404, so a booking's existence isn't revealed.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {Parameters<typeof customerBookingRoutes>[0]} deps
+ */
+async function ownBooking(req, res, deps) {
+  const { actor } = contextOf(res);
+  const d = await deps.bookings.detail(res.locals.input.params.ref);
+  const order = await deps.orders.read(d.orderRef, {
+    customerId: actor.type === 'customer' ? actor.customerId : null,
+    guestKey: req.get('x-guest-session') ?? null,
+    accessKey: res.locals.input.query.key ?? null,
+    linkSecret: deps.linkSecret,
+  });
+  return { d, order };
+}
+
+/**
  * @param {{
  *   summaries: ReturnType<typeof import('../modules/reporting/index.js').createBookingSummaries>,
  *   bookings: ReturnType<typeof import('../modules/hotel-booking/index.js').createCustomerBookings>,
@@ -68,14 +88,7 @@ export function customerBookingRoutes(deps) {
   });
   router.get('/bookings/hotels/:ref', publicRoute(), validate({ params: Ref, query: KeyQuery }), (req, res, next) => {
     (async () => {
-      const { actor } = contextOf(res);
-      const d = await deps.bookings.detail(res.locals.input.params.ref);
-      const order = await deps.orders.read(d.orderRef, {
-        customerId: actor.type === 'customer' ? actor.customerId : null,
-        guestKey: req.get('x-guest-session') ?? null,
-        accessKey: res.locals.input.query.key ?? null,
-        linkSecret: deps.linkSecret,
-      }); // not the buyer → 404 (the booking's existence isn't revealed)
+      const { d, order } = await ownBooking(req, res, deps);
       const money = await deps.money(String(order._id));
       noStore(res).json({
         booking: d.booking,
@@ -93,5 +106,16 @@ export function customerBookingRoutes(deps) {
       });
     })().catch(next);
   });
+  router.post(
+    '/bookings/hotels/:ref/cancellation-quote',
+    publicRoute(),
+    validate({ params: Ref, query: KeyQuery, body: z.strictObject({}) }),
+    (req, res, next) => {
+      (async () => {
+        await ownBooking(req, res, deps);
+        noStore(res).json(await deps.bookings.quote(res.locals.input.params.ref, deps.linkSecret));
+      })().catch(next);
+    },
+  );
   return router;
 }
