@@ -7,6 +7,16 @@
 import { definePermissions } from '../../core/permissions.js';
 
 export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePermissions('Orders', {
+  orderCreate: {
+    code: 'orders.order.create',
+    description: 'Book hotels for the company and pay (wallet, credit or PayU)',
+    orgTypes: ['CLIENT'],
+  },
+  orderRead: {
+    code: 'orders.order.read',
+    description: "See the company's orders and their documents",
+    orgTypes: ['CLIENT'],
+  },
   adminRead: {
     code: 'orders.admin.read',
     description: 'MusafirBaba admin: find orders and see their full timeline',

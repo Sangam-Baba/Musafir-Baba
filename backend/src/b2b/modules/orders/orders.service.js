@@ -32,12 +32,13 @@ const DUPLICATE_KEY = 11000;
  *   logger: import('../../core/logger.js').Logger,
  *   handlers: ReturnType<typeof import('./registry.js').createItemHandlers>,
  *   modes: ReturnType<typeof import('./registry.js').createPaymentModes>,
- *   limits?: Partial<typeof ORDER_LIMITS>,
+ *   limits?: Partial<Record<keyof typeof ORDER_LIMITS, number>>,
  * }} OrdersDeps
  * @typedef {{ clientOrgId: string | null, customerId: string | null, guestKey: string | null }} Buyer
  * @typedef {{ channel: 'WEBSITE' | 'B2B_PORTAL' | 'B2B_API' | 'ADMIN', buyer: Buyer, createdBy: string,
  *   idempotency: { scope: string, key: string }, ip: string | null, paymentMode: 'GATEWAY' | 'WALLET' | 'CREDIT',
- *   contact: { name: string, email: string, phone: string }, confirmDuplicate?: boolean,
+ *   contact: { name: string, email: string, phone: string }, confirmDuplicate?: boolean, limits?: Partial<Record<keyof typeof ORDER_LIMITS, number>>,
+ *   branchId?: string | null, customerReference?: string | null,
  *   item: { type: 'HOTEL', input: { caller: unknown, priceToken: string, rooms: { leadGuest: string, guests?: string[] }[], specialRequests?: string | null } } }} CreateInput
  * @typedef {{ customerId?: string | null, guestKey?: string | null, accessKey?: string | null, linkSecret?: string, clientOrgId?: string | null, staff?: boolean }} Viewer
  */
@@ -98,6 +99,8 @@ async function insertHolding(deps, input, priced) {
       channel: input.channel,
       ...input.buyer,
       createdBy: input.createdBy,
+      branchId: input.branchId ?? null,
+      customerReference: input.customerReference?.trim() || null,
       idempotency: input.idempotency,
       tokenHash: priced.tokenHash,
       ip: input.ip,
@@ -125,7 +128,7 @@ const OPEN = ['HOLDING', 'AWAITING_PAYMENT', 'PAYMENT_PENDING', 'CONFIRMING'];
 /**
  * At most N open orders at once per buyer and per IP (hold exhaustion — plan §8).
  * @param {CreateInput} input
- * @param {typeof ORDER_LIMITS} limits
+ * @param {Record<keyof typeof ORDER_LIMITS, number>} limits
  */
 async function checkOpenOrders(input, limits) {
   const mine = await OrderRecord.countDocuments({ ...buyerFilter(input.buyer), status: { $in: OPEN } }).setOptions(ORDERS);
@@ -164,7 +167,7 @@ async function create(deps, ctx, input) {
   const again = await findOrder(byKey);
   if (again) return again;
   deps.modes.get(input.paymentMode); // refuse a payment mode this engine doesn't have yet, before taking rooms
-  const limits = { ...ORDER_LIMITS, ...deps.limits };
+  const limits = { ...ORDER_LIMITS, ...deps.limits, ...input.limits }; // B2B clients: their own (larger) limits
   await checkOpenOrders(input, limits);
   const handler = deps.handlers.get(input.item.type);
   const priced = await handler.price(ctx, input.item.input);
@@ -295,6 +298,7 @@ export async function orderView(deps, o, audience) {
     totalPaise: o.totalPaise,
     gstPaise: o.gstPaise,
     paymentMode: o.paymentMode,
+    customerReference: o.customerReference ?? null,
     holdExpiresAt: o.holdExpiresAt ?? null,
     holdExtended: Boolean(o.holdExtended),
     payment: { txnId: o.payment?.txnId ?? null, windowEndsAt: o.payment?.windowEndsAt ?? null, verified: Boolean(o.payment?.verified) },

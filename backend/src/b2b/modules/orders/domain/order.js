@@ -65,6 +65,17 @@ export const ORDER_LIMITS = Object.freeze({
   alertPerIpPerHour: 10,
 });
 
+/**
+ * B2B clients (plan Stage 12 §3.13; owner defaults): up to 20 orders waiting at once per company (an office shares one
+ * IP, so the IP limit matches), the same largest online order; bigger ones are booked offline by MusafirBaba.
+ */
+export const CLIENT_ORDER_LIMITS = Object.freeze({
+  openPerBuyer: 20,
+  openPerIp: 20,
+  maxOrderPaise: 50_000_000,
+  alertPerIpPerHour: 60,
+});
+
 /** @param {OrderStatus} from @param {OrderStatus} to */
 export function assertOrderTransition(from, to) {
   if (!ORDER_TRANSITIONS[from]?.includes(to)) throw new DomainError('ORDER_STATUS', { from, to });

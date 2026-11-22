@@ -35,6 +35,8 @@ const schema = new b2bMongoose.Schema(
     guestKey: { type: String, default: null }, // fingerprint of the guest's browser session
     hotelOrgIds: { type: [String], default: [] },
     createdBy: { type: String, required: true }, // customer:<id> | guest | user:<id> | staff:<id>
+    branchId: { type: String, default: null }, // Stage 12B: the client branch it was booked for
+    customerReference: { type: String, default: null, maxlength: 60 }, // Stage 12B: the client's own reference
     idempotency: { type: { scope: String, key: String }, required: true, _id: false },
     tokenHash: { type: String, required: true }, // the price token(s) it was made from (duplicate guard)
     ip: { type: String, default: null },

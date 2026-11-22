@@ -40,6 +40,7 @@ import { amendmentAdminRoutes } from './amendments-admin.js';
 import { orderAdminRoutes } from './orders-admin.js';
 import { summariesFor } from './reporting-wiring.js';
 import { orderRoutes } from './orders.js';
+import { clientOrderRoutes } from './client-orders.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
 
@@ -151,7 +152,7 @@ export function stage08Routes(env, clock, logger, identity) {
   // Online booking stays switched off on a server until the owner turns it on (`B2B_ORDERS_ENABLED=true`):
   // the rest of the system can go live first, and nobody can hold rooms before checkout and limits are ready.
   if (env.B2B_ORDERS_ENABLED !== 'true')
-    router.use(['/orders', '/bookings'], (_req, _res, next) => next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')));
+    router.use(['/orders', '/bookings', '/client/orders'], (_req, _res, next) => next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')));
   const engine = bookingEngine(env, clock, logger, identity);
   router.use(
     orderRoutes({
@@ -165,6 +166,7 @@ export function stage08Routes(env, clock, logger, identity) {
       clock,
     }),
   );
+  router.use(clientOrdersFor(env, clock, engine));
   const noShows = createNoShows({ clock });
   const failures = createHotelFailures({ clock });
   router.use(hotelBookingRoutes({ bookings: createHotelBookingsService({ clock }), noShows, failures }));
@@ -198,5 +200,27 @@ export function stage08Routes(env, clock, logger, identity) {
   );
   const admin = createOrderAdmin(engine.ordersDeps);
   router.use(orderAdminRoutes({ admin, detail: (o) => adminDetail(engine, admin, o), overdue: () => overdueAcknowledgements({ clock }) }));
+  return router;
+}
+
+/**
+ * Stage 12B: B2B clients' own orders (same engine, wallet / credit / PayU).
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {ReturnType<typeof bookingEngine>} engine
+ */
+function clientOrdersFor(env, clock, engine) {
+  const router = express.Router();
+  router.use(
+    clientOrderRoutes({
+      gate: engine.parts.gate,
+      orders: engine.orders,
+      payments: createOrderPayments(engine.ordersDeps),
+      documents: documentsFor(engine.ordersDeps),
+      view: (o) => orderView(engine.ordersDeps, o, 'BUYER'),
+      publicUrl: (env.B2B_PUBLIC_URL || 'https://musafirbaba.com').replace(/\/$/, ''),
+      clock,
+    }),
+  );
   return router;
 }
