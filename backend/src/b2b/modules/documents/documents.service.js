@@ -15,7 +15,7 @@ import { systemScope } from '../../core/db/tenant-plugin.js';
 import { NotFoundError } from '../../core/errors.js';
 import { EVENTS } from './events.js';
 import { creditNoteNumber, creditSeriesKey, financialYear, invoiceNumber, seriesKey } from './domain/numbering.js';
-import { creditNoteHtml, receiptHtml, taxInvoiceHtml, voucherHtml } from './domain/templates.js';
+import { clientVoucherHtml, creditNoteHtml, receiptHtml, taxInvoiceHtml, voucherHtml } from './domain/templates.js';
 import { DocumentRecord } from './models/document.model.js';
 import { KEEP_RESERVATIONS, NumberSeriesRecord } from './models/number-series.model.js';
 
@@ -25,7 +25,8 @@ const DUPLICATE_KEY = 11000;
 /**
  * @typedef {import('./domain/templates.js').OrderFacts} OrderFacts
  * @typedef {{ customerId: string | null, guestKey: string | null, clientOrgId: string | null, hotelOrgId: string | null }} Owners
- * @typedef {{ orderRef: string, confirmedAt: Date, owners: Owners, facts: OrderFacts, issuer: { stateCode: string, gstin: string | null } }} FactsFor
+ * @typedef {{ orderRef: string, confirmedAt: Date, owners: Owners, facts: OrderFacts, issuer: { stateCode: string, gstin: string | null },
+ *   brand?: { name: string } | null }} FactsFor   brand: a B2B client's order → its own voucher too
  * @typedef {{ orderRef: string, owners: Owners, issuer: { stateCode: string, gstin: string | null }, cancelledAt: Date,
  *   bookingRef: string, propertyName: string, contact: { name: string, email: string }, refundPaise: number,
  *   totals: { totalPaise: number, cgstPaise: number, sgstPaise: number, igstPaise: number }, sac: string, rateBps: number,
@@ -61,7 +62,7 @@ export async function reserveNumber(series, key, at) {
 /**
  * @param {DocumentsDeps} deps
  * @param {{ owners: Owners, orderRef: string }} f
- * @param {{ orderId: string, type: 'VOUCHER' | 'TAX_INVOICE' | 'RECEIPT' | 'CREDIT_NOTE', version: number, html: string, number?: string | null, series?: string | null, againstNumber?: string | null, subjectId?: string | null }} d
+ * @param {{ orderId: string, type: 'VOUCHER' | 'TAX_INVOICE' | 'RECEIPT' | 'CREDIT_NOTE' | 'VOUCHER_CLIENT', version: number, html: string, number?: string | null, series?: string | null, againstNumber?: string | null, subjectId?: string | null }} d
  */
 async function store(deps, f, d) {
   const sha256 = createHash('sha256').update(d.html).digest('hex');
@@ -118,6 +119,12 @@ async function ensureForOrder(deps, orderId) {
     created.push('VOUCHER');
   if (!have.has('RECEIPT') && (await store(deps, f, { orderId, type: 'RECEIPT', version: 1, html: receiptHtml(f.facts) })))
     created.push('RECEIPT');
+  if (
+    f.brand &&
+    !have.has('VOUCHER_CLIENT') &&
+    (await store(deps, f, { orderId, type: 'VOUCHER_CLIENT', version: 1, html: clientVoucherHtml(f.facts, f.brand) }))
+  )
+    created.push('VOUCHER_CLIENT');
   if (!have.has('TAX_INVOICE')) {
     const r = await issueInvoice(deps, orderId, f, 1);
     if ('skipped' in r && r.skipped) skipped.push({ type: 'TAX_INVOICE', reason: r.skipped });

@@ -53,6 +53,18 @@ ${it.specialRequests ? `<h2>Special requests</h2><p>${esc(it.specialRequests)} <
 <h2>Cancellation</h2><p>${esc(it.cancellation)}</p><p class="muted">Booking reference ${esc(it.bookingRef)}</p>`;
 }
 
+/**
+ * The B2B client's own voucher for its guest (plan Stage 12 §3.6): the client's name instead of MusafirBaba's, the stay
+ * and guests only — never a price, the hotel rate or MusafirBaba's margin.
+ * @param {OrderFacts} f
+ * @param {{ name: string }} brand
+ */
+export function clientVoucherHtml(f, brand) {
+  const body = `<header><div><div class="brand">${esc(brand.name)}</div></div><div style="text-align:right"><h1>Hotel voucher</h1><div class="muted">Booking ${esc(f.order.ref)}</div></div></header><p>Lead guest: <strong>${esc(f.items[0]?.rooms[0]?.leadGuest ?? f.order.contact.name)}</strong> · <strong>Confirmed</strong></p>
+${f.items.map(voucherItem).join('<hr>')}<p>Please carry a government photo ID for every guest. Show this voucher at check-in.</p><footer>Booked through ${esc(brand.name)} — contact them for any help with this booking.</footer>`;
+  return page(`Voucher ${f.order.ref}`, body);
+}
+
 /** @param {OrderFacts} f */
 export function voucherHtml(f) {
   const body = `${head('Hotel voucher', `Booking ${esc(f.order.ref)}`)}<p>Lead guest: <strong>${esc(f.order.contact.name)}</strong> · Booked ${esc(moment(f.order.confirmedAt))} · <strong>Confirmed and paid</strong></p>

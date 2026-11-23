@@ -4,6 +4,7 @@
  * item handler's admin view, the verified PayU payment, MusafirBaba's current GSTIN for the registration), the event
  * consumer that issues them when an order is confirmed, and the retry job (alerts after 5 minutes).
  */
+import { OrganizationRecord } from '../modules/organizations/index.js';
 import { createDocuments } from '../modules/documents/index.js';
 import { ORDERS, OrderRecord } from '../modules/orders/index.js';
 import { IntentRecord } from '../modules/payments/index.js';
@@ -73,7 +74,18 @@ async function factsFor(ordersDeps, orderId) {
     owners: { customerId: o.customerId, guestKey: o.guestKey, clientOrgId: o.clientOrgId, hotelOrgId: o.hotelOrgIds?.[0] ?? null },
     issuer: await issuerOf(views),
     facts: { order: orderPart(o, await verifiedIntent(o)), items: views.map(itemPart) },
+    brand: o.clientOrgId ? await clientBrand(o.clientOrgId) : null,
   };
+}
+
+/** A B2B client's name for its own voucher (Stage 12B). @param {string} orgId */
+async function clientBrand(orgId) {
+  const org = /** @type {any} */ (
+    await OrganizationRecord.findOne({ _id: orgId }, { displayName: 1 })
+      .setOptions({ tenantScope: 'SYSTEM', tenantReason: 'documents: client voucher' })
+      .lean()
+  );
+  return org ? { name: String(org.displayName) } : null;
 }
 
 /**

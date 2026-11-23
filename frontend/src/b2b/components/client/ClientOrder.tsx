@@ -16,7 +16,7 @@ import type { Order, OrderDocument } from "../../website/checkout";
 import { inr } from "../../website/hotels";
 
 type ClientOrderView = Order & { paymentMode: string; customerReference: string | null };
-const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER: "Voucher", TAX_INVOICE: "Tax invoice", RECEIPT: "Receipt", CREDIT_NOTE: "Credit note" };
+const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER_CLIENT: "Voucher for your guest (your name)", VOUCHER: "MusafirBaba voucher", TAX_INVOICE: "Tax invoice", RECEIPT: "Receipt", CREDIT_NOTE: "Credit note" };
 const FAILED_TEXT: Record<string, string> = {
   INSUFFICIENT_WALLET_BALANCE: "There wasn't enough in your wallet, so the rooms were let go. Add money and book again.",
   CREDIT_OVERDUE: "Your credit payment is overdue, so the rooms were let go. Add money and book again.",

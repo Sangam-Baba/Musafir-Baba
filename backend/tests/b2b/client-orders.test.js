@@ -62,6 +62,8 @@ describe('client orders', () => {
     expect(created.status).toBe(201);
     expect(created.body).toMatchObject({ status: 'AWAITING_PAYMENT', channel: 'B2B_PORTAL', customerReference: 'TRIP-2026-114' });
     expect(created.body.totalPaise).toBe(b2bTotal); // the client's B2B price, never the website price
+    const { orderEmailTo } = await import('../../src/b2b/routes/customer-emails.js');
+    expect(await orderEmailTo(await E.stored(created.body.ref))).toMatch(/^owner\d+@trips\.in$/); // the booker, never the guest
     const again = await app.srv.post('/api/v1/client/orders', body(priceToken), { ...auth(c.token), 'idempotency-key': k });
     expect(again.body.ref).toBe(created.body.ref);
     const paid = await app.srv.post(

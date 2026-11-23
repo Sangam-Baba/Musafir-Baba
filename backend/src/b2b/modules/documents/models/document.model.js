@@ -9,7 +9,7 @@ import { eventFields } from '../../../core/db/events.js';
 import { defineTenantModel } from '../../../core/db/model.js';
 
 export const DOCUMENTS_COLLECTION = 'doc_documents';
-export const DOCUMENT_TYPES = /** @type {const} */ (['VOUCHER', 'TAX_INVOICE', 'RECEIPT', 'CREDIT_NOTE']);
+export const DOCUMENT_TYPES = /** @type {const} */ (['VOUCHER', 'TAX_INVOICE', 'RECEIPT', 'CREDIT_NOTE', 'VOUCHER_CLIENT']); // VOUCHER_CLIENT: Stage 12B, the B2B client's own
 
 const schema = new b2bMongoose.Schema(
   {

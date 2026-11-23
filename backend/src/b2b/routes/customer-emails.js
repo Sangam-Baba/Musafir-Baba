@@ -4,9 +4,24 @@
  * invoice and receipt) and "rooms sold out — your payment is being refunded". Sent once per event (the consumer inbox)
  * to the email given at checkout, from the notification templates (values cleaned there). Without the email settings
  * nothing is sent (logged only).
+ * Stage 12B: a B2B client's order → the person who booked it (their business email; the link opens the order in the
+ * business area) — never the guest the agent typed in (the company tells its guest; owner default).
  */
 import { renderTemplate } from '../modules/notifications/index.js';
+import { UserRecord } from '../modules/identity/index.js';
 import { linkKey, ORDERS, OrderRecord } from '../modules/orders/index.js';
+
+/**
+ * Who gets an order's emails: the website buyer (the checkout email), or for a B2B order the person who booked it.
+ * @param {any} o
+ * @returns {Promise<string | null>}
+ */
+export async function orderEmailTo(o) {
+  if (!o.clientOrgId) return o.contact.email;
+  const id = /^user:([a-f0-9]{24})$/.exec(String(o.createdBy))?.[1];
+  const u = id ? /** @type {any} */ (await UserRecord.findById(id, { email: 1 }).lean()) : null;
+  return u?.email ?? null;
+}
 
 /** @param {number} paise */
 const rupees = (paise) => `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -26,12 +41,14 @@ export function customerEmailConsumers(deps) {
   const load = async (orderId) =>
     /^[a-f0-9]{24}$/.test(orderId) ? /** @type {any} */ (await OrderRecord.findOne({ _id: orderId }).setOptions(ORDERS).lean()) : null;
   /** @param {any} o */
-  const link = (o) => `${base}/hotels/booking/${o.ref}?key=${linkKey(deps.linkSecret, o.ref)}`;
+  const link = (o) =>
+    o.clientOrgId ? `${base}/business/orders/${o.ref}` : `${base}/hotels/booking/${o.ref}?key=${linkKey(deps.linkSecret, o.ref)}`;
   /** @param {any} o @param {string} key @param {Record<string, unknown>} vars */
   async function mail(o, key, vars) {
     const msg = renderTemplate(key, { name: o.contact.name, orderRef: o.ref, total: rupees(o.totalPaise), link: link(o), ...vars });
     if (!deps.send) return deps.ordersDeps.logger.info({ ref: o.ref, template: key }, 'customer email not sent (email settings missing)');
-    await deps.send({ to: o.contact.email, subject: msg.subject, text: msg.text });
+    const to = await orderEmailTo(o);
+    if (to) await deps.send({ to, subject: msg.subject, text: msg.text });
   }
   return [
     {
@@ -100,7 +117,8 @@ export function amendmentEmailConsumer(deps, staffReplied) {
         link,
       });
       if (!deps.send) return deps.ordersDeps.logger.info({ ref: o.ref }, 'customer email not sent (email settings missing)');
-      await deps.send({ to: o.contact.email, subject: msg.subject, text: msg.text });
+      const to = await orderEmailTo(o);
+      if (to) await deps.send({ to, subject: msg.subject, text: msg.text });
     },
   };
 }
@@ -123,7 +141,8 @@ export function hotelFailedEmailConsumer(deps, failed) {
       const link = `${base}/hotels/my-bookings/${e.payload.bookingRef}?key=${linkKey(deps.linkSecret, o.ref)}`;
       const msg = renderTemplate('hotel-failed-customer', { name: o.contact.name, orderRef: o.ref, link });
       if (!deps.send) return deps.ordersDeps.logger.info({ ref: o.ref }, 'customer email not sent (email settings missing)');
-      await deps.send({ to: o.contact.email, subject: msg.subject, text: msg.text });
+      const to = await orderEmailTo(o);
+      if (to) await deps.send({ to, subject: msg.subject, text: msg.text });
     },
   };
 }
@@ -146,7 +165,8 @@ export function noShowEmailConsumer(deps, marked) {
       const link = `${base}/hotels/my-bookings/${e.payload.bookingRef}?key=${linkKey(deps.linkSecret, o.ref)}`;
       const msg = renderTemplate('no-show.marked-customer', { name: o.contact.name, orderRef: o.ref, link });
       if (!deps.send) return deps.ordersDeps.logger.info({ ref: o.ref }, 'customer email not sent (email settings missing)');
-      await deps.send({ to: o.contact.email, subject: msg.subject, text: msg.text });
+      const to = await orderEmailTo(o);
+      if (to) await deps.send({ to, subject: msg.subject, text: msg.text });
     },
   };
 }

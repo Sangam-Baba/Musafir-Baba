@@ -38,7 +38,7 @@ export type Order = {
   linkKey?: string;
 };
 export type PayuForm = { txnId: string; action: string; fields: Record<string, string>; windowEndsAt: string };
-export type OrderDocument = { id: string; type: "VOUCHER" | "TAX_INVOICE" | "RECEIPT" | "CREDIT_NOTE"; version: number; number: string | null; issuedAt: string };
+export type OrderDocument = { id: string; type: "VOUCHER" | "TAX_INVOICE" | "RECEIPT" | "CREDIT_NOTE" | "VOUCHER_CLIENT"; version: number; number: string | null; issuedAt: string };
 
 /** What the hotel page hands to checkout (kept in this browser tab only). */
 export type CheckoutOffer = { hotelName: string; hotelSlug: string; checkIn: string; checkOut: string; rooms: RoomAsk[]; offer: Offer };
@@ -139,7 +139,7 @@ export function submitToPayu(form: PayuForm) {
 }
 
 export const NAME_RE = /^[\p{L}][\p{L} .'-]{0,59}$/u;
-export const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER: "Hotel voucher", TAX_INVOICE: "GST tax invoice", RECEIPT: "Payment receipt", CREDIT_NOTE: "GST credit note (refund)" };
+export const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER: "Hotel voucher", TAX_INVOICE: "GST tax invoice", RECEIPT: "Payment receipt", CREDIT_NOTE: "GST credit note (refund)", VOUCHER_CLIENT: "Voucher (your company)" };
 
 // Stage 09: the customer's hotel bookings (a new page — the existing website bookings page is not touched).
 export type BookingRow = { bookingRef: string; orderRef: string; propertyName: string | null; destination: string | null; leadGuest: string | null; checkIn: string | null; checkOut: string | null; bookingStatus: string; orderStatus: string; paymentState: "UNPAID" | "PAID" | "PARTLY_REFUNDED" | "REFUNDED"; totalPaise: number; refundedPaise: number; orderCreatedAt: string };
