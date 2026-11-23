@@ -17,6 +17,7 @@ import {
   groupLines,
   toCsv,
 } from '../../src/b2b/modules/reporting/index.js';
+import { OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
 import { PayableRecord } from '../../src/b2b/modules/wallet/index.js';
 import { adminReportsFor } from '../../src/b2b/routes/reports-wiring.js';
 import { startMongo } from './helpers/mongo.js';
@@ -268,6 +269,14 @@ describe('start-up wiring', () => {
       status: 'ELIGIBLE',
       eligibleAt: new Date('2026-11-09T00:00:00Z'),
     });
+    await OrganizationRecord.create({
+      _id: H1,
+      type: 'HOTEL',
+      reference: 'ORG-H1',
+      legalName: 'Ganga View Pvt Ltd',
+      displayName: 'Ganga View',
+      status: 'ACTIVE',
+    });
     const r = adminReportsFor({ clock });
     const f = { from: '2026-11-01', to: '2026-11-30' };
     for (const name of ADMIN_REPORTS) expect(Array.isArray((await r.run(name, f)).rows)).toBe(true);
@@ -276,6 +285,7 @@ describe('start-up wiring', () => {
       netPaise: 100_000,
       costPaise: 85_000,
       marginPaise: 15_000,
+      name: 'Ganga View',
     });
     expect((await r.run('payables-ageing', f)).rows[0]).toMatchObject({ key: H1, D8_15Paise: 85_000 });
   });

@@ -41,3 +41,4 @@ export { runDto, lineDto } from './payout-runs.service.js';
 export { createPayoutRuns } from './payout-runs-pay.service.js';
 export { STATEMENT_DISPUTES_COLLECTION, StatementDisputeRecord } from './models/statement-dispute.model.js';
 export { createStatementDisputes, disputeDto, openDisputes } from './disputes.service.js';
+export { journalExport } from './journal-export.service.js';

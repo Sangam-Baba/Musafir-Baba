@@ -6,10 +6,10 @@
  */
 import { systemScope } from '../core/db/tenant-plugin.js';
 import { InvoiceRecord } from '../modules/billing/index.js';
-import { UsageMonthlyRecord } from '../modules/metering/index.js';
+import { createUsageReports, UsageMonthlyRecord } from '../modules/metering/index.js';
 import { OrganizationRecord } from '../modules/organizations/index.js';
 import { IntentRecord } from '../modules/payments/index.js';
-import { createAdminReports } from '../modules/reporting/index.js';
+import { createAdminReports, createClientReports } from '../modules/reporting/index.js';
 import { AccountRecord, PayableRecord } from '../modules/wallet/index.js';
 
 const SCOPE = systemScope('reports: admin read', { routine: true });
@@ -35,11 +35,11 @@ async function costs(refs) {
 async function names(ids) {
   const unique = [...new Set(ids)].filter((id) => /^[a-f0-9]{24}$/.test(id));
   const docs = unique.length
-    ? await OrganizationRecord.find({ _id: { $in: unique } }, { name: 1 })
+    ? await OrganizationRecord.find({ _id: { $in: unique } }, { displayName: 1 })
         .setOptions(SCOPE)
         .lean()
     : [];
-  return new Map(docs.map((d) => [String(d._id), String(/** @type {any} */ (d).name ?? '')]));
+  return new Map(docs.map((d) => [String(d._id), String(/** @type {any} */ (d).displayName ?? '')]));
 }
 
 /** @param {{ clock: import('../core/clock.js').Clock }} deps */
@@ -99,4 +99,10 @@ export function adminReportsFor(deps) {
           .lean()
       ),
   });
+}
+
+/** A client's own reports: usage from the metering counters (the same numbers as the usage page). */
+export function clientReportsFor() {
+  const usage = createUsageReports();
+  return createClientReports({ usage: (orgId, month) => usage.clientMonth(orgId, month) });
 }
