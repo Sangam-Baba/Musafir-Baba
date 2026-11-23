@@ -199,6 +199,15 @@ export const TEMPLATES = Object.freeze({
     subject: 'MusafirBaba made a booking for {{orgName}}',
     text: 'Hello,\n\nMusafirBaba booked a stay for {{orgName}} as you asked, paid from your wallet.\n\nSee it here: {{link}}\n\nMusafirBaba Business',
   },
+  // Stage 13: plan limits
+  'subscription.quota': {
+    version: 1,
+    vars: ['orgName', 'link', 'percent'],
+    title: 'Monthly query limit: {{percent}} used',
+    body: "{{orgName}} has used {{percent}} of this month's queries. Upgrade your plan or ask us for a top-up to keep searching.",
+    subject: 'You have used {{percent}} of your monthly queries',
+    text: "Hello,\n\n{{orgName}} has used {{percent}} of this month's queries on MusafirBaba Business.\n\nSee your plan: {{link}}\n\nMusafirBaba Business",
+  },
   // Stage 11: client wallets
   'wallet.topup-credited': {
     version: 1,

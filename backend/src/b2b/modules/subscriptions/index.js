@@ -20,3 +20,5 @@ export { OVERRIDES_COLLECTION, OverrideRecord } from './models/override.model.js
 export { createPlans, planDto, publishedPlan, planVersion, queryWeights, seedPlans } from './plans.service.js';
 export { createSubscriptions, effectiveTerms, subscriptionOf, SUBS } from './subscriptions.service.js';
 export { createOverrides, overrideDto } from './overrides.service.js';
+export { ALERT_PERCENTS, weightedUsed, quotaState, alertsDue } from './domain/quota.js';
+export { quotaOf, quotaOfSubscription, sendQuotaAlerts } from './quota.service.js';

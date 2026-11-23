@@ -6,6 +6,7 @@
  */
 import { logger as defaultLogger } from '../core/logger.js';
 import { createUsageRecorder, recountDay, usageOf } from '../modules/metering/index.js';
+import { quotaGuard } from './quota-wiring.js';
 
 /** @type {ReturnType<typeof createUsageRecorder> | null} */
 let recorder = null;
@@ -21,6 +22,7 @@ export function usageRecorder(clock) {
 /** The search gateway's hooks. @param {import('../core/clock.js').Clock} clock @returns {import('./search-gateway.js').SearchHooks} */
 export function usageHooks(clock) {
   return {
+    before: quotaGuard(clock), // Stage 13: plan limits
     after: async (caller, kind, info) => {
       const now = clock.now().getTime();
       const memo = `${info.userId ?? '-'}|${kind}|${info.subject ?? '-'}`;
