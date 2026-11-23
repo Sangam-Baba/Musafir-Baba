@@ -124,6 +124,18 @@ different people — checking a bank transfer (`wallet.topup.check`), approving 
 (`wallet.credit.propose` / `wallet.credit.approve`), wallet adjustments (`wallet.adjustment.propose` / `.approve`).
 Approve permissions are never given by wildcards: Super Admin, or a role listing the exact code.
 
+## 8c. Stage 12 part B (B2B booking) — with the next push
+
+Migration `0069` (usage counting: `mtr_usage_events`, daily and monthly counters). Nothing new to set:
+
+- B2B clients book from the dashboard (**Book now** on a room) only when **both** booking switches are on — server
+  `B2B_ORDERS_ENABLED=true` (also covers `/client/orders`, `/client/bookings` and admin offline bookings) and frontend
+  `NEXT_PUBLIC_FEATURE_HOTEL_BOOKING=true`. Paying from the wallet also needs `B2B_WALLET_ENABLED=true` (Stage 11).
+- **My Bookings** and **Usage** appear in the client menu for the roles allowed; admin gets **Orders → Offline booking**
+  (`orders.offline.book`) and a **Usage** tab (`metering.admin.read`, given to Finance).
+- Usage is counted from the first search after this push (website traffic under `platform`, never billable); nothing is
+  charged until plans (Stage 13).
+
 ## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.

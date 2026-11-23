@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Status** | IN_PROGRESS |
+| **Status** | AWAITING_SIGN_OFF |
 | **Phase · Track** | B · clients |
 | **Owner(s)** | |
 | **Started** | 2026-11-19 |
@@ -59,7 +59,7 @@
 | S12-T19 | Offline bookings by MusafirBaba admin for a client (same engine, channel ADMIN, the client's wallet / credit), audited, client told | §3.10 | DONE | AI (Claude) |  | offline-bookings.test.js (+ frontend tsc) | `routes/offline-bookings.js` (`orders.offline.book`): the client's own B2B prices, order channel ADMIN by the staff member (reason in the history), paid from the client's wallet → confirmed or rooms let go; event `orders.order.booked-offline` → client bell + owners' email; admin Orders tab: Offline booking panel; behind `B2B_ORDERS_ENABLED` |
 | S12-T20 | Usage counting `mtr_usage_events` / daily / monthly: billable routes after a successful response, buffered and flushed (2 s / 200), flush on stop, refresh header rules, nightly check | §3.11 | DONE | AI (Claude) |  | metering-usage.test.js | new module `metering` (migration 0069: `mtr_usage_events` / daily / monthly): the search gateway's after-response hook records search, offers, price check and booking (successful answers only); website under `platform`, never billable; autocomplete free; `X-MB-Refresh: realtime` free once per property per person per 60 s (never API keys); one recorder per process, flushed every 2 s / 200 events + every 5 s by the scheduler + on background stop (`onStop`, no signal handlers); recount of yesterday from the events every 6 h; permissions `metering.usage.read` (client Owner, Admin, Accountant) / `metering.admin.read` (Finance) |
 | S12-T21 | Usage screens: client (this month by endpoint, by user, daily) and admin (per client, all clients sorted, CSV) | §3.12 | DONE | AI (Claude) |  | metering-usage.test.js (+ frontend tsc) | GET /usage (client: by kind, by person, by day), /admin/usage (every client with names, most used first), /admin/usage.csv, /admin/usage/:clientOrgId — all read the daily counters, so client and admin numbers are identical (tested); client page `/business/usage` (menu Usage) and admin tab Usage; API split appears with Stage 14 |
-| S12-T22 | Part B mandatory tests: mixed-channel last-room race, wallet ledger table, insufficient balance releases rooms, wallet refund on cancel, branded voucher without net / margin, usage counting rules | §8 | DOING | AI (Claude) |  |  |  |
+| S12-T22 | Part B mandatory tests: mixed-channel last-room race, wallet ledger table, insufficient balance releases rooms, wallet refund on cancel, branded voucher without net / margin, usage counting rules | §8 | DONE | AI (Claude) |  | stage-12b-mandatory.test.js (+ the files listed in its header) | mixed-channel last-room race (website guest + client dashboard + admin offline booking at once → exactly one booking; 3/3 runs); index of where each §8 test lives; full suite 1 053 tests ✅. My Bookings < 300 ms: to check on staging (index `client_recent`) |
 
 Status: `TODO` · `DOING` · `REVIEW` · `DONE` · `BLOCKED` · `DEFERRED` (needs a `DEF-…` row) · `DROPPED` (reason in Notes)
 

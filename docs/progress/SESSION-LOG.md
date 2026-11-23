@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-23 — AI (Claude) — Stage 12 part B B2B booking (S12-T12 to T22)
+
+- **Goal:** B2B clients book with wallet / credit / PayU through the same engine; My Bookings; cancellations and changes; offline bookings; client voucher; usage counting and screens.
+- **Done:** S12-T12 … T22 → DONE. Wallet payment mode (money held → rooms confirmed → money taken → journal; not enough → rooms released; rooms lost → hold freed; refunds into the wallet) via two optional payment-mode hooks (`instant`, `settle`); client orders `/client/orders` (B2B price, branch, customer reference, 20 waiting, pay WALLET / GATEWAY); checkout screens (Book now, order page); client voucher `VOUCHER_CLIENT` (client's name, no amounts) and B2B order emails to the booker; My Bookings (filters, branch / own limits, CSV); client cancellations / change requests through the booking routes; offline bookings by admin (client's own price, wallet, reason kept, client told); module `metering` (usage counted after successful answers, buffered flush, refresh-header rules, recount, flush on stop) + usage screens. Migration 0069.
+- **Not done / why:** client voucher logo / unbranded / selling price and guest emails per client (DEF-038); CSV export is a direct download with a row cap rather than an expiring link.
+- **Files / PR:** `backend/src/b2b/modules/orders/wallet-mode.js`, `modules/metering/**`, `routes/client-orders.js`, `client-bookings.js`, `offline-bookings.js`, `usage.js`, `metering-wiring.js`; frontend `business/orders/[ref]`, `business/my-bookings`, `business/usage`, client / admin components — local commits only, nothing pushed.
+- **Tests run:** orders-wallet, client-orders, client-bookings, offline-bookings, documents-client-voucher, metering-usage, stage-12b-mandatory (race 3/3) ✅; lint, typecheck ✅; frontend `tsc` ✅; full suite 1 053 ✅.
+- **Decisions / deferrals:** "Wallet / credit" is one payment choice (CREDIT registered as the same mode); client limits 20 waiting orders; DEF-038.
+- **Next step:** owner: OK to push; migrations 0054–0069 on the server; sign-offs. Build: Stage 13 (subscriptions & usage billing) — Pilot 1 when the owner starts it.
+
+
 ## 2026-11-21 — AI (Claude) — Stage 11 client wallet & credit (S11-T01 to T11)
 
 - **Goal:** client wallets with live balances, holds, top-ups (PayU + bank transfer), credit lines, refunds to wallet, wallet adjustments, statement and alerts, admin screens.
