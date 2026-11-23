@@ -17,7 +17,7 @@ import { AuditEventRecord } from '../../src/b2b/modules/audit/index.js';
 import { SessionRecord, UserRecord, ViewAsRecord } from '../../src/b2b/modules/identity/index.js';
 import { MfaRecord } from '../../src/b2b/modules/identity/models/mfa.model.js';
 import { OtpRecord } from '../../src/b2b/modules/identity/models/otp.model.js';
-import { InvitationRecord, MemberRecord, OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
+import { BrandingRecord, InvitationRecord, MemberRecord, OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
 import { BranchRecord } from '../../src/b2b/modules/organizations/models/branch.model.js';
 import { MIGRATIONS } from '../../src/b2b/migrations/index.js';
 import { startMongo } from './helpers/mongo.js';
@@ -67,6 +67,12 @@ const OWNED = [
       permissions: ['organizations.org.read'],
       createdBy: 'u',
     }),
+  ],
+  [
+    'org_branding', // Stage 15: a client's voucher brand
+    BrandingRecord,
+    'orgId',
+    (o) => ({ orgId: o, name: `Brand ${o}`, updatedBy: 'u' }),
   ],
   [
     'aud_events',

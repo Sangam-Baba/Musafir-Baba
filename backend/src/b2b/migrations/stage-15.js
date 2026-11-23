@@ -1,5 +1,6 @@
 // @ts-check
 import { PERIOD_LOCKS_COLLECTION } from '../modules/billing/index.js';
+import { BRANDING_COLLECTION } from '../modules/organizations/index.js';
 /** Stage 15 — payouts, finance and reports (new collections with allowed prefixes only). */
 import {
   DEDUCTION_RULES_COLLECTION,
@@ -49,6 +50,14 @@ export const STAGE_15 = [
     up: async (ctx) => {
       await ctx.createCollection(PERIOD_LOCKS_COLLECTION);
       await ctx.createIndex(PERIOD_LOCKS_COLLECTION, { month: 1 }, { name: 'month_unique', unique: true });
+    },
+  },
+  {
+    id: '0077-org-branding',
+    description: 'Client branding: one per client company',
+    up: async (ctx) => {
+      await ctx.createCollection(BRANDING_COLLECTION);
+      await ctx.createIndex(BRANDING_COLLECTION, { orgId: 1 }, { name: 'org_unique', unique: true });
     },
   },
 ];

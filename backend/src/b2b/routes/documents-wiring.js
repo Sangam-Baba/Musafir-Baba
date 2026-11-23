@@ -4,7 +4,7 @@
  * item handler's admin view, the verified PayU payment, MusafirBaba's current GSTIN for the registration), the event
  * consumer that issues them when an order is confirmed, and the retry job (alerts after 5 minutes).
  */
-import { OrganizationRecord } from '../modules/organizations/index.js';
+import { brandOf, OrganizationRecord } from '../modules/organizations/index.js';
 import { createDocuments } from '../modules/documents/index.js';
 import { ORDERS, OrderRecord } from '../modules/orders/index.js';
 import { IntentRecord } from '../modules/payments/index.js';
@@ -85,7 +85,7 @@ async function clientBrand(orgId) {
       .setOptions({ tenantScope: 'SYSTEM', tenantReason: 'documents: client voucher' })
       .lean()
   );
-  return org ? { name: String(org.displayName) } : null;
+  return org ? brandOf(orgId, String(org.displayName)) : null; // Stage 15: the client's saved brand, else its name
 }
 
 /**
