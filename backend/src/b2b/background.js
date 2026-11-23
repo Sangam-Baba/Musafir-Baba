@@ -63,7 +63,7 @@ import { createSearchCacheSignals } from './modules/hotel-search/index.js';
 import { AmendmentRecord, BookingRecord, BookingRequestRecord, HotelFailureRecord, NoShowRecord } from './modules/hotel-booking/index.js';
 import { OrderRecord } from './modules/orders/index.js';
 import { DocumentRecord } from './modules/documents/index.js';
-import { AccountRecord, createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
+import { AccountRecord, createLedger, ledgerInvariants, PayoutLineRecord, seedPlatformAccounts } from './modules/wallet/index.js';
 import { seedPlans, SubscriptionRecord } from './modules/subscriptions/index.js';
 import { DunningRecord } from './modules/billing/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
@@ -222,6 +222,7 @@ export const eventSources = [
   AccountRecord, // Stage 11: client wallet alerts
   SubscriptionRecord, // Stage 13: quota alerts
   DunningRecord, // Stage 13: payment reminders, suspension
+  PayoutLineRecord, // Stage 15: remittance notices
 ];
 
 /**
