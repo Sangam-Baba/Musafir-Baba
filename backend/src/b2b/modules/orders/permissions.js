@@ -27,6 +27,11 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: 'MusafirBaba admin: find orders and see their full timeline',
     orgTypes: ['PLATFORM'],
   },
+  offlineBook: {
+    code: 'orders.offline.book',
+    description: "MusafirBaba admin: book a hotel for a B2B client (phone / email request), paid from the client's wallet or credit",
+    orgTypes: ['PLATFORM'],
+  },
   adminAct: {
     code: 'orders.admin.act',
     description: 'MusafirBaba admin: propose an action on an order (release rooms, refund); a second person approves',

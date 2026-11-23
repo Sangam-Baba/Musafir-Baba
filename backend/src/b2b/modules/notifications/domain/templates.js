@@ -190,6 +190,15 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your role changed — MusafirBaba Business',
     text: 'Hello,\n\nYour role in {{orgName}} was changed. What you can see and do there may be different now.\n\n{{link}}\n\nMusafirBaba Business',
   },
+  // Stage 12B: offline booking for a B2B client
+  'order.booked-offline': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Booking made for you by MusafirBaba',
+    body: 'MusafirBaba booked a stay for {{orgName}} as you asked. See it in My Bookings.',
+    subject: 'MusafirBaba made a booking for {{orgName}}',
+    text: 'Hello,\n\nMusafirBaba booked a stay for {{orgName}} as you asked, paid from your wallet.\n\nSee it here: {{link}}\n\nMusafirBaba Business',
+  },
   // Stage 11: client wallets
   'wallet.topup-credited': {
     version: 1,

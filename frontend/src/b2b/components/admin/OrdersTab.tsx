@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { errorMessage } from "../../messages";
 import { inr } from "../../website/hotels";
 import { adminCall } from "./AdminPassGate";
+import { OfflineBookingPanel } from "./OfflineBookingPanel";
 import { FleetEmptyState, FleetPanel, FleetPill, fleetSelectClass, fleetTone, Input, inputSm, PrimaryBtn, SecondaryBtn } from "./kit";
 
 const STATUSES = ["", "AWAITING_PAYMENT", "PAYMENT_PENDING", "CONFIRMING", "CONFIRMED", "FAILED", "EXPIRED"] as const;
@@ -132,6 +133,7 @@ export function OrdersTab({ token }: { token: string }) {
   return (
     <div className="space-y-3">
       <HotelsNotAnswering token={token} />
+      <OfflineBookingPanel token={token} />
       <FleetPanel title="Orders" description="Website bookings: find one by reference, customer or status and see everything that happened." icon={ShoppingBag} bodyClassName="p-0">
         <form className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-4 py-2" onSubmit={(e) => { e.preventDefault(); setSearch(q.trim()); }}>
           <Input className={`${inputSm} w-72`} placeholder="MBO- / MBH- reference, name, email, phone, PayU txn" value={q} onChange={(e) => setQ(e.target.value)} />

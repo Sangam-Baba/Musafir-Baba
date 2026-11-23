@@ -144,6 +144,15 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/bookings',
   },
+  // Stage 12B: MusafirBaba booked a stay for a B2B client (phone / email request)
+  'order.booked-offline': {
+    audience: 'ORG',
+    permission: 'orders.order.read',
+    critical: false,
+    label: 'Booking made for you by MusafirBaba',
+    emailTo: 'OWNERS',
+    link: '/business/my-bookings',
+  },
   // Stage 11: client wallets
   'wallet.topup-credited': {
     audience: 'ORG',
@@ -191,6 +200,7 @@ export const EVENT_CATEGORIES = Object.freeze({
   'hotel-booking.booking.ack-reminded': 'booking.reminder',
   'hotel-booking.booking.ack-escalated': 'booking.escalated',
   'hotel-booking.booking.cancelled': 'booking.cancelled',
+  'orders.order.booked-offline': 'order.booked-offline',
   'wallet.topup.credited': 'wallet.topup-credited',
   'wallet.account.low-balance': 'wallet.low-balance',
   'wallet.credit.overdue': 'wallet.credit-overdue',

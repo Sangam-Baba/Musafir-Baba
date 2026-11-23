@@ -11,4 +11,6 @@ export const EVENTS = /** @type {const} */ ({
   orderExpired: 'orders.order.expired',
   /** every booking of a confirmed order cancelled by the buyer (refund on its way) */
   orderCancelled: 'orders.order.cancelled',
+  /** Stage 12B: MusafirBaba booked it for a B2B client (phone / email request) — the client is told */
+  orderBookedOffline: 'orders.order.booked-offline',
 });

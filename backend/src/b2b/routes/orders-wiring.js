@@ -42,6 +42,7 @@ import { summariesFor } from './reporting-wiring.js';
 import { orderRoutes } from './orders.js';
 import { clientOrderRoutes } from './client-orders.js';
 import { clientBookingRoutes } from './client-bookings.js';
+import { offlineBookingRoutes } from './offline-bookings.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
 
@@ -153,7 +154,9 @@ export function stage08Routes(env, clock, logger, identity) {
   // Online booking stays switched off on a server until the owner turns it on (`B2B_ORDERS_ENABLED=true`):
   // the rest of the system can go live first, and nobody can hold rooms before checkout and limits are ready.
   if (env.B2B_ORDERS_ENABLED !== 'true')
-    router.use(['/orders', '/bookings', '/client/orders'], (_req, _res, next) => next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')));
+    router.use(['/orders', '/bookings', '/client/orders', '/client/bookings', '/admin/offline-bookings'], (_req, _res, next) =>
+      next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')),
+    );
   const engine = bookingEngine(env, clock, logger, identity);
   router.use(
     orderRoutes({
@@ -167,7 +170,7 @@ export function stage08Routes(env, clock, logger, identity) {
       clock,
     }),
   );
-  router.use(clientOrdersFor(env, clock, engine));
+  router.use(clientOrdersFor(env, clock, engine, identity));
   const noShows = createNoShows({ clock });
   const failures = createHotelFailures({ clock });
   router.use(hotelBookingRoutes({ bookings: createHotelBookingsService({ clock }), noShows, failures }));
@@ -209,8 +212,9 @@ export function stage08Routes(env, clock, logger, identity) {
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/clock.js').Clock} clock
  * @param {ReturnType<typeof bookingEngine>} engine
+ * @param {ReturnType<typeof import('./identity.js').createIdentity>} identity
  */
-function clientOrdersFor(env, clock, engine) {
+function clientOrdersFor(env, clock, engine, identity) {
   const router = express.Router();
   router.use(
     clientOrderRoutes({
@@ -224,5 +228,15 @@ function clientOrdersFor(env, clock, engine) {
     }),
   );
   router.use(clientBookingRoutes({ summaries: summariesFor(engine.ordersDeps) }));
+  router.use(
+    offlineBookingRoutes({
+      offers: engine.parts.offers,
+      orgInfo: (orgId) => identity.orgs.basicInfo(orgId),
+      orders: engine.orders,
+      payments: createOrderPayments(engine.ordersDeps),
+      view: (o) => orderView(engine.ordersDeps, o, 'ADMIN'),
+      clock,
+    }),
+  );
   return router;
 }
