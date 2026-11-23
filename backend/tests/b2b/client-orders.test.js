@@ -116,4 +116,40 @@ describe('client orders', () => {
     const org = /** @type {any} */ (await OrganizationRecord.findById(c.orgId).setOptions(S).lean());
     expect(org.type).toBe('CLIENT');
   });
+
+  it('cancel a wallet-paid booking → refund straight into the wallet; change requests; other companies 404', async () => {
+    const { c, priceToken } = await setup();
+    const o = (await app.srv.post('/api/v1/client/orders', body(priceToken), { ...auth(c.token), 'idempotency-key': key() })).body;
+    await app.srv.post(`/api/v1/client/orders/${o.ref}/pay`, { method: 'WALLET' }, { ...auth(c.token), 'idempotency-key': key() });
+    const bookingRef = (await app.srv.get(`/api/v1/client/orders/${o.ref}`, auth(c.token))).body.items[0].ref;
+    const detail = await app.srv.get(`/api/v1/bookings/hotels/${bookingRef}`, auth(c.token));
+    expect(detail.status).toBe(200);
+    const other = await clientOwner(app, `other${(n += 1)}@trips.in`);
+    expect((await app.srv.get(`/api/v1/bookings/hotels/${bookingRef}`, auth(other.token))).status).toBe(404);
+    const cr = await app.srv.post(
+      `/api/v1/bookings/hotels/${bookingRef}/amendments`,
+      { type: 'OTHER', message: 'Late arrival around 11 pm' },
+      auth(c.token),
+    );
+    expect(cr.status).toBe(201);
+    const quote = (await app.srv.post(`/api/v1/bookings/hotels/${bookingRef}/cancellation-quote`, {}, auth(c.token))).body;
+    const before = /** @type {any} */ (
+      await (await import('../../src/b2b/modules/wallet/index.js')).AccountRecord.findOne({ ownerOrgId: c.orgId, type: 'WALLET' })
+        .setOptions(S)
+        .lean()
+    );
+    const done = await app.srv.post(
+      `/api/v1/bookings/hotels/${bookingRef}/cancel`,
+      { quoteToken: quote.quoteToken },
+      { ...auth(c.token), 'idempotency-key': key() },
+    );
+    expect(done.status).toBe(200);
+    const after = /** @type {any} */ (
+      await (await import('../../src/b2b/modules/wallet/index.js')).AccountRecord.findOne({ ownerOrgId: c.orgId, type: 'WALLET' })
+        .setOptions(S)
+        .lean()
+    );
+    expect(after.balancePaise - before.balancePaise).toBe(done.body.refundPaise);
+    expect(done.body.refundPaise).toBeGreaterThan(0);
+  });
 });

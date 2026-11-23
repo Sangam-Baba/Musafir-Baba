@@ -1,6 +1,7 @@
 // @ts-check
 /**
- * Change requests for website buyers (plan Stage 09 §3.5, §5) — through their booking (buyer only; others 404):
+ * Change requests for website buyers (plan Stage 09 §3.5, §5) and B2B clients' people (Stage 12B — same rules as
+ * customer-bookings.js) — through their booking (buyer only; others 404):
  *   GET  /bookings/hotels/:ref/amendments
  *   POST /bookings/hotels/:ref/amendments {type, message, guestNames?}
  *   POST /bookings/hotels/:ref/amendments/:id/messages {text}
@@ -9,11 +10,10 @@
 import express from 'express';
 import { z } from 'zod';
 
-import { contextOf } from '../core/http/context-middleware.js';
 import { publicRoute } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import { AMENDMENT_TYPES } from '../modules/hotel-booking/index.js';
-import { ownBooking } from './customer-bookings.js';
+import { actorId, ownBooking } from './customer-bookings.js';
 
 const Ref = z.strictObject({ ref: z.string().min(5).max(32) });
 const RefId = z.strictObject({ ref: z.string().min(5).max(32), id: z.string().regex(/^[a-f0-9]{24}$/) });
@@ -33,11 +33,7 @@ const OpenBody = z.strictObject({
     .optional(),
 });
 
-/** @param {import('express').Response} res */
-const buyerId = (res) => {
-  const { actor } = contextOf(res);
-  return actor.type === 'customer' ? `customer:${actor.customerId}` : 'guest';
-};
+const buyerId = actorId;
 
 /**
  * @param {Parameters<typeof ownBooking>[2] & {
@@ -62,7 +58,7 @@ export function customerAmendmentRoutes(deps) {
     validate({ params: Ref, query: KeyQuery, body: OpenBody }),
     (req, res, next) => {
       (async () => {
-        await ownBooking(req, res, deps);
+        await ownBooking(req, res, deps, true);
         const b = await deps.bookingByRef(res.locals.input.params.ref);
         noStore(res)
           .status(201)
@@ -76,7 +72,7 @@ export function customerAmendmentRoutes(deps) {
     validate({ params: RefId, query: KeyQuery, body: z.strictObject({ text: Text }) }),
     (req, res, next) => {
       (async () => {
-        await ownBooking(req, res, deps);
+        await ownBooking(req, res, deps, true);
         const b = await deps.bookingByRef(res.locals.input.params.ref);
         noStore(res).json(
           await deps.amendments.buyerReply(String(b._id), res.locals.input.params.id, buyerId(res), res.locals.input.body.text),
@@ -97,7 +93,7 @@ export function customerAmendmentRoutes(deps) {
     validate({ params: Ref, query: KeyQuery, body: z.strictObject({ message: Text }) }),
     (req, res, next) => {
       (async () => {
-        await ownBooking(req, res, deps);
+        await ownBooking(req, res, deps, true);
         const b = await deps.bookingByRef(res.locals.input.params.ref);
         noStore(res).json(await deps.noShows.dispute(String(b._id), buyerId(res), res.locals.input.body.message));
       })().catch(next);

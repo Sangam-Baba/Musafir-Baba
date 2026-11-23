@@ -8,16 +8,19 @@
  *   POST /bookings/hotels/:ref/cancellation-quote   the buyer: charge and refund now, signed, valid 5 minutes
  *   POST /bookings/hotels/:ref/cancel   the buyer; Idempotency-Key + the quote → rooms back, refund to the source
  * Public routes (guests have no login); every read is checked against the order's buyer.
+ * Stage 12B: a B2B client's people use the same routes for their company's bookings — `orders.order.read` to see,
+ * `orders.order.create` to cancel or ask for changes; branch and "own bookings only" limits apply; others 404.
  */
 import express from 'express';
 import { z } from 'zod';
 
 import { hashRequest, withIdempotency } from '../core/db/idempotency.js';
-import { UnauthorizedError, ValidationError } from '../core/errors.js';
+import { ForbiddenError, NotFoundError, UnauthorizedError, ValidationError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
 import { publicRoute } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { fingerprint } from '../modules/orders/index.js';
+import { fingerprint, PERMISSIONS as ORD } from '../modules/orders/index.js';
+import { memberSees } from './client-orders.js';
 
 const Ref = z.strictObject({ ref: z.string().min(5).max(32) });
 const KeyQuery = z.strictObject({
@@ -51,10 +54,12 @@ const listRow = (r) => ({
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * @param {{ bookings: ReturnType<typeof import('../modules/hotel-booking/index.js').createCustomerBookings>, orders: ReturnType<typeof import('../modules/orders/index.js').createOrderService>, linkSecret: string }} deps
+ * @param {boolean} [act] cancelling or asking for a change (B2B: needs the booking permission)
  */
-export async function ownBooking(req, res, deps) {
+export async function ownBooking(req, res, deps, act = false) {
   const { actor } = contextOf(res);
   const d = await deps.bookings.detail(res.locals.input.params.ref);
+  if (actor.type === 'member') return clientBooking(res, deps, d, act);
   const order = await deps.orders.read(d.orderRef, {
     customerId: actor.type === 'customer' ? actor.customerId : null,
     guestKey: req.get('x-guest-session') ?? null,
@@ -64,6 +69,32 @@ export async function ownBooking(req, res, deps) {
   return { d, order };
 }
 
+/**
+ * A B2B client's booking for one of its people (permission, branch and own limits) — otherwise 404 / 403.
+ * @param {import('express').Response} res
+ * @param {Parameters<typeof ownBooking>[2]} deps
+ * @param {Record<string, any>} d
+ * @param {boolean} act
+ */
+async function clientBooking(res, deps, d, act) {
+  const { actor } = contextOf(res);
+  if (actor.type !== 'member' || actor.orgType !== 'CLIENT' || !actor.permissions.includes(ORD.orderRead))
+    throw new NotFoundError('BOOKING_NOT_FOUND');
+  const order = await deps.orders.read(d.orderRef, { clientOrgId: actor.orgId });
+  const m = { orgId: actor.orgId, userId: actor.userId, branchIds: actor.branchIds ?? [], ownOnly: actor.ownOnly === true };
+  if (!memberSees(m, order)) throw new NotFoundError('BOOKING_NOT_FOUND');
+  if (act && (!actor.permissions.includes(ORD.orderCreate) || actor.viewAs)) throw new ForbiddenError();
+  return { d, order };
+}
+
+/** Who acts: `customer:<id>`, `user:<id>` (B2B) or a guest. @param {import('express').Response} res */
+export function actorId(res) {
+  const { actor } = contextOf(res);
+  if (actor.type === 'customer') return `customer:${actor.customerId}`;
+  if (actor.type === 'member') return `user:${actor.userId}`;
+  return 'guest';
+}
+
 /** POST …/cancel. @param {import('express').Router} router @param {Parameters<typeof customerBookingRoutes>[0]} deps */
 function cancelRoute(router, deps) {
   const Body = z.strictObject({ quoteToken: z.string().min(20).max(2000), reason: z.string().trim().max(500).nullish() });
@@ -71,7 +102,7 @@ function cancelRoute(router, deps) {
     (async () => {
       const key = req.get('idempotency-key') ?? '';
       if (!/^[A-Za-z0-9_-]{16,64}$/.test(key)) throw new ValidationError({ problems: [{ field: 'Idempotency-Key', code: 'REQUIRED' }] });
-      const { order } = await ownBooking(req, res, deps);
+      const { order } = await ownBooking(req, res, deps, true);
       const ref = res.locals.input.params.ref;
       const body = res.locals.input.body;
       const r = await withIdempotency(
@@ -84,8 +115,7 @@ function cancelRoute(router, deps) {
         async () => {
           const booking = await deps.bookings.bookingByRef(ref);
           const q = deps.readQuote(body.quoteToken, booking);
-          const { actor } = contextOf(res);
-          const by = actor.type === 'customer' ? `customer:${actor.customerId}` : 'guest';
+          const by = actorId(res);
           await deps.cancellations.cancel({
             order,
             bookingRef: booking.ref,
@@ -156,7 +186,7 @@ export function customerBookingRoutes(deps) {
     validate({ params: Ref, query: KeyQuery, body: z.strictObject({}) }),
     (req, res, next) => {
       (async () => {
-        await ownBooking(req, res, deps);
+        await ownBooking(req, res, deps, true);
         noStore(res).json(await deps.bookings.quote(res.locals.input.params.ref, deps.linkSecret));
       })().catch(next);
     },

@@ -14,6 +14,7 @@ import { useBusinessSession } from "../../session-store";
 import { idempotencyKey, type Wallet } from "../../wallet";
 import type { Order, OrderDocument } from "../../website/checkout";
 import { inr } from "../../website/hotels";
+import { ClientBookingActions } from "./ClientBookingActions";
 
 type ClientOrderView = Order & { paymentMode: string; customerReference: string | null };
 const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER_CLIENT: "Voucher for your guest (your name)", VOUCHER: "MusafirBaba voucher", TAX_INVOICE: "Tax invoice", RECEIPT: "Receipt", CREDIT_NOTE: "Credit note" };
@@ -112,6 +113,7 @@ export function ClientOrder({ orderRef, canPay }: { orderRef: string; canPay: bo
             <p className="font-medium text-slate-900">{it.property.name} — {it.roomTypeName}</p>
             <p>{it.stay.checkIn} → {it.stay.checkOut} · {it.stay.nights} night{it.stay.nights > 1 ? "s" : ""} · {it.rooms.map((r) => r.leadGuest).join(", ")}</p>
             <p className="text-slate-500">{it.cancellation.summary}</p>
+            {(it.status === "CONFIRMED" || it.status === "CANCELLED") && (o.status === "CONFIRMED" || o.status === "CANCELLED") && <ClientBookingActions bookingRef={it.ref} paidByWallet={o.paymentMode === "WALLET"} canAct={canPay && it.status === "CONFIRMED"} />}
           </div>
         ))}
       </div>
