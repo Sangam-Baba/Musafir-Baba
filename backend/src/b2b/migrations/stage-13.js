@@ -1,5 +1,6 @@
 // @ts-check
 /** Stage 13 — subscriptions and billing (new `sub_` / `bil_` collections only). */
+import { INVOICES_COLLECTION } from '../modules/billing/index.js';
 import {
   OVERRIDES_COLLECTION,
   PLAN_VERSIONS_COLLECTION,
@@ -43,6 +44,18 @@ export const STAGE_13 = [
       await ctx.createCollection(OVERRIDES_COLLECTION);
       await ctx.createIndex(OVERRIDES_COLLECTION, { clientOrgId: 1, createdAt: -1 }, { name: 'client' });
       await ctx.createIndex(OVERRIDES_COLLECTION, { status: 1, createdAt: 1 }, { name: 'status_age' });
+    },
+  },
+  {
+    id: '0072-bil-invoices',
+    description: 'SaaS invoices: one per client × key; unique number; per client newest first; unpaid queue; by charge reference',
+    up: async (ctx) => {
+      await ctx.createCollection(INVOICES_COLLECTION);
+      await ctx.createIndex(INVOICES_COLLECTION, { clientOrgId: 1, key: 1 }, { name: 'client_key_unique', unique: true });
+      await ctx.createIndex(INVOICES_COLLECTION, { number: 1 }, { name: 'number_unique', unique: true });
+      await ctx.createIndex(INVOICES_COLLECTION, { clientOrgId: 1, issuedAt: -1 }, { name: 'client_recent' });
+      await ctx.createIndex(INVOICES_COLLECTION, { status: 1, lastAttemptAt: 1 }, { name: 'status_attempt' });
+      await ctx.createIndex(INVOICES_COLLECTION, { clientOrgId: 1, 'lines.ref': 1 }, { name: 'client_line_ref' });
     },
   },
 ];

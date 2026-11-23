@@ -2,11 +2,18 @@
 /**
  * Stage 13 background parts: a client company is activated → its subscription starts (the default plan / trial,
  * repeat-safe); every 10 minutes: verified clients without one get it (clients verified before Stage 13), approved
- * overrides cut short are applied; every 5 minutes: 80 % / 100 % quota alerts. Billing (renewals, invoices, collection, dunning) is added with S13-T06 / T07.
+ * overrides cut short are applied; every 5 minutes: 80 % / 100 % quota alerts.
+ * Billing (S13-T06): every 10 minutes — trials ended, months renewed, new charges invoiced and collected from the
+ * wallet, finished months' overage billed; hourly — unpaid invoices tried again; a PayU payment for an invoice → paid.
  */
 import { systemScope } from '../core/db/tenant-plugin.js';
 import { EVENTS as ORG_EVENTS, OrganizationRecord } from '../modules/organizations/index.js';
 import { createOverrides, createSubscriptions, sendQuotaAlerts, SubscriptionRecord } from '../modules/subscriptions/index.js';
+import { createBilling } from '../modules/billing/index.js';
+import { createGstRegistrations } from '../modules/kyc/index.js';
+import { EVENTS as PAYMENT_EVENTS } from '../modules/payments/index.js';
+import { readSettings } from '../modules/pricing/index.js';
+import { createLedger, createLiveWallets } from '../modules/wallet/index.js';
 
 const SCOPE = systemScope('subscriptions: start for verified clients', { routine: true });
 
@@ -23,13 +30,69 @@ export async function startMissingSubscriptions(subs) {
   return started;
 }
 
-/** @param {import('../core/clock.js').Clock} clock */
-export function subscriptionParts(clock) {
+/**
+ * Billing for this process: MusafirBaba's default GST registration, the client's name and verified GSTIN.
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {NodeJS.ProcessEnv} env
+ * @param {ReturnType<typeof createSubscriptions>} subs
+ */
+export function billingFor(clock, env, subs) {
+  const ledger = createLedger({ clock });
+  const gst = createGstRegistrations({ clock, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET ?? '' });
+  return createBilling({
+    clock,
+    ledger,
+    wallets: createLiveWallets({ clock, ledger }),
+    subscriptions: subs,
+    issuer: async () => {
+      const issuers = (await readSettings()).issuers ?? [];
+      const i = issuers.find((x) => x.isDefault) ?? issuers[0];
+      return { stateCode: i?.stateCode ?? '07', gstin: i?.gstin ?? null };
+    },
+    client: async (orgId) => {
+      const org = /** @type {any} */ (await OrganizationRecord.findOne({ _id: orgId }, { legalName: 1 }).setOptions(SCOPE).lean());
+      const status = await gst.gstStatus(orgId);
+      return { name: org?.legalName ?? 'Client', gstin: status.verified[0]?.gstin ?? null };
+    },
+  });
+}
+
+/** Every subscription: trial end, renewal, charges invoiced, finished months billed. @param {ReturnType<typeof createSubscriptions>} subs @param {ReturnType<typeof createBilling>} billing */
+export async function runBilling(subs, billing) {
+  const all = await SubscriptionRecord.find({}, { _id: 1, clientOrgId: 1 }).setOptions(SCOPE).limit(5000).lean();
+  let invoices = 0;
+  for (const { clientOrgId } of all) {
+    let sub = await subs.current(clientOrgId);
+    if (sub) await subs.endTrial(sub);
+    sub = await subs.current(clientOrgId);
+    if (sub) await subs.renew(sub);
+    sub = await subs.current(clientOrgId);
+    if (!sub) continue;
+    invoices += await billing.billCharges(sub);
+    invoices += await billing.closeMonths(sub);
+  }
+  return { subscriptions: all.length, invoices };
+}
+
+/** @param {import('../core/clock.js').Clock} clock @param {NodeJS.ProcessEnv} [env] */
+export function subscriptionParts(clock, env = {}) {
   const subs = createSubscriptions({ clock });
   const overrides = createOverrides({ clock });
+  const billing = billingFor(clock, env, subs);
   return {
     subs,
+    billing,
     consumers: [
+      {
+        consumer: 'billing-invoice-paid-payu',
+        types: [PAYMENT_EVENTS.intentSucceeded, PAYMENT_EVENTS.intentPaidLate],
+        /** @param {any} event */
+        handler: async (event) => {
+          const p = event.payload;
+          if (p.purpose === 'SUBSCRIPTION' && p.reference?.type === 'saas-invoice')
+            await billing.paidByPayu(String(p.reference.id), String(p.txnId));
+        },
+      },
       {
         consumer: 'subscriptions-client-start',
         types: [ORG_EVENTS.orgActivated],
@@ -46,6 +109,8 @@ export function subscriptionParts(clock) {
         run: async () => ({ started: await startMissingSubscriptions(subs), ...(await overrides.applyDue()) }),
       },
       { name: 'subscriptions-quota-alerts', everyMs: 5 * 60_000, run: () => sendQuotaAlerts({ clock }) },
+      { name: 'billing-run', everyMs: 10 * 60_000, run: () => runBilling(subs, billing) },
+      { name: 'billing-retry-unpaid', everyMs: 60 * 60_000, run: () => billing.retryUnpaid() },
     ],
   };
 }

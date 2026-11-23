@@ -76,7 +76,7 @@ export function startDatabase(env, log, hub, identity) {
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   const emails = emailConsumers(engine, config, email);
   const wallet = walletParts(systemClock);
-  const subscriptions = subscriptionParts(systemClock);
+  const subscriptions = subscriptionParts(systemClock, env);
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({

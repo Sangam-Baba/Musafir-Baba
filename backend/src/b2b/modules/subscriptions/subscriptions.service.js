@@ -171,6 +171,19 @@ async function change(deps, a) {
   return { kind: p.kind, chargeNowPaise: p.chargeNowPaise, subscription: await subscriptionOf(a.clientOrgId) };
 }
 
+/** What the finishing month allowed (billing rates its overage from it). @param {Record<string, any>} sub @param {Date} now */
+async function closingSnapshot(sub, now) {
+  const plan = /** @type {any} */ (await planVersion(sub.planVersionId));
+  const t = effectiveTerms(sub, plan, now);
+  return {
+    period: sub.period,
+    allowance: (sub.includedQueries ?? 0) + (sub.extraQueries ?? 0),
+    limitBehaviour: t.limitBehaviour,
+    overagePricePerQueryPaise: t.overagePricePerQueryPaise,
+    planName: t.name,
+  };
+}
+
 /** Cancelled at period end. @param {Record<string, any>} sub @param {string} month @param {Date} now */
 async function closeCancelled(sub, month, now) {
   const res = await SubscriptionRecord.updateOne(
@@ -178,7 +191,7 @@ async function closeCancelled(sub, month, now) {
     {
       $set: { status: 'CANCELLED', period: month, pending: null, includedQueries: 0 },
       $inc: { version: 1 },
-      $push: { history: { at: now, what: 'cancelled at period end', by: 'system' } },
+      $push: { closedPeriods: await closingSnapshot(sub, now), history: { at: now, what: 'cancelled at period end', by: 'system' } },
     },
   ).setOptions(SUBS);
   return res.modifiedCount === 1;
@@ -227,7 +240,11 @@ async function renew(deps, sub) {
         ...(status !== 'TRIAL' ? { trialEndsAt: null } : {}),
       },
       $inc: { version: 1 },
-      $push: { charges: { $each: fee }, history: { at: now, what: `renewed for ${month} on ${plan.name}`, by: 'system' } },
+      $push: {
+        charges: { $each: fee },
+        closedPeriods: await closingSnapshot(sub, now),
+        history: { at: now, what: `renewed for ${month} on ${plan.name}`, by: 'system' },
+      },
     },
   ).setOptions(SUBS);
   return res.modifiedCount === 1;
@@ -269,6 +286,32 @@ async function endTrial(deps, sub) {
     },
   ).setOptions(SUBS);
   return res.modifiedCount === 1;
+}
+
+/** An invoice could not be collected (repeat-safe). @param {SubDeps} deps @param {string} clientOrgId @param {string} why */
+async function markPastDue(deps, clientOrgId, why) {
+  const now = deps.clock.now();
+  await SubscriptionRecord.updateOne(
+    { clientOrgId, status: { $in: ['TRIAL', 'ACTIVE'] } },
+    {
+      $set: { status: 'PAST_DUE', pastDueSince: now },
+      $inc: { version: 1 },
+      $push: { history: { at: now, what: `past due: ${why}`, by: 'system:billing' } },
+    },
+  ).setOptions(SUBS);
+}
+
+/** Everything is paid — back to ACTIVE (from PAST_DUE or SUSPENDED). @param {SubDeps} deps @param {string} clientOrgId */
+async function markPaidUp(deps, clientOrgId) {
+  const now = deps.clock.now();
+  await SubscriptionRecord.updateOne(
+    { clientOrgId, status: { $in: ['PAST_DUE', 'SUSPENDED'] } },
+    {
+      $set: { status: 'ACTIVE', pastDueSince: null },
+      $inc: { version: 1 },
+      $push: { history: { at: now, what: 'paid up — active again', by: 'system:billing' } },
+    },
+  ).setOptions(SUBS);
 }
 
 /** @param {SubDeps} deps */
@@ -315,5 +358,9 @@ export function createSubscriptions(deps) {
     /** @param {Record<string, any>} sub */
     endTrial: (sub) => endTrial(deps, sub),
     effectiveTerms,
+    /** Billing: an invoice could not be collected (repeat-safe). @param {string} clientOrgId @param {string} why */
+    markPastDue: (clientOrgId, why) => markPastDue(deps, clientOrgId, why),
+    /** Billing: everything is paid — back to ACTIVE. @param {string} clientOrgId */
+    markPaidUp: (clientOrgId) => markPaidUp(deps, clientOrgId),
   };
 }

@@ -44,6 +44,12 @@ const schema = new b2bMongoose.Schema(
       default: null,
       _id: false,
     },
+    closedPeriods: {
+      type: [
+        { _id: false, period: String, allowance: Number, limitBehaviour: String, overagePricePerQueryPaise: Number, planName: String },
+      ],
+      default: [],
+    }, // what each finished month allowed — billing rates its overage from this
     alerts: { type: { period: String, sent: [Number] }, default: () => ({ period: '', sent: [] }), _id: false }, // 80 / 100 % sent this period
     pastDueSince: { type: Date, default: null },
     history: { type: [{ _id: false, at: Date, what: String, by: String }], default: [] },
