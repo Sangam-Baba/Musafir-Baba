@@ -114,6 +114,7 @@ export const SYSTEM_ROLES = Object.freeze([
       'hotel-booking.**',
       'orders.**',
       'metering.**.read', // Stage 12B: the company's usage
+      'subscriptions.**.read', // Stage 13: the company's plan
     ],
     defaultScope: 'ORG',
   },
@@ -146,6 +147,7 @@ export const SYSTEM_ROLES = Object.freeze([
       'documents.**',
       'reporting.**',
       'metering.**.read',
+      'subscriptions.**', // Stage 13: plan and invoices
       'payments.**.read',
       'orders.**.read',
       'hotel-booking.**.read',

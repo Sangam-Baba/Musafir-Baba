@@ -64,6 +64,7 @@ import { AmendmentRecord, BookingRecord, BookingRequestRecord, HotelFailureRecor
 import { OrderRecord } from './modules/orders/index.js';
 import { DocumentRecord } from './modules/documents/index.js';
 import { AccountRecord, createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
+import { seedPlans, SubscriptionRecord } from './modules/subscriptions/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
@@ -218,6 +219,7 @@ export const eventSources = [
   NoShowRecord,
   HotelFailureRecord,
   AccountRecord, // Stage 11: client wallet alerts
+  SubscriptionRecord, // Stage 13: quota alerts
 ];
 
 /**
@@ -232,6 +234,7 @@ export const startupTasks = [
   { name: 'pricing: settings with the owner defaults (only if missing)', run: () => seedPricingSettings() },
   { name: 'organizations: starter client categories (adds only what is missing)', run: () => seedClientCategories() },
   { name: 'wallet: MusafirBaba ledger accounts (opens only what is missing)', run: () => seedPlatformAccounts() },
+  { name: 'subscriptions: placeholder plans and query weights (adds only what is missing)', run: () => seedPlans() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;

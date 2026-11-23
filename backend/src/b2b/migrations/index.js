@@ -24,6 +24,7 @@ import { STAGE_08 } from './stage-08.js';
 import { STAGE_09 } from './stage-09.js';
 import { STAGE_11 } from './stage-11.js';
 import { STAGE_12B } from './stage-12b.js';
+import { STAGE_13 } from './stage-13.js';
 import { STAGE_07 } from './stage-07.js';
 
 /** @type {readonly import('../core/db/migrations.js').Migration[]} */
@@ -247,4 +248,5 @@ export const MIGRATIONS = [
   ...STAGE_09,
   ...STAGE_11,
   ...STAGE_12B,
+  ...STAGE_13,
 ];
