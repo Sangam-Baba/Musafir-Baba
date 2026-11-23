@@ -203,6 +203,7 @@ describe('system roles (plan §4) — authorization matrix', () => {
     expect(futureGrants('client.viewer')).toEqual([
       'hotel-booking.booking.read',
       'hotel-booking.request.read',
+      'orders.export.read', // Stage 12B: bookings as CSV
       'orders.order.read', // Stage 12B: the company's orders
       'organizations.org.read',
     ]);

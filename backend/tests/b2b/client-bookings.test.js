@@ -12,7 +12,6 @@ import { auth, useInventoryApp } from './helpers/inventory-app.js';
 import { clientOwner } from './helpers/search-setup.js';
 
 const clock = { now: () => new Date('2026-11-23T10:00:00Z') };
-const S = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 'test' };
 const app = useInventoryApp({ clock, models: [BookingSummaryRecord], env: { B2B_ORDERS_ENABLED: 'true' } });
 let n = 0;
 
