@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CONTACT_INFO, getWhatsAppLink } from "@/config/contact";
+import { PAY_NOW_URL } from "@/config/payments";
 
 // Routes where the white nav bar sticks on desktop. Allow-list on purpose:
 // package / visa / rental detail pages, blog posts, bookings, payment,
@@ -212,7 +213,7 @@ export default function Header() {
                   asChild
                   className="hidden md:flex h-8 px-4 rounded-md font-bold text-[#d35400] bg-white hover:bg-gray-100 transition-all shadow-sm flex items-center gap-1.5"
                 >
-                  <Link href="https://payu.in/invoice/56FFB3A783C36FD0D432CEFB61FCE2A77E7188F585220534625FAFB9C5BA7A91/3A149C292C19880543705B6135EFBDB1">
+                  <Link href={PAY_NOW_URL}>
                     <CreditCard className="w-3.5 h-3.5" />
                     <span>Pay Now</span>
                   </Link>
