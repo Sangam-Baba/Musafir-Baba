@@ -37,7 +37,9 @@ beforeAll(async () => {
 afterAll(async () => mongo.stop());
 beforeEach(async () => {
   nowMs = Date.parse('2026-11-10T06:30:00Z');
-  for (const m of [InvoiceRecord, SubscriptionRecord, UsageMonthlyRecord]) await m.deleteMany({}).setOptions(S);
+  await InvoiceRecord.deleteMany({}).setOptions(S);
+  await SubscriptionRecord.deleteMany({}).setOptions(S);
+  await UsageMonthlyRecord.deleteMany({}).setOptions(S);
   await PlanVersionRecord.deleteMany({});
   await NumberSeriesRecord.deleteMany({});
   await seedPlans();
