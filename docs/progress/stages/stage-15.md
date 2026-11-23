@@ -34,8 +34,8 @@
 | S15-T01 | Setup: task list, placeholder defaults (D11) | §3 | DONE | AI (Claude) | | — | |
 | S15-T02 | Deduction rules + "TDS / deductions payable" account + payout run proposal (`wal_payout_runs`, `wal_payout_lines`): eligible − deductions per hotel, negatives carried, holds (bank changed < 72 h, KYC, disputes) | §3.1–3.3 | TODO | | | | |
 | S15-T03 | Prepare → approve (a different person, totals hash) → bank file (logged) → paid (journal per hotel, payables PAID) → remittance; approved runs locked | §3.2 | TODO | | | | |
-| S15-T04 | Hotel statements per run + disputes (`wal_statement_disputes`): hotel raises on a line, ops resolves, hold / adjustment next run | §3.4 | TODO | | | | |
-| S15-T05 | GST registers (tax invoices, credit notes, SaaS invoices; B2B / B2C; place of supply; SAC) + period locks (`bil_period_locks`) enforced when documents are issued | §3.5 | TODO | | | | |
+| S15-T04 | Hotel statements per run + disputes (`wal_statement_disputes`): hotel raises on a line, ops resolves, hold / adjustment next run | §3.4 | DONE | AI (Claude) | | payout-disputes.test.js | migration 0075 `wal_statement_disputes` (one open per payable); statement per paid payout (bookings, deductions, net, bank reference); hotel raises a dispute on its own payable → next payout line held (STATEMENT_DISPUTE_OPEN) → MusafirBaba accepts / rejects with a note; corrections via adjustment / recorded payout. Routes / screens: T09 |
+| S15-T05 | GST registers (tax invoices, credit notes, SaaS invoices; B2B / B2C; place of supply; SAC) + period locks (`bil_period_locks`) enforced when documents are issued | §3.5 | DOING | AI (Claude) | |  |  |
 | S15-T06 | Admin reports: sales, client, destination, profit / margin, payments, wallet & credit ageing, payables ageing, cancellations, plan revenue & usage — CSV | §3.6 | TODO | | | | |
 | S15-T07 | Client reports (bookings, spend, usage) + accounting export (journal CSV by day) | §3.7, §3.8 | TODO | | | | |
 | S15-T08 | Client white-label (`org_branding`: name, contact, colour, logo link) on the client voucher | §3.9, §3.10 | TODO | | | | |

@@ -1,6 +1,11 @@
 // @ts-check
 /** Stage 15 — payouts, finance and reports (new collections with allowed prefixes only). */
-import { DEDUCTION_RULES_COLLECTION, PAYOUT_LINES_COLLECTION, PAYOUT_RUNS_COLLECTION } from '../modules/wallet/index.js';
+import {
+  DEDUCTION_RULES_COLLECTION,
+  PAYOUT_LINES_COLLECTION,
+  PAYOUT_RUNS_COLLECTION,
+  STATEMENT_DISPUTES_COLLECTION,
+} from '../modules/wallet/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_15 = [
@@ -21,6 +26,20 @@ export const STAGE_15 = [
       );
       await ctx.createCollection(DEDUCTION_RULES_COLLECTION);
       await ctx.createIndex(DEDUCTION_RULES_COLLECTION, { status: 1, hotelOrgId: 1 }, { name: 'status_hotel' });
+    },
+  },
+  {
+    id: '0075-wal-statement-disputes',
+    description: 'Statement disputes: one open per payable; per hotel newest first; queue by status',
+    up: async (ctx) => {
+      await ctx.createCollection(STATEMENT_DISPUTES_COLLECTION);
+      await ctx.createIndex(
+        STATEMENT_DISPUTES_COLLECTION,
+        { payableId: 1 },
+        { name: 'one_open', unique: true, partialFilterExpression: { status: 'OPEN' } },
+      );
+      await ctx.createIndex(STATEMENT_DISPUTES_COLLECTION, { hotelOrgId: 1, createdAt: -1 }, { name: 'hotel' });
+      await ctx.createIndex(STATEMENT_DISPUTES_COLLECTION, { status: 1, createdAt: 1 }, { name: 'status_age' });
     },
   },
 ];
