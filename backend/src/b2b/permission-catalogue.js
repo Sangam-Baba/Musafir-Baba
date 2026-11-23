@@ -22,6 +22,7 @@ import { PERMISSION_CATALOGUE as kyc } from './modules/kyc/index.js';
 import { PERMISSION_CATALOGUE as notifications } from './modules/notifications/index.js';
 import { PERMISSION_CATALOGUE as organizations } from './modules/organizations/index.js';
 import { PERMISSION_CATALOGUE as pricing } from './modules/pricing/index.js';
+import { PERMISSION_CATALOGUE as metering } from './modules/metering/index.js';
 
 export const PERMISSION_CATALOGUE = mergeCatalogues([
   identity,
@@ -41,4 +42,5 @@ export const PERMISSION_CATALOGUE = mergeCatalogues([
   reporting,
   wallet,
   payments,
+  metering,
 ]);

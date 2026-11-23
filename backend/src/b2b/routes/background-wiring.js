@@ -29,6 +29,7 @@ import { createOrderCancellations } from '../modules/orders/index.js';
 import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { walletParts } from './wallet-wiring.js';
+import { usageRecorder, usageSchedules } from './metering-wiring.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
 
@@ -83,6 +84,7 @@ export function startDatabase(env, log, hub, identity) {
         hub,
         email,
         publicUrl: config.B2B_PUBLIC_URL,
+        onStop: () => usageRecorder(systemClock).stop(),
         rules: [...orderReconcileRules(engine.ordersDeps), cancellingRule(engine.ordersDeps)],
         consumers: [
           ...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
@@ -91,20 +93,15 @@ export function startDatabase(env, log, hub, identity) {
           ...emails,
           summaries.consumer,
           ...payables.consumers,
-          wallet.consumer,
-          wallet.topUps,
+          ...[wallet.consumer, wallet.topUps],
         ],
-        invariants: [
-          ...orderInvariants({ clock: systemClock }),
-          ...documentInvariants({ clock: systemClock }),
-          ...wallet.invariants,
-          ...bookingInvariants({ clock: systemClock, owners: () => bookedNightOwners(systemClock) }),
-        ],
+        invariants: invariantsOf(engine, wallet),
         schedules: [
           retentionSchedule(env, config, log),
           CALENDAR_WINDOW_SCHEDULE,
           { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
           payables.completion,
+          ...usageSchedules(systemClock),
           wallet.schedule,
           { name: 'hotel-booking-no-show-settle', everyMs: 10 * 60_000, run: () => settleNoShows(engine.ordersDeps) },
           { name: 'hotel-booking-ack-reminders', everyMs: 60_000, run: () => ackEscalation({ clock: systemClock }) },
@@ -199,4 +196,18 @@ async function settleNoShows(ordersDeps) {
     }
   }
   return { settled };
+}
+
+/**
+ * The hourly checks registered with background work (orders, documents, wallets, bookings).
+ * @param {ReturnType<typeof bookingEngine>} engine
+ * @param {ReturnType<typeof walletParts>} wallet
+ */
+function invariantsOf(engine, wallet) {
+  return [
+    ...orderInvariants({ clock: systemClock }),
+    ...documentInvariants({ clock: systemClock }),
+    ...wallet.invariants,
+    ...bookingInvariants({ clock: systemClock, owners: () => bookedNightOwners(systemClock) }),
+  ];
 }

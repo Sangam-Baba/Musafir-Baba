@@ -22,7 +22,9 @@ export const SEARCH_LIMITS = Object.freeze({
 
 /**
  * @typedef {import('../modules/hotel-search/index.js').SearchCaller} SearchCaller
- * @typedef {{ before?: (caller: SearchCaller, kind: string) => Promise<void>, after?: (caller: SearchCaller, kind: string) => Promise<void> }} SearchHooks
+ * @typedef {{ statusCode: number, userId: string | null, requestId: string | null, refresh: boolean, subject: string | null }} AfterInfo
+ *   `refresh`: the dashboard's own refresh after a live update (`X-MB-Refresh: realtime`); `subject`: the hotel asked about
+ * @typedef {{ before?: (caller: SearchCaller, kind: string) => Promise<void>, after?: (caller: SearchCaller, kind: string, info: AfterInfo) => Promise<void> }} SearchHooks
  */
 
 /** @param {import('../core/clock.js').Clock} clock */
@@ -122,7 +124,16 @@ export function createSearchGate(deps) {
       await hooks.before?.(caller, kind);
       res.locals.searchCaller = caller;
       res.on('finish', () => {
-        if (res.statusCode < 400) hooks.after?.(caller, kind).catch(() => undefined);
+        if (res.statusCode >= 400) return; // failures are never counted
+        const ctx = contextOf(res);
+        const info = {
+          statusCode: res.statusCode,
+          userId: ctx.actor.type === 'member' ? ctx.actor.userId : null,
+          requestId: ctx.requestId ?? null,
+          refresh: req.get('x-mb-refresh') === 'realtime',
+          subject: typeof req.params?.ref === 'string' ? req.params.ref : null,
+        };
+        hooks.after?.(caller, kind, info).catch(() => undefined);
       });
     })().then(() => next(), next);
   };

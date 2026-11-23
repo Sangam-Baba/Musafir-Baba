@@ -1,5 +1,6 @@
 // @ts-check
 /** Stage 06 wiring: hotel search routes, through hotel-catalog / hotel-inventory / pricing / kyc public interfaces. */
+import { usageHooks } from './metering-wiring.js';
 import express from 'express';
 
 import { createSearchCatalog } from '../modules/hotel-catalog/index.js';
@@ -22,7 +23,7 @@ import { createSearchGate } from './search-gateway.js';
  */
 export function searchParts(env, clock, identity) {
   const catalog = createSearchCatalog({ clock });
-  const gate = createSearchGate({ clock, orgInfo: (orgId) => identity.orgs.basicInfo(orgId) });
+  const gate = createSearchGate({ clock, orgInfo: (orgId) => identity.orgs.basicInfo(orgId), hooks: usageHooks(clock) }); // Stage 12B: usage counted
   const availability = createAvailabilityService({ clock });
   const terms = createPlanTermsService();
   const quotes = createQuoteService({ clock });

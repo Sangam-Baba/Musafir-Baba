@@ -261,7 +261,9 @@ export function routeSignal(signal, hub) {
  *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[],
  *   rules?: import('./core/jobs/reconciler.js').ReconcileRule[],
  *   consumers?: { consumer: string, types: string[], handler: (event: any) => Promise<void> }[],
- *   invariants?: { name: string, check: () => Promise<{ id: string, detail: string }[]> }[] }} options
+ *   invariants?: { name: string, check: () => Promise<{ id: string, detail: string }[]> }[],
+ *   onStop?: () => Promise<unknown> }} options
+ *   `onStop`: last work when background stops (Stage 12B: the usage counter's final flush) — errors are logged only
  *   `rules` / `consumers`: parts built with the process's settings (the booking engine) — registered once here
  * @returns {{ stop: () => Promise<void> }}
  */
@@ -307,6 +309,7 @@ export function startBackground(options) {
   return {
     async stop() {
       await Promise.all([scheduler.stop(), relay.stop(), runner.stop(), reader.stop()]);
+      await options.onStop?.().catch((err) => logger.error({ err }, 'background: last work on stop failed'));
     },
   };
 }
