@@ -12,6 +12,11 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: 'Book hotels for the company and pay (wallet, credit or PayU)',
     orgTypes: ['CLIENT'],
   },
+  exportRead: {
+    code: 'orders.export.read',
+    description: "Download the company's bookings as a spreadsheet (CSV)",
+    orgTypes: ['CLIENT'],
+  },
   orderRead: {
     code: 'orders.order.read',
     description: "See the company's orders and their documents",

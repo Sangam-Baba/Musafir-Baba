@@ -41,6 +41,7 @@ import { orderAdminRoutes } from './orders-admin.js';
 import { summariesFor } from './reporting-wiring.js';
 import { orderRoutes } from './orders.js';
 import { clientOrderRoutes } from './client-orders.js';
+import { clientBookingRoutes } from './client-bookings.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
 
@@ -222,5 +223,6 @@ function clientOrdersFor(env, clock, engine) {
       clock,
     }),
   );
+  router.use(clientBookingRoutes({ summaries: summariesFor(engine.ordersDeps) }));
   return router;
 }

@@ -22,6 +22,7 @@ const MAIN: NavItem[] = [
   { href: "/business/statement", label: "Statement", icon: FileSpreadsheet, permission: "wallet.statement.read" },
   // B2B clients (Stage 12 part A) — shown only to roles that have these permissions, so hotels never see them
   { href: "/business/hotels", label: "Search Hotels", icon: Search, permission: "hotel-search.search.use" },
+  { href: "/business/my-bookings", label: "My Bookings", icon: CalendarCheck, permission: "orders.order.read" }, // Stage 12B: clients
   { href: "/business/booking-requests", label: "Booking Requests", icon: ClipboardList, permission: "hotel-booking.request.read" },
   { href: "/business/markup", label: "My Markup", icon: Percent, permission: "pricing.markup.read" },
   { href: "/business/wallet", label: "Wallet", icon: Wallet, permission: "wallet.account.read" }, // Stage 11: clients only

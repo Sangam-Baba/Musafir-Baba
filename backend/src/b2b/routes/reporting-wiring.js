@@ -25,6 +25,7 @@ const orderPart = (o, refunded) => ({
   customerId: o.customerId ?? null,
   guestKey: o.guestKey ?? null,
   clientOrgId: o.clientOrgId ?? null,
+  branchId: o.branchId ?? null,
   createdBy: o.createdBy ?? null,
   orderStatus: o.status,
   paymentState: paymentState(o.totalPaise, refunded, Boolean(o.payment?.verified)),
