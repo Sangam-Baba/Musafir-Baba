@@ -17,7 +17,7 @@ import {
   usageOf,
 } from '../../src/b2b/modules/metering/index.js';
 import { usageRecorder } from '../../src/b2b/routes/metering-wiring.js';
-import { auth } from './helpers/inventory-app.js';
+import { asStaff, auth } from './helpers/inventory-app.js';
 import { useOrderEngine } from './helpers/order-engine.js';
 import { clientOwner } from './helpers/search-setup.js';
 
@@ -99,5 +99,15 @@ describe('through the API', () => {
     const site = await UsageEventRecord.find({ orgId: 'platform' }).setOptions(S).lean();
     expect(site).toHaveLength(1);
     expect(site.every((e) => !e.billable)).toBe(true);
+
+    // the client's screen and MusafirBaba's show the same numbers
+    const month = new Date(clock.now().getTime() + 330 * 60_000).toISOString().slice(0, 7);
+    const own = (await app.srv.get(`/api/v1/usage?month=${month}`, auth(c.token))).body;
+    expect(own.byMetric['hotel.offers']).toMatchObject({ count: 3, billable: 2 });
+    const admin = (await app.admin.get(`/api/v1/admin/usage?month=${month}`, asStaff('f1:metering.admin.read'))).body.data;
+    expect(admin.find((/** @type {any} */ r) => r.orgId === c.orgId)).toMatchObject({ billable: own.billable, name: 'Trips Co' });
+    const one = (await app.admin.get(`/api/v1/admin/usage/${c.orgId}?month=${month}`, asStaff('f1:metering.admin.read'))).body;
+    expect(one).toEqual(own);
+    expect((await app.admin.get(`/api/v1/admin/usage?month=${month}`, asStaff('f2:orders.admin.read'))).status).toBe(403);
   });
 });
