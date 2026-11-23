@@ -7,9 +7,13 @@
  * wallet, finished months' overage billed; hourly — unpaid invoices tried again, dunning (reminders day 0 / 3 / 7, suspended
  * day 10); a wallet top-up → that client's unpaid invoices tried at once; a PayU payment for an invoice → paid.
  */
+import express from 'express';
+
 import { systemScope } from '../core/db/tenant-plugin.js';
 import { EVENTS as ORG_EVENTS, OrganizationRecord } from '../modules/organizations/index.js';
-import { createOverrides, createSubscriptions, sendQuotaAlerts, SubscriptionRecord } from '../modules/subscriptions/index.js';
+import { createOverrides, createPlans, createSubscriptions, sendQuotaAlerts, SubscriptionRecord } from '../modules/subscriptions/index.js';
+import { paymentsFromEnv } from './payments-wiring.js';
+import { subscriptionRoutes } from './subscriptions.js';
 import { createBilling, runDunning } from '../modules/billing/index.js';
 import { createGstRegistrations } from '../modules/kyc/index.js';
 import { EVENTS as PAYMENT_EVENTS } from '../modules/payments/index.js';
@@ -121,4 +125,27 @@ export function subscriptionParts(clock, env = {}) {
       { name: 'billing-dunning', everyMs: 60 * 60_000, run: () => runDunning({ clock }) },
     ],
   };
+}
+
+/**
+ * Stage 13 routes (client plan and billing; admin comes with S13-T09).
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {import('../core/logger.js').Logger} logger
+ */
+export function stage13Routes(env, clock, logger) {
+  const router = express.Router();
+  const subs = createSubscriptions({ clock });
+  const billing = billingFor(clock, env, subs);
+  router.use(
+    subscriptionRoutes({
+      clock,
+      plans: createPlans({ clock }),
+      subs,
+      billing,
+      payments: paymentsFromEnv(env, clock, logger).payments,
+      publicUrl: (env.B2B_PUBLIC_URL || 'https://musafirbaba.com').replace(/\/$/, ''),
+    }),
+  );
+  return router;
 }
