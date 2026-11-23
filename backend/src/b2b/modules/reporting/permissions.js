@@ -8,4 +8,9 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: 'MusafirBaba admin: lists of all bookings across hotels and channels',
     orgTypes: ['PLATFORM'],
   },
+  reportsRead: {
+    code: 'reporting.reports.read',
+    description: 'MusafirBaba admin: finance and management reports (sales, margin, payments, ageing, plan revenue) and their CSV',
+    orgTypes: ['PLATFORM'],
+  },
 });
