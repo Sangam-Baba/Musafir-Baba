@@ -127,7 +127,7 @@ export function createPayoutRuns(deps) {
     /** @param {string} by @param {{ cycleEnd: string }} a */
     propose: (by, a) => propose(deps, by, a),
     /** @param {string} by @param {string} lineId @param {{ hold: boolean, note?: string | null }} a */
-    setHold: (by, lineId, a) => setHold(by, lineId, a),
+    setHold: (by, lineId, a) => setHold(deps, by, lineId, a),
     /** @param {string} by @param {string} runId */
     approve: (by, runId) => approve(deps, by, runId),
     /** @param {string} by @param {string} runId */

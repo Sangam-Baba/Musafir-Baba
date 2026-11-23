@@ -143,8 +143,8 @@ async function propose(deps, by, a) {
   return runDto(await loadRun(run._id));
 }
 
-/** @param {string} by @param {string} lineId @param {{ hold: boolean, note?: string | null }} a */
-async function setHold(by, lineId, a) {
+/** @param {RunDeps} deps @param {string} by @param {string} lineId @param {{ hold: boolean, note?: string | null }} a */
+async function setHold(deps, by, lineId, a) {
   const l = /^[a-f0-9]{24}$/.test(lineId) ? await PayoutLineRecord.findById(lineId).setOptions(SCOPE).lean() : null;
   if (!l) throw new NotFoundError('PAYOUT_LINE_NOT_FOUND');
   const run = await loadRun(l.runId);
@@ -163,7 +163,7 @@ async function setHold(by, lineId, a) {
     { _id: run._id, status: 'DRAFT' },
     {
       $set: { totals: runTotals(await linesOf(run._id)) },
-      $push: { history: { at: new Date(), what: `${a.hold ? 'held' : 'released'} ${l.hotelOrgId}`, by } },
+      $push: { history: { at: deps.clock.now(), what: `${a.hold ? 'held' : 'released'} ${l.hotelOrgId}`, by } },
     },
   );
   return lineDto(/** @type {any} */ (await PayoutLineRecord.findById(lineId).setOptions(SCOPE).lean()));
