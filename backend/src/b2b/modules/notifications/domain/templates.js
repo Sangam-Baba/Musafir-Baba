@@ -208,6 +208,22 @@ export const TEMPLATES = Object.freeze({
     subject: 'You have used {{percent}} of your monthly queries',
     text: "Hello,\n\n{{orgName}} has used {{percent}} of this month's queries on MusafirBaba Business.\n\nSee your plan: {{link}}\n\nMusafirBaba Business",
   },
+  'billing.reminder': {
+    version: 1,
+    vars: ['orgName', 'link', 'amount'],
+    title: 'Invoice unpaid: {{amount}}',
+    body: '{{amount}} for your MusafirBaba plan is unpaid. Add money to your wallet or pay by PayU — searching stops after 10 days unpaid.',
+    subject: 'Your MusafirBaba invoice is unpaid ({{amount}})',
+    text: 'Hello,\n\n{{amount}} for the {{orgName}} plan on MusafirBaba Business is unpaid. Add money to your wallet (it is taken automatically) or pay by PayU. After 10 days unpaid, searching and new bookings are paused; your existing bookings stay as they are.\n\nPay now: {{link}}\n\nMusafirBaba Business',
+  },
+  'billing.suspended': {
+    version: 1,
+    vars: ['orgName', 'link', 'amount'],
+    title: 'Searching and booking paused',
+    body: '{{amount}} has been unpaid for 10 days, so searching and new bookings are paused for {{orgName}}. Existing bookings are not affected. Pay to switch it back on at once.',
+    subject: 'Searching and booking paused — {{amount}} unpaid',
+    text: 'Hello,\n\n{{amount}} has been unpaid for 10 days, so searching and new bookings are paused for {{orgName}} on MusafirBaba Business. Your existing bookings, documents and cancellations are not affected. As soon as it is paid, everything is switched back on.\n\nPay now: {{link}}\n\nMusafirBaba Business',
+  },
   // Stage 11: client wallets
   'wallet.topup-credited': {
     version: 1,

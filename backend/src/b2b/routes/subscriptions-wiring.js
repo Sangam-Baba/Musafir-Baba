@@ -4,16 +4,17 @@
  * repeat-safe); every 10 minutes: verified clients without one get it (clients verified before Stage 13), approved
  * overrides cut short are applied; every 5 minutes: 80 % / 100 % quota alerts.
  * Billing (S13-T06): every 10 minutes — trials ended, months renewed, new charges invoiced and collected from the
- * wallet, finished months' overage billed; hourly — unpaid invoices tried again; a PayU payment for an invoice → paid.
+ * wallet, finished months' overage billed; hourly — unpaid invoices tried again, dunning (reminders day 0 / 3 / 7, suspended
+ * day 10); a wallet top-up → that client's unpaid invoices tried at once; a PayU payment for an invoice → paid.
  */
 import { systemScope } from '../core/db/tenant-plugin.js';
 import { EVENTS as ORG_EVENTS, OrganizationRecord } from '../modules/organizations/index.js';
 import { createOverrides, createSubscriptions, sendQuotaAlerts, SubscriptionRecord } from '../modules/subscriptions/index.js';
-import { createBilling } from '../modules/billing/index.js';
+import { createBilling, runDunning } from '../modules/billing/index.js';
 import { createGstRegistrations } from '../modules/kyc/index.js';
 import { EVENTS as PAYMENT_EVENTS } from '../modules/payments/index.js';
 import { readSettings } from '../modules/pricing/index.js';
-import { createLedger, createLiveWallets } from '../modules/wallet/index.js';
+import { createLedger, createLiveWallets, EVENTS as WALLET_EVENTS } from '../modules/wallet/index.js';
 
 const SCOPE = systemScope('subscriptions: start for verified clients', { routine: true });
 
@@ -94,6 +95,12 @@ export function subscriptionParts(clock, env = {}) {
         },
       },
       {
+        consumer: 'billing-retry-after-topup',
+        types: [WALLET_EVENTS.topUpCredited],
+        /** @param {any} event */
+        handler: async (event) => void (await billing.retryUnpaid(String(event.payload.orgId))), // paid → active again at once
+      },
+      {
         consumer: 'subscriptions-client-start',
         types: [ORG_EVENTS.orgActivated],
         /** @param {any} event */
@@ -111,6 +118,7 @@ export function subscriptionParts(clock, env = {}) {
       { name: 'subscriptions-quota-alerts', everyMs: 5 * 60_000, run: () => sendQuotaAlerts({ clock }) },
       { name: 'billing-run', everyMs: 10 * 60_000, run: () => runBilling(subs, billing) },
       { name: 'billing-retry-unpaid', everyMs: 60 * 60_000, run: () => billing.retryUnpaid() },
+      { name: 'billing-dunning', everyMs: 60 * 60_000, run: () => runDunning({ clock }) },
     ],
   };
 }

@@ -162,6 +162,22 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/plan',
   },
+  'billing.reminder': {
+    audience: 'ORG',
+    permission: 'subscriptions.subscription.read',
+    critical: true,
+    label: 'Invoice unpaid',
+    emailTo: 'OWNERS',
+    link: '/business/plan',
+  },
+  'billing.suspended': {
+    audience: 'ORG',
+    permission: 'subscriptions.subscription.read',
+    critical: true,
+    label: 'Searching and booking paused',
+    emailTo: 'OWNERS',
+    link: '/business/plan',
+  },
   // Stage 11: client wallets
   'wallet.topup-credited': {
     audience: 'ORG',
@@ -211,6 +227,8 @@ export const EVENT_CATEGORIES = Object.freeze({
   'hotel-booking.booking.cancelled': 'booking.cancelled',
   'orders.order.booked-offline': 'order.booked-offline',
   'subscriptions.quota.reached': 'subscription.quota',
+  'billing.dunning.reminded': 'billing.reminder',
+  'billing.subscription.suspended': 'billing.suspended',
   'wallet.topup.credited': 'wallet.topup-credited',
   'wallet.account.low-balance': 'wallet.low-balance',
   'wallet.credit.overdue': 'wallet.credit-overdue',
@@ -245,6 +263,7 @@ export const ADMIN_QUEUES = Object.freeze({
   'hotel-booking.booking.hotel-failed': 'hotel-failures',
   'hotel-booking.hotel-failure.resolved': 'hotel-failures',
   'subscriptions.quota.reached': 'client-quota', // Stage 13: clients near / over their limit
+  'billing.subscription.suspended': 'dunning',
 });
 
 /** @param {string} key @returns {Category | null} */

@@ -235,9 +235,13 @@ export function createBilling(deps) {
       if (!inv) throw new NotFoundError('INVOICE_NOT_FOUND');
       return /** @type {Record<string, any>} */ (inv);
     },
-    /** Unpaid invoices tried again from the wallet (after a top-up). */
-    async retryUnpaid() {
-      const due = await InvoiceRecord.find({ status: 'UNPAID' }).setOptions(BILL).sort({ lastAttemptAt: 1 }).limit(200).lean();
+    /** Unpaid invoices tried again from the wallet (after a top-up — one client, or all). @param {string} [clientOrgId] */
+    async retryUnpaid(clientOrgId) {
+      const due = await InvoiceRecord.find({ status: 'UNPAID', ...(clientOrgId ? { clientOrgId } : {}) })
+        .setOptions(BILL)
+        .sort({ lastAttemptAt: 1 })
+        .limit(200)
+        .lean();
       let paid = 0;
       for (const inv of due) if ((await collect(deps, inv)) === 'PAID') paid += 1;
       return { unpaidTried: due.length, unpaidPaid: paid };

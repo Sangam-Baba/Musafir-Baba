@@ -65,6 +65,7 @@ import { OrderRecord } from './modules/orders/index.js';
 import { DocumentRecord } from './modules/documents/index.js';
 import { AccountRecord, createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
 import { seedPlans, SubscriptionRecord } from './modules/subscriptions/index.js';
+import { DunningRecord } from './modules/billing/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
@@ -220,6 +221,7 @@ export const eventSources = [
   HotelFailureRecord,
   AccountRecord, // Stage 11: client wallet alerts
   SubscriptionRecord, // Stage 13: quota alerts
+  DunningRecord, // Stage 13: payment reminders, suspension
 ];
 
 /**

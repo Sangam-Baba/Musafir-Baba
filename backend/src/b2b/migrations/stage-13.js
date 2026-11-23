@@ -1,6 +1,6 @@
 // @ts-check
 /** Stage 13 — subscriptions and billing (new `sub_` / `bil_` collections only). */
-import { INVOICES_COLLECTION } from '../modules/billing/index.js';
+import { DUNNING_COLLECTION, INVOICES_COLLECTION } from '../modules/billing/index.js';
 import {
   OVERRIDES_COLLECTION,
   PLAN_VERSIONS_COLLECTION,
@@ -56,6 +56,19 @@ export const STAGE_13 = [
       await ctx.createIndex(INVOICES_COLLECTION, { clientOrgId: 1, issuedAt: -1 }, { name: 'client_recent' });
       await ctx.createIndex(INVOICES_COLLECTION, { status: 1, lastAttemptAt: 1 }, { name: 'status_attempt' });
       await ctx.createIndex(INVOICES_COLLECTION, { clientOrgId: 1, 'lines.ref': 1 }, { name: 'client_line_ref' });
+    },
+  },
+  {
+    id: '0073-bil-dunning',
+    description: 'Dunning steps: one per client × episode × step; events for the relay',
+    up: async (ctx) => {
+      await ctx.createCollection(DUNNING_COLLECTION);
+      await ctx.createIndex(DUNNING_COLLECTION, { clientOrgId: 1, episode: 1, step: 1 }, { name: 'step_unique', unique: true });
+      await ctx.createIndex(
+        DUNNING_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];
