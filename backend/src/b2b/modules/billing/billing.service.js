@@ -10,13 +10,14 @@
  * Invoices are unique per client and key, numbers reserved per key — a repeated run never bills or numbers twice.
  */
 import { systemScope } from '../../core/db/tenant-plugin.js';
-import { DomainError, NotFoundError } from '../../core/errors.js';
+import { ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
 import { financialYear, reserveNumber, STATE_LETTERS } from '../documents/index.js';
 import { UsageMonthlyRecord } from '../metering/index.js';
-import { monthStart, nextMonth, queryWeights, SAAS_SAC, weightedUsed } from '../subscriptions/index.js';
+import { monthOf, monthStart, nextMonth, queryWeights, SAAS_SAC, weightedUsed } from '../subscriptions/index.js';
 import { saasInvoiceHtml } from './domain/invoice-html.js';
 import { chargeLines, intraState, invoiceTotals, overageLines } from './domain/rating.js';
 import { InvoiceRecord } from './models/invoice.model.js';
+import { PeriodLockRecord } from './models/period-lock.model.js';
 
 export const BILL = systemScope('billing: SaaS invoices', { routine: true });
 export const MONTH_CLOSE_AFTER_MS = 24 * 60 * 60_000;
@@ -61,6 +62,7 @@ async function issue(deps, a) {
   const have = await InvoiceRecord.findOne({ clientOrgId: a.clientOrgId, key: a.key }).setOptions(BILL).lean();
   if (have) return /** @type {Record<string, any>} */ (have);
   const now = deps.clock.now();
+  if (await PeriodLockRecord.exists({ month: monthOf(now) })) throw new ConflictError('PERIOD_LOCKED'); // Stage 15: filed months stay closed
   const [issuer, client] = await Promise.all([deps.issuer(), deps.client(a.clientOrgId)]);
   const supply = {
     intraState: intraState(issuer.stateCode, client.gstin),

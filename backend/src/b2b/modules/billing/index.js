@@ -8,3 +8,5 @@ export { EVENTS } from './events.js';
 export { DUNNING_STEPS, dunningStepsDue } from './domain/dunning.js';
 export { DUNNING_COLLECTION, DunningRecord } from './models/dunning.model.js';
 export { runDunning, dunningBoard } from './dunning.service.js';
+export { PERIOD_LOCKS_COLLECTION, PeriodLockRecord } from './models/period-lock.model.js';
+export { gstRegister, gstRegisterCsv, isLocked, lockPeriod } from './gst-registers.service.js';

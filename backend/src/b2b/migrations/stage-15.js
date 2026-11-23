@@ -1,4 +1,5 @@
 // @ts-check
+import { PERIOD_LOCKS_COLLECTION } from '../modules/billing/index.js';
 /** Stage 15 — payouts, finance and reports (new collections with allowed prefixes only). */
 import {
   DEDUCTION_RULES_COLLECTION,
@@ -40,6 +41,14 @@ export const STAGE_15 = [
       );
       await ctx.createIndex(STATEMENT_DISPUTES_COLLECTION, { hotelOrgId: 1, createdAt: -1 }, { name: 'hotel' });
       await ctx.createIndex(STATEMENT_DISPUTES_COLLECTION, { status: 1, createdAt: 1 }, { name: 'status_age' });
+    },
+  },
+  {
+    id: '0076-bil-period-locks',
+    description: 'Period locks: one per month',
+    up: async (ctx) => {
+      await ctx.createCollection(PERIOD_LOCKS_COLLECTION);
+      await ctx.createIndex(PERIOD_LOCKS_COLLECTION, { month: 1 }, { name: 'month_unique', unique: true });
     },
   },
 ];

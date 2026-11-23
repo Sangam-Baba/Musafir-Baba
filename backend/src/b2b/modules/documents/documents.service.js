@@ -15,7 +15,7 @@ import { systemScope } from '../../core/db/tenant-plugin.js';
 import { NotFoundError } from '../../core/errors.js';
 import { EVENTS } from './events.js';
 import { creditNoteNumber, creditSeriesKey, financialYear, invoiceNumber, seriesKey } from './domain/numbering.js';
-import { clientVoucherHtml, creditNoteHtml, receiptHtml, taxInvoiceHtml, voucherHtml } from './domain/templates.js';
+import { clientVoucherHtml, creditNoteHtml, invoiceLines, receiptHtml, taxInvoiceHtml, voucherHtml } from './domain/templates.js';
 import { DocumentRecord } from './models/document.model.js';
 import { KEEP_RESERVATIONS, NumberSeriesRecord } from './models/number-series.model.js';
 
@@ -62,7 +62,7 @@ export async function reserveNumber(series, key, at) {
 /**
  * @param {DocumentsDeps} deps
  * @param {{ owners: Owners, orderRef: string }} f
- * @param {{ orderId: string, type: 'VOUCHER' | 'TAX_INVOICE' | 'RECEIPT' | 'CREDIT_NOTE' | 'VOUCHER_CLIENT', version: number, html: string, number?: string | null, series?: string | null, againstNumber?: string | null, subjectId?: string | null }} d
+ * @param {{ orderId: string, type: 'VOUCHER' | 'TAX_INVOICE' | 'RECEIPT' | 'CREDIT_NOTE' | 'VOUCHER_CLIENT', version: number, tax?: Record<string, unknown> | null, html: string, number?: string | null, series?: string | null, againstNumber?: string | null, subjectId?: string | null }} d
  */
 async function store(deps, f, d) {
   const sha256 = createHash('sha256').update(d.html).digest('hex');
@@ -91,6 +91,22 @@ async function store(deps, f, d) {
   }
 }
 
+/** The register amounts of a tax invoice (Stage 15 — GST registers). @param {import('./domain/templates.js').OrderFacts} facts */
+export function invoiceTax(facts) {
+  const lines = invoiceLines(facts.items);
+  const sum = (/** @type {'taxablePaise' | 'cgstPaise' | 'sgstPaise' | 'igstPaise'} */ k) => lines.reduce((a, l) => a + l[k], 0);
+  const first = facts.items[0]?.breakdown.lines[0]?.gst;
+  return {
+    taxablePaise: sum('taxablePaise'),
+    cgstPaise: sum('cgstPaise'),
+    sgstPaise: sum('sgstPaise'),
+    igstPaise: sum('igstPaise'),
+    placeOfSupply: first?.placeOfSupply ?? '',
+    sac: first?.sac ?? '',
+    buyerGstin: null,
+  };
+}
+
 /**
  * @param {DocumentsDeps} deps
  * @param {string} orderId
@@ -103,7 +119,7 @@ async function issueInvoice(deps, orderId, f, version) {
   const series = seriesKey(f.issuer.stateCode, fy);
   const number = invoiceNumber(fy, await reserveNumber(series, `order:${orderId}`, deps.clock.now()));
   const html = taxInvoiceHtml(f.facts, { number, issuedAt: deps.clock.now(), gstin: f.issuer.gstin });
-  return { created: await store(deps, f, { orderId, type: 'TAX_INVOICE', version, html, number, series }) };
+  return { created: await store(deps, f, { orderId, type: 'TAX_INVOICE', version, html, number, series, tax: invoiceTax(f.facts) }) };
 }
 
 /** @param {DocumentsDeps} deps @param {string} orderId */
@@ -185,6 +201,13 @@ async function issueCreditNote(deps, orderId, bookingId) {
       series,
       againstNumber: invoice.number,
       subjectId: bookingId,
+      tax: {
+        taxablePaise: c.refundPaise - taxes.cgstPaise - taxes.sgstPaise - taxes.igstPaise,
+        ...taxes,
+        placeOfSupply: c.placeOfSupply,
+        sac: c.sac,
+        buyerGstin: null,
+      },
     }),
   };
 }
@@ -282,4 +305,29 @@ export function documentInvariants(deps) {
       },
     },
   ];
+}
+
+/**
+ * Tax invoices and credit notes issued in a time range, with their register amounts (Stage 15 — GST registers).
+ * @param {Date} from
+ * @param {Date} to
+ */
+export async function taxDocumentsBetween(from, to) {
+  return (
+    await DocumentRecord.find(
+      { type: { $in: ['TAX_INVOICE', 'CREDIT_NOTE'] }, version: 1, issuedAt: { $gte: from, $lt: to } },
+      { html: 0, pendingEvents: 0 },
+    )
+      .setOptions(DOCS)
+      .sort({ issuedAt: 1 })
+      .limit(20_000)
+      .lean()
+  ).map((d) => ({
+    type: d.type,
+    number: d.number,
+    againstNumber: d.againstNumber,
+    issuedAt: d.issuedAt,
+    orderRef: d.orderRef,
+    tax: d.tax ?? null,
+  }));
 }
