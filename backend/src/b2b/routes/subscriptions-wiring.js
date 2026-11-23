@@ -14,6 +14,7 @@ import { EVENTS as ORG_EVENTS, OrganizationRecord } from '../modules/organizatio
 import { createOverrides, createPlans, createSubscriptions, sendQuotaAlerts, SubscriptionRecord } from '../modules/subscriptions/index.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { subscriptionRoutes } from './subscriptions.js';
+import { subscriptionAdminRoutes } from './subscriptions-admin.js';
 import { createBilling, runDunning } from '../modules/billing/index.js';
 import { createGstRegistrations } from '../modules/kyc/index.js';
 import { EVENTS as PAYMENT_EVENTS } from '../modules/payments/index.js';
@@ -128,7 +129,7 @@ export function subscriptionParts(clock, env = {}) {
 }
 
 /**
- * Stage 13 routes (client plan and billing; admin comes with S13-T09).
+ * Stage 13 routes: client plan and billing, MusafirBaba admin (plans, subscriptions, overrides, dunning, revenue).
  * @param {NodeJS.ProcessEnv} env
  * @param {import('../core/clock.js').Clock} clock
  * @param {import('../core/logger.js').Logger} logger
@@ -137,6 +138,7 @@ export function stage13Routes(env, clock, logger) {
   const router = express.Router();
   const subs = createSubscriptions({ clock });
   const billing = billingFor(clock, env, subs);
+  router.use(subscriptionAdminRoutes({ clock, plans: createPlans({ clock }), overrides: createOverrides({ clock }) }));
   router.use(
     subscriptionRoutes({
       clock,
