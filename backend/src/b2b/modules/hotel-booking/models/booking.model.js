@@ -60,6 +60,12 @@ const schema = new b2bMongoose.Schema(
     confirmedAt: { type: Date, default: null },
     acknowledgedAt: { type: Date, default: null },
     acknowledgedBy: { type: String, default: null },
+    cancellation: {
+      type: { chargePaise: Number, refundPaise: Number, hotelSharePaise: Number, requestedBy: String, requestedAt: Date, reason: String },
+      default: null,
+      _id: false,
+    },
+    escalationLevel: { type: Number, default: 0 }, // reminders sent while not acknowledged (1: 15 min, 2: 30 min, 3: 60 min)
     failure: { type: { code: String, detail: Mixed }, default: null, _id: false },
     ...stateFields(b2bMongoose, BOOKING_STATUSES),
   },

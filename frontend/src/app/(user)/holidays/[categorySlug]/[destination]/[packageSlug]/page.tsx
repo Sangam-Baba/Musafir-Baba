@@ -62,6 +62,7 @@ export interface GroupPackageInterface {
   destination: Destination;
   mainCategory: { name: string; slug: string };
   coverImage: Image;
+  coverImages?: Image[]; // newer packages keep their pictures here (coverImage may be empty)
   gallery: Image[];
   batch: Batch[];
   duration: Duration;

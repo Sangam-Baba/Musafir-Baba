@@ -13,6 +13,8 @@ export {
   PAYMENT_WINDOW_MARGIN_MINUTES,
   MIN_HOLD_LEFT_TO_PAY_MINUTES,
   DUPLICATE_WINDOW_MINUTES,
+  ORDER_LIMITS,
+  CLIENT_ORDER_LIMITS,
   assertOrderTransition,
   paymentPlan,
   checkBuyerInput,
@@ -31,9 +33,13 @@ export {
   ORDERS,
 } from './orders.service.js';
 export { createGatewayMode } from './gateway-mode.js';
+export { createWalletMode, WALLET_HOLD_TTL_MS } from './wallet-mode.js';
 export { orderReconcileRules, orderConsumers, HOLDING_STUCK_MS, CONFIRMING_STUCK_MS } from './safety-net.js';
 export { createOrderPayments, confirmForward, refundOrder, MAX_PAYMENT_ATTEMPTS } from './payment.service.js';
-export { sweepOrders, orderInvariants, ORDER_SWEEP_EVERY_MS } from './sweeper.js';
+export { sweepOrders, orderInvariants, expireOrder, ORDER_SWEEP_EVERY_MS } from './sweeper.js';
+export { createOrderAdmin } from './admin.service.js';
+export { createOrderCancellations } from './cancel.service.js';
+export { ADMIN_ACTIONS_COLLECTION, ADMIN_ACTIONS, ADMIN_ACTION_STATUSES, AdminActionRecord } from './models/admin-action.model.js';
 /** @typedef {import('./registry.js').ItemHandler} ItemHandler */
 /** @typedef {import('./registry.js').PaymentMode} PaymentMode */
 /** @typedef {import('./registry.js').OrderInfo} OrderInfo */

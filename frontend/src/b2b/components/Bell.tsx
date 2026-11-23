@@ -12,6 +12,7 @@ import { b2b, refreshBusinessSession } from "../api";
 import { errorMessage } from "../messages";
 import { STATUS_LABEL, useRealtime } from "../realtime";
 import { useBusinessSession } from "../session-store";
+import { playAlert } from "../sound";
 
 interface Notification {
   id: string;
@@ -42,6 +43,13 @@ export function Bell({ orgId }: { orgId: string | null }) {
       if (m.event !== "notification:new") return;
       void refresh();
       const title = typeof m.data?.title === "string" ? m.data.title : "New notification";
+      if (typeof m.data?.category === "string" && m.data.category.startsWith("booking.")) {
+        // a hotel booking alert (Stage 08): sound, and the notice stays until opened
+        playAlert();
+        void queryClient.invalidateQueries({ queryKey: ["b2b", "hotel-bookings"] });
+        toast.warning(title, { duration: Infinity, action: { label: "Open bookings", onClick: () => router.push("/business/bookings") } });
+        return;
+      }
       toast(title, { action: { label: "Open", onClick: () => setOpen(true) } });
     },
     onSync: () => void refresh(),

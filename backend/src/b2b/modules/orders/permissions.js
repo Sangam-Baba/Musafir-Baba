@@ -7,9 +7,29 @@
 import { definePermissions } from '../../core/permissions.js';
 
 export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePermissions('Orders', {
+  orderCreate: {
+    code: 'orders.order.create',
+    description: 'Book hotels for the company and pay (wallet, credit or PayU)',
+    orgTypes: ['CLIENT'],
+  },
+  exportRead: {
+    code: 'orders.export.read',
+    description: "Download the company's bookings as a spreadsheet (CSV)",
+    orgTypes: ['CLIENT'],
+  },
+  orderRead: {
+    code: 'orders.order.read',
+    description: "See the company's orders and their documents",
+    orgTypes: ['CLIENT'],
+  },
   adminRead: {
     code: 'orders.admin.read',
     description: 'MusafirBaba admin: find orders and see their full timeline',
+    orgTypes: ['PLATFORM'],
+  },
+  offlineBook: {
+    code: 'orders.offline.book',
+    description: "MusafirBaba admin: book a hotel for a B2B client (phone / email request), paid from the client's wallet or credit",
     orgTypes: ['PLATFORM'],
   },
   adminAct: {

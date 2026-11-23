@@ -54,6 +54,28 @@ export const PAYMENT_WINDOW_MARGIN_MINUTES = 2;
 export const MIN_HOLD_LEFT_TO_PAY_MINUTES = 5;
 export const DUPLICATE_WINDOW_MINUTES = 2;
 
+/**
+ * Safety limits (plan Stage 08 §3.7; owner defaults, 19 Nov 2026 — changeable): open orders at once per buyer and per
+ * IP, the largest order taken online (bigger ones: "call us"), and when many orders from one IP raise an alert.
+ */
+export const ORDER_LIMITS = Object.freeze({
+  openPerBuyer: 3,
+  openPerIp: 5,
+  maxOrderPaise: 50_000_000, // ₹5,00,000
+  alertPerIpPerHour: 10,
+});
+
+/**
+ * B2B clients (plan Stage 12 §3.13; owner defaults): up to 20 orders waiting at once per company (an office shares one
+ * IP, so the IP limit matches), the same largest online order; bigger ones are booked offline by MusafirBaba.
+ */
+export const CLIENT_ORDER_LIMITS = Object.freeze({
+  openPerBuyer: 20,
+  openPerIp: 20,
+  maxOrderPaise: 50_000_000,
+  alertPerIpPerHour: 60,
+});
+
 /** @param {OrderStatus} from @param {OrderStatus} to */
 export function assertOrderTransition(from, to) {
   if (!ORDER_TRANSITIONS[from]?.includes(to)) throw new DomainError('ORDER_STATUS', { from, to });

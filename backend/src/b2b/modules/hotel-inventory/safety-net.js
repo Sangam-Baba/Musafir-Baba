@@ -191,3 +191,19 @@ export function inventoryInvariants(deps) {
     },
   ];
 }
+
+/**
+ * The bookings that own nights from yesterday on (read-only; for the booking engine's check that every booked night
+ * belongs to a confirmed booking — Stage 08). At most 5 000 ids.
+ * @param {NetDeps['clock']} clock
+ */
+export async function bookedNightOwners(clock) {
+  const from = addDays(clock.now().toISOString().slice(0, 10), -1);
+  const rows = await InventoryDayRecord.aggregate([
+    { $match: { date: { $gte: from }, 'bookings.0': { $exists: true } } },
+    { $unwind: '$bookings' },
+    { $group: { _id: '$bookings.bookingId' } },
+    { $limit: 5000 },
+  ]).option(SCOPE);
+  return rows.map((r) => String(r._id));
+}

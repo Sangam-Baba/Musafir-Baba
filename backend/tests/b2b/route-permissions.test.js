@@ -83,6 +83,17 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /orders/:ref', // the buyer only (signed-in customer, same guest session, or the order link key); others 404
         'POST /orders/:ref/payments', // the buyer only (as above); Idempotency-Key; the PayU form for the server's amount
         'POST /orders/:ref/extend-hold', // the buyer only (as above); once, +10 minutes
+        'GET /orders/:ref/documents', // the buyer only (as above): voucher, invoice, receipt list
+        'GET /bookings/hotels', // the signed-in customer's (existing website login) or this browser's guest id; per buyer only
+        'GET /bookings/hotels/:ref', // the buyer only (customer, guest id or order link key); others 404
+        'GET /bookings/hotels/:ref/amendments', // the buyer only (as above)
+        'POST /bookings/hotels/:ref/amendments', // the buyer only; at most 5 open per booking
+        'POST /bookings/hotels/:ref/amendments/:id/messages', // the buyer only; their own booking's request
+        'GET /bookings/hotels/:ref/no-show', // the buyer only (as above)
+        'POST /bookings/hotels/:ref/no-show-dispute', // the buyer only; within 72 hours of the hotel marking it
+        'POST /bookings/hotels/:ref/cancel', // the buyer only; Idempotency-Key + a valid signed quote; server-side amounts
+        'POST /bookings/hotels/:ref/cancellation-quote', // the buyer only (as above); server-computed, signed, 5 minutes
+        'GET /orders/:ref/documents/:id', // the buyer only (as above): the page, escaped, strict CSP
         'POST /payments/payu/callback', // PayU browser return: trusted only after the reverse hash AND PayU's verify API
         'POST /registrations/verify-email',
       ].sort(),

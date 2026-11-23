@@ -15,10 +15,10 @@ import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
 import { newEvent } from '../../core/db/events.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { transition } from '../../core/db/transition.js';
-import { ConflictError, NotFoundError, ValidationError } from '../../core/errors.js';
+import { ConflictError, DomainError, NotFoundError, ValidationError } from '../../core/errors.js';
 import { newReference, parseReference } from '../../core/ids.js';
 import { EVENTS } from './events.js';
-import { checkBuyerInput, DUPLICATE_WINDOW_MINUTES } from './domain/order.js';
+import { checkBuyerInput, DUPLICATE_WINDOW_MINUTES, ORDER_LIMITS } from './domain/order.js';
 import { OrderRecord } from './models/order.model.js';
 
 export const ORDERS = systemScope('orders: booking engine', { routine: true });
@@ -32,11 +32,13 @@ const DUPLICATE_KEY = 11000;
  *   logger: import('../../core/logger.js').Logger,
  *   handlers: ReturnType<typeof import('./registry.js').createItemHandlers>,
  *   modes: ReturnType<typeof import('./registry.js').createPaymentModes>,
+ *   limits?: Partial<Record<keyof typeof ORDER_LIMITS, number>>,
  * }} OrdersDeps
  * @typedef {{ clientOrgId: string | null, customerId: string | null, guestKey: string | null }} Buyer
  * @typedef {{ channel: 'WEBSITE' | 'B2B_PORTAL' | 'B2B_API' | 'ADMIN', buyer: Buyer, createdBy: string,
  *   idempotency: { scope: string, key: string }, ip: string | null, paymentMode: 'GATEWAY' | 'WALLET' | 'CREDIT',
- *   contact: { name: string, email: string, phone: string }, confirmDuplicate?: boolean,
+ *   contact: { name: string, email: string, phone: string }, confirmDuplicate?: boolean, limits?: Partial<Record<keyof typeof ORDER_LIMITS, number>>,
+ *   branchId?: string | null, customerReference?: string | null,
  *   item: { type: 'HOTEL', input: { caller: unknown, priceToken: string, rooms: { leadGuest: string, guests?: string[] }[], specialRequests?: string | null } } }} CreateInput
  * @typedef {{ customerId?: string | null, guestKey?: string | null, accessKey?: string | null, linkSecret?: string, clientOrgId?: string | null, staff?: boolean }} Viewer
  */
@@ -97,6 +99,8 @@ async function insertHolding(deps, input, priced) {
       channel: input.channel,
       ...input.buyer,
       createdBy: input.createdBy,
+      branchId: input.branchId ?? null,
+      customerReference: input.customerReference?.trim() || null,
       idempotency: input.idempotency,
       tokenHash: priced.tokenHash,
       ip: input.ip,
@@ -119,6 +123,34 @@ async function insertHolding(deps, input, priced) {
   }
 }
 
+const OPEN = ['HOLDING', 'AWAITING_PAYMENT', 'PAYMENT_PENDING', 'CONFIRMING'];
+
+/**
+ * At most N open orders at once per buyer and per IP (hold exhaustion — plan §8).
+ * @param {CreateInput} input
+ * @param {Record<keyof typeof ORDER_LIMITS, number>} limits
+ */
+async function checkOpenOrders(input, limits) {
+  const mine = await OrderRecord.countDocuments({ ...buyerFilter(input.buyer), status: { $in: OPEN } }).setOptions(ORDERS);
+  if (mine >= limits.openPerBuyer) throw new ConflictError('TOO_MANY_OPEN_ORDERS', { limit: limits.openPerBuyer });
+  if (!input.ip) return;
+  const fromIp = await OrderRecord.countDocuments({ ip: input.ip, status: { $in: OPEN } }).setOptions(ORDERS);
+  if (fromIp >= limits.openPerIp) throw new ConflictError('TOO_MANY_OPEN_ORDERS', { limit: limits.openPerIp });
+}
+
+/**
+ * Many orders from one IP in an hour → one warning for the team (the log alert), when the count reaches the mark.
+ * @param {OrdersDeps} deps
+ * @param {string | null} ip
+ * @param {number} mark
+ */
+async function velocityAlert(deps, ip, mark) {
+  if (!ip) return;
+  const since = new Date(deps.clock.now().getTime() - 60 * 60_000);
+  const n = await OrderRecord.countDocuments({ ip, createdAt: { $gte: since } }).setOptions(ORDERS);
+  if (n === mark) deps.logger.warn({ ipHash: fingerprint(ip).slice(0, 12), orders: n }, 'orders: many orders from one IP in an hour');
+}
+
 /**
  * @param {OrdersDeps} deps
  * @param {Ctx} ctx
@@ -135,14 +167,18 @@ async function create(deps, ctx, input) {
   const again = await findOrder(byKey);
   if (again) return again;
   deps.modes.get(input.paymentMode); // refuse a payment mode this engine doesn't have yet, before taking rooms
+  const limits = { ...ORDER_LIMITS, ...deps.limits, ...input.limits }; // B2B clients: their own (larger) limits
+  await checkOpenOrders(input, limits);
   const handler = deps.handlers.get(input.item.type);
   const priced = await handler.price(ctx, input.item.input);
+  if (priced.totalPaise > limits.maxOrderPaise) throw new DomainError('ORDER_VALUE_LIMIT', { maxPaise: limits.maxOrderPaise });
   if (!input.confirmDuplicate) {
     const twin = await recentTwin(deps, input.buyer, priced.tokenHash);
     if (twin) throw new ConflictError('DUPLICATE_ORDER_SUSPECTED', { ref: twin.ref, orderStatus: twin.status });
   }
   const order = await insertHolding(deps, input, priced);
   if (!order) return /** @type {Record<string, any>} */ (await findOrder(byKey));
+  await velocityAlert(deps, input.ip, limits.alertPerIpPerHour);
   return hold(deps, ctx, order, priced);
 }
 
@@ -262,6 +298,7 @@ export async function orderView(deps, o, audience) {
     totalPaise: o.totalPaise,
     gstPaise: o.gstPaise,
     paymentMode: o.paymentMode,
+    customerReference: o.customerReference ?? null,
     holdExpiresAt: o.holdExpiresAt ?? null,
     holdExtended: Boolean(o.holdExtended),
     payment: { txnId: o.payment?.txnId ?? null, windowEndsAt: o.payment?.windowEndsAt ?? null, verified: Boolean(o.payment?.verified) },

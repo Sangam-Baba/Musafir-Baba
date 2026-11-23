@@ -4,13 +4,10 @@
  * Loaded lazily by ../mount.js. It has its own body parser, 404 and RFC 9457 error
  * handling, so requests never reach the existing app's middleware or routes.
  */
+import { startDatabase } from './background-wiring.js';
 import express from 'express';
-
-import { startBackground } from '../background.js';
 import { systemClock } from '../core/clock.js';
-import { loadConfig } from '../core/config.js';
-import { emailSenderFromConfig } from '../core/email.js';
-import { b2bMongoose, connectB2BDatabase } from '../core/db/connection.js';
+import { b2bMongoose } from '../core/db/connection.js';
 import { checkHealth } from '../core/health.js';
 import { assertRegisteredModelsAllowed } from '../core/db/model.js';
 import { contextMiddleware, contextOf } from '../core/http/context-middleware.js';
@@ -42,16 +39,13 @@ import { adminCalendarRoutes } from './hotel-calendar-admin.js';
 import { stage05Routes } from './pricing-wiring.js';
 import { followCheck, stage06Routes } from './search-wiring.js';
 import { stage10Routes } from './client-wiring.js';
-import { paymentsFromEnv, stage07Routes } from './payments-wiring.js';
-import { bookingEngine, stage08Routes } from './orders-wiring.js';
-import { ORDER_SWEEP_EVERY_MS, orderConsumers, orderInvariants, orderReconcileRules, sweepOrders } from '../modules/orders/index.js';
-import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY_MS } from '../modules/payments/index.js';
-import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
+import { stage07Routes } from './payments-wiring.js';
+import { stage11Routes } from './wallet.js';
+import { stage08Routes } from './orders-wiring.js';
 import { publicStoreFromEnv } from '../modules/files/index.js';
 import { kycRoutes } from './kyc.js';
 import { notificationRoutes } from './notifications.js';
 import { registrationRoutes } from './registrations.js';
-import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import {
   createAdminListingService,
   createContentService,
@@ -72,9 +66,6 @@ import {
   createCalendarService,
   createCancellationPolicyService,
   createRatePlanService,
-  extendCalendarWindow,
-  SWEEP_EVERY_MS,
-  sweepHolds,
 } from '../modules/hotel-inventory/index.js';
 import { createAdminAuthenticator } from './admin-auth.js';
 import { firstMatch } from './legacy-auth.js';
@@ -153,9 +144,8 @@ export function createB2BRouter(options = {}) {
   router.use(stage02Routes(env, clock, identity));
   router.use(stage06Routes(env, clock, identity)); // before Stage 03: `/hotels/destinations` must not be read as `/hotels/:ref`
   router.use(stage03Routes(env, clock, identity));
-  router.use(stage04Routes(clock, identity));
-  router.use(stage05Routes(env, clock, identity, log));
-  router.use(stage10Routes(clock), stage07Routes(env, clock, log), stage08Routes(env, clock, log, identity));
+  router.use(stage04Routes(clock, identity), stage05Routes(env, clock, identity, log), stage10Routes(clock));
+  router.use(stage07Routes(env, clock, log), stage08Routes(env, clock, log, identity), stage11Routes(env, clock, log));
   router.use('/realtime', realtimeRoutes({ hub, canFollow: options.canFollow ?? followCheck(clock) }));
 
   router.use(notFoundHandler());
@@ -296,73 +286,4 @@ function registrationDeps(env, clock, identity, kyc) {
     secureCookies: identity.secureCookies,
     clock,
   };
-}
-
-/**
- * Unfinished registrations: reminder, then removal (S02-T11).
- * @param {NodeJS.ProcessEnv} env
- * @param {ReturnType<typeof loadConfig>} config
- * @param {import('../core/logger.js').Logger} log
- */
-function retentionSchedule(env, config, log) {
-  const retention = createKycRetention({
-    clock: systemClock,
-    logger: log,
-    files: createFiles(env, systemClock),
-    secret: config.B2B_AUTH_SECRET,
-    remindAfterDays: config.B2B_KYC_REMIND_DAYS,
-    purgeAfterDays: config.B2B_KYC_PURGE_DAYS,
-  });
-  return { name: 'kyc-retention', everyMs: RETENTION_EVERY_MS, run: () => retention.runOnce() };
-}
-
-/** Stage 04: keep every known room type's calendar 365 days ahead (new nights start with 0 rooms). */
-const CALENDAR_WINDOW_SCHEDULE = {
-  name: 'inventory-calendar-window',
-  everyMs: 6 * 60 * 60_000,
-  run: () => extendCalendarWindow({ clock: systemClock }),
-};
-
-/**
- * Connects the B2B Mongoose instance, then starts the background work (../background.js).
- * A failure only affects /api/v1 (health reports `down`); the existing app has its own connection.
- * @param {NodeJS.ProcessEnv} env
- * @param {import('../core/logger.js').Logger} log
- * @param {StreamHub} hub
- * @param {ReturnType<typeof createIdentity>} identity
- */
-function startDatabase(env, log, hub, identity) {
-  const config = loadConfig(env);
-  const engine = bookingEngine(env, systemClock, log, identity);
-  const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
-  connectB2BDatabase(config.MONGO_URI, 'api')
-    .then(() =>
-      startBackground({
-        clock: systemClock,
-        logger: log,
-        runJobs: config.B2B_BACKGROUND === 'true',
-        hub,
-        email,
-        publicUrl: config.B2B_PUBLIC_URL,
-        rules: orderReconcileRules(engine.ordersDeps),
-        consumers: orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
-        invariants: orderInvariants({ clock: systemClock }),
-        schedules: [
-          retentionSchedule(env, config, log),
-          CALENDAR_WINDOW_SCHEDULE,
-          { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
-          { name: 'orders-sweeper', everyMs: ORDER_SWEEP_EVERY_MS, run: () => sweepOrders(engine.ordersDeps) },
-          { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
-          { name: 'payments-poller', everyMs: POLL_EVERY_MS, run: () => pollPayments(paymentsFromEnv(env, systemClock, log).deps) },
-          {
-            name: 'payments-daily-reconciliation',
-            everyMs: 24 * 60 * 60_000,
-            run: () => dailyReconciliation(paymentsFromEnv(env, systemClock, log).deps),
-          },
-        ],
-      }),
-    )
-    .catch((error) => {
-      log.error({ err: error }, 'b2b database connection or background start failed');
-    });
 }

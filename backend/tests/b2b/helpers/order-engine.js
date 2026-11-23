@@ -21,6 +21,7 @@ import {
   createItemHandlers,
   createOrderPayments,
   createPaymentModes,
+  createWalletMode,
   orderConsumers,
   OrderRecord,
 } from '../../../src/b2b/modules/orders/index.js';
@@ -32,8 +33,22 @@ import {
   PaymentInboxRecord,
   RefundRecord,
 } from '../../../src/b2b/modules/payments/index.js';
-import { MarginRuleRecord, SigningKeyRecord } from '../../../src/b2b/modules/pricing/index.js';
-import { AccountRecord, createLedger, seedPlatformAccounts, TransactionRecord } from '../../../src/b2b/modules/wallet/index.js';
+import { MarginRuleRecord, PricingSettingsRecord, SigningKeyRecord } from '../../../src/b2b/modules/pricing/index.js';
+import { DocumentRecord, NumberSeriesRecord } from '../../../src/b2b/modules/documents/index.js';
+import { AdminActionRecord } from '../../../src/b2b/modules/orders/index.js';
+import { BookingSummaryRecord } from '../../../src/b2b/modules/reporting/index.js';
+import { AmendmentRecord, CancellationRecord, HotelFailureRecord, NoShowRecord } from '../../../src/b2b/modules/hotel-booking/index.js';
+import {
+  BalanceSnapshotRecord,
+  createHolds,
+  createLedger,
+  createLiveWallets,
+  ManualPayoutRecord,
+  PayableRecord,
+  seedPlatformAccounts,
+  TransactionRecord,
+  WalletHoldRecord,
+} from '../../../src/b2b/modules/wallet/index.js';
 import { useInventoryApp } from './inventory-app.js';
 import { seedPricing, sellableHotel } from './search-setup.js';
 
@@ -60,7 +75,19 @@ export function useOrderEngine() {
       PaymentInboxRecord,
       RefundRecord,
       TransactionRecord,
-      AccountRecord,
+      DocumentRecord,
+      NumberSeriesRecord,
+      PricingSettingsRecord,
+      AdminActionRecord,
+      BookingSummaryRecord,
+      CancellationRecord,
+      AmendmentRecord,
+      NoShowRecord,
+      HotelFailureRecord,
+      PayableRecord,
+      ManualPayoutRecord,
+      BalanceSnapshotRecord,
+      WalletHoldRecord,
     ],
   });
   const logger = createLogger({ write: () => {} });
@@ -95,6 +122,9 @@ export function useOrderEngine() {
     handlers.register('HOTEL', createHotelItemHandler(/** @type {any} */ ({ clock, logger, holds: createHoldService({ clock }), ledger })));
     const modes = createPaymentModes();
     modes.register('GATEWAY', createGatewayMode({ payments, paymentsDeps, ledger }));
+    const walletDeps = { clock, ledger };
+    const wallets = createLiveWallets(walletDeps);
+    modes.register('WALLET', createWalletMode({ ...walletDeps, wallets, holds: createHolds(walletDeps) }));
     const deps = { clock, logger, handlers, modes, ledger };
     const consumers = orderConsumers(deps, PAY);
     /** Deliver the intent's stored events to the order consumers (what the relay + inbox do). @param {string} txnId */
@@ -103,7 +133,7 @@ export function useOrderEngine() {
       for (const e of i.pendingEvents ?? [])
         for (const c of consumers) if (c.types.includes(e.type)) await c.handler({ payload: e.payload });
     };
-    return { deps, payments, paymentsDeps, orderPay: createOrderPayments(deps), deliver };
+    return { deps, payments, paymentsDeps, orderPay: createOrderPayments(deps), deliver, wallets };
   }
 
   /** @param {number} rooms */

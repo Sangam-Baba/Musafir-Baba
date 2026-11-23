@@ -105,7 +105,9 @@ export async function postPaymentReceived(deps, intent) {
 
 /**
  * A payment we had given up on (window over) turns out paid: the money is recorded, finance is told, and it is
- * refunded to the source **once** (refund key `late-success`) — the order it was for no longer waits for it.
+ * refunded to the source **once** (refund key `late-success`) — the order it was for no longer waits for it. Orders and
+ * wallet top-ups decide themselves (`payments.intent.paid-late`): an order holds the rooms again or refunds; a top-up
+ * always credits the wallet (plan Stage 11 §3.4 — nothing to lose).
  * @param {PaymentsDeps} deps
  * @param {Record<string, any>} intent
  * @param {'CALLBACK' | 'POLL'} source
@@ -114,7 +116,7 @@ async function lateSuccess(deps, intent, source) {
   const v = await /** @type {NonNullable<PaymentsDeps['payu']>} */ (deps.payu).verify(intent.txnId);
   await IntentRecord.updateOne({ _id: intent._id }, { $set: { lastVerifiedAt: deps.clock.now() } });
   if (v.status !== 'SUCCESS' || v.amountPaise !== intent.amountPaise) return 'FAILED';
-  const forOrder = intent.purpose === 'ORDER';
+  const forOrder = intent.purpose === 'ORDER' || intent.purpose === 'TOPUP'; // the owner decides
   const payload = {
     orgId: intent.orgId ?? 'platform',
     intentId: String(intent._id),
@@ -132,7 +134,9 @@ async function lateSuccess(deps, intent, source) {
           at: deps.clock.now(),
           status: 'FAILED',
           source,
-          note: forOrder ? 'paid after the window — the order decides' : 'paid after the window — refunding',
+          note: forOrder
+            ? `paid after the window — the ${intent.purpose === 'TOPUP' ? 'wallet' : 'order'} decides`
+            : 'paid after the window — refunding',
         },
         ...(forOrder ? { pendingEvents: newEvent(EVENTS.intentPaidLate, payload, deps) } : {}),
       },

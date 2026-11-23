@@ -262,6 +262,17 @@ export default function Header() {
                   <Search className="w-4 h-4 text-gray-500" />
                   <span className="text-[14px] font-normal truncate">Search</span>
                 </button>
+                {/* Ask Baba on WhatsApp (moved here from the floating corner button) */}
+                <a
+                  href={getWhatsAppLink()}
+                  target="_blank"
+                  rel="nofollow noopener noreferrer"
+                  aria-label="Chat on WhatsApp"
+                  title="Chat on WhatsApp"
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-[#25D366] hover:bg-[#20bd5a] text-white shadow-sm transition-colors flex-shrink-0"
+                >
+                  <FaWhatsapp size={20} />
+                </a>
               </div>
             </div>
           </div>

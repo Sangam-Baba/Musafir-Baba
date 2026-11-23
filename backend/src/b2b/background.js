@@ -60,9 +60,10 @@ import {
   TaxRuleRecord,
 } from './modules/pricing/index.js';
 import { createSearchCacheSignals } from './modules/hotel-search/index.js';
-import { BookingRecord, BookingRequestRecord } from './modules/hotel-booking/index.js';
+import { AmendmentRecord, BookingRecord, BookingRequestRecord, HotelFailureRecord, NoShowRecord } from './modules/hotel-booking/index.js';
 import { OrderRecord } from './modules/orders/index.js';
-import { createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
+import { DocumentRecord } from './modules/documents/index.js';
+import { AccountRecord, createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
@@ -212,6 +213,11 @@ export const eventSources = [
   RefundRecord,
   OrderRecord,
   BookingRecord,
+  DocumentRecord,
+  AmendmentRecord,
+  NoShowRecord,
+  HotelFailureRecord,
+  AccountRecord, // Stage 11: client wallet alerts
 ];
 
 /**
@@ -255,7 +261,9 @@ export function routeSignal(signal, hub) {
  *   schedules?: { name: string, everyMs: number, run: () => Promise<unknown> }[],
  *   rules?: import('./core/jobs/reconciler.js').ReconcileRule[],
  *   consumers?: { consumer: string, types: string[], handler: (event: any) => Promise<void> }[],
- *   invariants?: { name: string, check: () => Promise<{ id: string, detail: string }[]> }[] }} options
+ *   invariants?: { name: string, check: () => Promise<{ id: string, detail: string }[]> }[],
+ *   onStop?: () => Promise<unknown> }} options
+ *   `onStop`: last work when background stops (Stage 12B: the usage counter's final flush) — errors are logged only
  *   `rules` / `consumers`: parts built with the process's settings (the booking engine) — registered once here
  * @returns {{ stop: () => Promise<void> }}
  */
@@ -301,6 +309,7 @@ export function startBackground(options) {
   return {
     async stop() {
       await Promise.all([scheduler.stop(), relay.stop(), runner.stop(), reader.stop()]);
+      await options.onStop?.().catch((err) => logger.error({ err }, 'background: last work on stop failed'));
     },
   };
 }

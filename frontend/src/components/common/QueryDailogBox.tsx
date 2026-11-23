@@ -15,8 +15,26 @@ export function QueryDailogBox() {
     setIsOpen(false);
   }, [pathname]);
 
+  // Presentation only: the tab stays out of the way over the page's banner (roughly the first screen) and fades in
+  // once the visitor scrolls past it. It stays mounted, so the form and its open / close behaviour are unchanged.
+  const [pastBanner, setPastBanner] = useState(false);
+  useEffect(() => {
+    const check = () => setPastBanner(window.scrollY > window.innerHeight * 0.8);
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check);
+    return () => {
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, [pathname]);
+
   return (
-    <div className="hidden md:flex fixed top-100 -right-10 z-50 flex items-center gap-2 rotate-[270deg]">
+    <div
+      className={`hidden md:flex fixed top-100 -left-10 z-50 flex items-center gap-2 rotate-[270deg] transition-[opacity,visibility] duration-300 ${
+        pastBanner || isOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+      }`}
+    >
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <Button>Enquire Now</Button>

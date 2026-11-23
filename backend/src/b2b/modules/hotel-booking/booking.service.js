@@ -13,10 +13,7 @@
 import { createHash } from 'node:crypto';
 
 import { systemContext } from '../../core/context.js';
-import { newEvent } from '../../core/db/events.js';
-import { systemScope } from '../../core/db/tenant-plugin.js';
-import { transition } from '../../core/db/transition.js';
-import { ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
+import { ConflictError, DomainError } from '../../core/errors.js';
 import { newReference } from '../../core/ids.js';
 import { nights as nightsOf } from '../hotel-inventory/index.js';
 import { priceView } from '../pricing/index.js';
@@ -24,8 +21,8 @@ import { confirmationCredits, holdLinesOf } from './domain/booking.js';
 import { EVENTS } from './events.js';
 import { BookingRecord } from './models/booking.model.js';
 import { BookingStatusRecord } from './models/status-history.model.js';
-
-const ENGINE = systemScope('hotel-booking: booking engine', { routine: true });
+import { cancelSteps } from './booking-cancel.js';
+import { ENGINE, loadBooking, moveBooking } from './booking-steps.js';
 
 /**
  * @typedef {import('../hotel-search/domain/caller.js').SearchCaller} SearchCaller
@@ -47,45 +44,6 @@ const sys = (deps, why) => systemContext(`hotel-booking: ${why}`, `engine-${deps
 
 /** @param {string} token */
 export const tokenFingerprint = (token) => createHash('sha256').update(token).digest('base64url').slice(0, 32);
-
-/** @param {string} id */
-async function loadBooking(id) {
-  const b = /^[a-f0-9]{24}$/.test(id) ? await BookingRecord.findOne({ _id: id }).setOptions(ENGINE).lean() : null;
-  if (!b) throw new NotFoundError('BOOKING_NOT_FOUND');
-  return /** @type {Record<string, any>} */ (b);
-}
-
-/**
- * A status change with its history row (and event, when given).
- * @param {EngineDeps} deps
- * @param {Record<string, any>} b
- * @param {{ from: string | string[], to: string, by: string, set?: Record<string, unknown>, event?: string, note?: string }} m
- */
-async function moveBooking(deps, b, m) {
-  const events = m.event
-    ? [newEvent(m.event, { orgId: b.hotelOrgId, bookingId: String(b._id), ref: b.ref, orderId: b.orderId, propertyId: b.propertyId }, deps)]
-    : [];
-  const moved = await transition(BookingRecord, {
-    id: b._id,
-    from: m.from,
-    to: m.to,
-    set: m.set,
-    events,
-    clock: deps.clock,
-    options: ENGINE,
-  });
-  if (moved)
-    await BookingStatusRecord.create({
-      bookingId: String(b._id),
-      hotelOrgId: b.hotelOrgId,
-      from: b.status,
-      to: m.to,
-      at: deps.clock.now(),
-      by: m.by,
-      note: m.note ?? null,
-    });
-  return moved;
-}
 
 /** @param {EngineDeps} deps @param {HotelItemInput} input */
 async function price(deps, input) {
@@ -286,6 +244,9 @@ export function bookingView(b, audience) {
     specialRequests: b.specialRequests,
     price: priceView(b.price, b.channel === 'WEBSITE' ? 'WEBSITE' : 'CLIENT'),
     confirmedAt: b.confirmedAt,
+    cancelled: b.cancellation
+      ? { chargePaise: b.cancellation.chargePaise, refundPaise: b.cancellation.refundPaise, requestedAt: b.cancellation.requestedAt }
+      : null,
   };
   if (audience === 'BUYER') return view;
   return {
@@ -313,6 +274,14 @@ export function createHotelItemHandler(deps) {
     },
     ledgerLines: (_order, item) => ledgerLines(deps, item),
     abandon: (_ctx, order) => abandon(deps, order),
+    ...cancelSteps(deps),
     view: async (item, audience) => bookingView(await loadBooking(item.bookingId), audience),
+    timeline: async (item) =>
+      (await BookingStatusRecord.find({ bookingId: item.bookingId }).setOptions(ENGINE).sort({ at: 1 }).lean()).map((r) => ({
+        at: r.at,
+        what: `booking ${item.bookingRef}: ${r.from ?? '—'} → ${r.to}`,
+        by: r.by,
+        note: r.note ?? null,
+      })),
   };
 }

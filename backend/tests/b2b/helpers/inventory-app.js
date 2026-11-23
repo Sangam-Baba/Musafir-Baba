@@ -42,7 +42,7 @@ export const auth = (t) => ({ authorization: `Bearer ${t}` });
 export const asStaff = (who) => ({ 'x-staff': who });
 
 /**
- * @param {{ clock: import('../../../src/b2b/core/clock.js').Clock, models?: import('mongoose').Model<any>[] }} options
+ * @param {{ clock: import('../../../src/b2b/core/clock.js').Clock, models?: import('mongoose').Model<any>[], env?: Record<string, string> }} options
  *   `models`: the test's own collections, emptied before each test (with the ones every test needs)
  */
 export function useInventoryApp(options) {
@@ -63,7 +63,7 @@ export function useInventoryApp(options) {
         connect: false,
         logger: createLogger({ write: () => {} }),
         clock: options.clock,
-        env: { B2B_AUTH_SECRET: secret, B2B_ORDERS_ENABLED: 'true' },
+        env: { B2B_AUTH_SECRET: secret, B2B_ORDERS_ENABLED: 'true', ...options.env },
       }),
     );
     env.srv = await startServer(app);
@@ -74,7 +74,7 @@ export function useInventoryApp(options) {
         connect: false,
         logger: createLogger({ write: () => {} }),
         clock: options.clock,
-        env: { B2B_AUTH_SECRET: secret, B2B_ORDERS_ENABLED: 'true' },
+        env: { B2B_AUTH_SECRET: secret, B2B_ORDERS_ENABLED: 'true', ...options.env },
         authenticate: async (req) => {
           const [staffId, perms] = String(req.get('x-staff') ?? '').split(':');
           return staffId ? { type: 'staff', staffId, permissions: (perms ?? '').split(',') } : null;

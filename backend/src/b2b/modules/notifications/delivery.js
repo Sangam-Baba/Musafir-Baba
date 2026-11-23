@@ -82,6 +82,10 @@ const stringOrNull = (v) => (typeof v === 'string' ? v : null);
 /** The link with the event's ids filled in (e.g. /business/properties/{propertyId}). @param {string} link @param {Record<string, unknown>} payload */
 const linkFor = (link, payload) => link.replace('{propertyId}', encodeURIComponent(stringOrNull(payload.propertyId) ?? ''));
 
+/** ₹ with Indian grouping, e.g. ₹1,25,000 or ₹99.50. @param {number} paise */
+const rupees = (paise) =>
+  `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: paise % 100 ? 2 : 0, maximumFractionDigits: 2 })}`;
+
 /**
  * Template variables an event can give (each template uses only those in its schema; values are cleaned there).
  * @param {Record<string, unknown>} payload
@@ -90,6 +94,7 @@ const varsFrom = (payload) => ({
   propertyName: stringOrNull(payload.name) ?? 'your listing',
   decision: payload.decision === 'APPROVED' ? 'approved' : 'not approved',
   reason: stringOrNull(payload.reason) ?? 'see your listing for details',
+  amount: typeof payload.amountPaise === 'number' ? rupees(payload.amountPaise) : 'money',
 });
 
 /**

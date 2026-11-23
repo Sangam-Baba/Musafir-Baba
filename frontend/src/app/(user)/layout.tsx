@@ -4,7 +4,6 @@ import Header from "@/components/common/Header";
 import Footer from "@/components/common/Footer";
 import Script from "next/script";
 import dynamic from "next/dynamic";
-const WhatsAppButton = dynamic(() => import("@/components/common/WhatsappButton"));
 const MobileBottom = dynamic(() => import("@/components/custom/MobileBottom"));
 
 export const metadata: Metadata = {
@@ -88,7 +87,6 @@ export default function UserLayout({
         </main>
         {/* Floating action widgets outside <main> for proper accessibility semantics */}
         <QueryDailogBox />
-        <WhatsAppButton />
         <MobileBottom />
         <FloatingButton />
         <LazyAuthDialog />

@@ -799,7 +799,7 @@ function SlugClients({
                       id: pkg._id,
                       name: pkg.title,
                       slug: pkg.slug,
-                      image: pkg.coverImage ? pkg.coverImage.url : "",
+                      image: pkg.coverImage?.url || pkg.coverImages?.[0]?.url || "",
                       price: pkg.batch ? pkg.batch[0]?.quad : 9999,
                       duration: `${pkg.duration.nights}N/${pkg.duration.days}D`,
                       destination:

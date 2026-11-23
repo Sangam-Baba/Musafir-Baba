@@ -200,9 +200,18 @@ describe('system roles (plan §4) — authorization matrix', () => {
     expect(futureGrants('client.accountant')).toContain('wallet.topup.create');
     expect(futureGrants('client.accountant')).not.toContain('hotel-booking.booking.create');
     // + booking requests (D37, real today): viewers follow them too
-    expect(futureGrants('client.viewer')).toEqual(['hotel-booking.booking.read', 'hotel-booking.request.read', 'organizations.org.read']);
+    expect(futureGrants('client.viewer')).toEqual([
+      'hotel-booking.booking.read',
+      'hotel-booking.request.read',
+      'orders.export.read', // Stage 12B: bookings as CSV
+      'orders.order.read', // Stage 12B: the company's orders
+      'organizations.org.read',
+    ]);
+    expect(futureGrants('client.bookingAgent')).toEqual(expect.arrayContaining(['orders.order.create', 'orders.order.read']));
+    expect(futureGrants('client.viewer')).not.toContain('orders.order.create');
     expect(futureGrants('hotel.frontDesk')).toEqual([
       'hotel-booking.booking.acknowledge',
+      'hotel-booking.booking.markNoShow', // Stage 09: listed by exact code in the role
       'hotel-booking.booking.read',
       'organizations.org.read',
     ]);

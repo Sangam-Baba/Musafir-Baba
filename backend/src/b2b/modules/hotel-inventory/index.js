@@ -35,6 +35,7 @@ export { stepsOf } from './night-steps.js';
 export {
   holdReconcileRules,
   sweepHolds,
+  bookedNightOwners,
   inventoryInvariants,
   SWEEP_EVERY_MS,
   STUCK_AFTER_MS,
