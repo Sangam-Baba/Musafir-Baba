@@ -75,6 +75,9 @@ export default function ExploreDestinationsPanel() {
   const [tab, setTab] = useState<"india" | "world">("india");
   const [active, setActive] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  // Small screens only (below lg): the states list shows the first few until "Show all" — desktop always lists all.
+  const [showAllStates, setShowAllStates] = useState(false);
+  const MOBILE_STATES = 6;
 
   const filteredDomestic = useMemo(() => {
     if (!searchQuery.trim()) return DOMESTIC_LIST;
@@ -93,7 +96,7 @@ export default function ExploreDestinationsPanel() {
   }, [searchQuery]);
 
   return (
-    <div className="bg-[#F4F5FA] rounded-2xl p-5 md:p-6 shadow-xs border border-gray-100">
+    <div className="min-w-0 bg-[#F4F5FA] rounded-2xl p-5 md:p-6 shadow-xs border border-gray-100">
       {/* Header & Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <div>
@@ -134,7 +137,7 @@ export default function ExploreDestinationsPanel() {
       {tab === "india" ? (
         /* India: Interactive Map on Left, Full Searchable States List on Right */
         <div className="lg:grid lg:grid-cols-[1.15fr_1fr] lg:gap-6 lg:items-start">
-          <div className="rounded-2xl overflow-hidden bg-white/70 border border-gray-100/80 mb-4 lg:mb-0 w-full aspect-[9/10] shadow-xs flex items-center justify-center p-2">
+          <div className="rounded-2xl overflow-hidden bg-white/70 border border-gray-100/80 mb-4 lg:mb-0 w-full aspect-[5/4] sm:aspect-[4/3] lg:aspect-[9/10] shadow-xs flex items-center justify-center p-2">
             <IndiaStatesMap activeSlug={active} onSpotHover={setActive} />
           </div>
 
@@ -174,21 +177,22 @@ export default function ExploreDestinationsPanel() {
             </div>
 
             {/* Scrollable list */}
-            <div className="max-h-[300px] overflow-y-auto pr-1 flex flex-col gap-1.5 mb-4 scrollbar-thin scrollbar-thumb-gray-200">
+            <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-1.5 mb-3 lg:mb-4 lg:flex lg:flex-col lg:max-h-[300px] lg:overflow-y-auto lg:pr-1 scrollbar-thin scrollbar-thumb-gray-200">
               {filteredDomestic.length === 0 ? (
                 <div className="py-8 text-center text-gray-400 text-[12.5px]">
                   No destinations found matching &quot;{searchQuery}&quot;
                 </div>
               ) : (
-                filteredDomestic.map((item) => {
+                filteredDomestic.map((item, index) => {
                   const isHovered = active === item.slug;
+                  const collapsed = !showAllStates && !searchQuery.trim() && index >= MOBILE_STATES;
                   return (
                     <Link
                       key={item.slug}
                       href={`/destinations/${item.slug}`}
                       onMouseEnter={() => setActive(item.slug)}
                       onMouseLeave={() => setActive(null)}
-                      className={`flex items-center justify-between gap-2.5 rounded-xl px-2.5 py-2 border transition-all cursor-pointer ${
+                      className={`${collapsed ? "hidden lg:flex" : "flex"} items-center justify-between gap-2.5 rounded-xl px-2.5 py-2 border transition-all cursor-pointer ${
                         isHovered
                           ? "bg-orange-50 border-[#FE5300]/50 shadow-xs translate-x-0.5"
                           : "bg-white/80 border-gray-100 hover:bg-white hover:border-gray-200"
@@ -229,6 +233,18 @@ export default function ExploreDestinationsPanel() {
               )}
             </div>
 
+            {/* Small screens: show the rest of the states without a scroll box inside the page */}
+            {!searchQuery.trim() && filteredDomestic.length > MOBILE_STATES && (
+              <button
+                type="button"
+                onClick={() => setShowAllStates((v) => !v)}
+                className="lg:hidden mb-3 w-full rounded-xl border border-gray-200 bg-white py-2 text-[12.5px] font-bold text-gray-700 hover:border-[#FE5300]/50 hover:text-[#FE5300] transition-colors cursor-pointer"
+                aria-expanded={showAllStates}
+              >
+                {showAllStates ? "Show fewer states" : `Show all ${filteredDomestic.length} states`}
+              </button>
+            )}
+
             <Link
               href="/destinations"
               className="flex items-center justify-center gap-1.5 w-full bg-[#D64300] hover:bg-[#b83800] active:scale-[0.99] text-white text-[13px] font-bold py-2.5 rounded-xl transition-all shadow-xs cursor-pointer"
@@ -240,7 +256,7 @@ export default function ExploreDestinationsPanel() {
       ) : (
         /* World: Full-width Map on top, searchable grid below */
         <div>
-          <div className="rounded-2xl overflow-hidden bg-white/70 border border-gray-100/80 w-full aspect-[16/9] md:aspect-[2.2/1] mb-4 shadow-xs flex items-center justify-center p-2">
+          <div className="rounded-2xl overflow-hidden bg-white/70 border border-gray-100/80 w-full min-w-0 aspect-[16/9] md:aspect-[2.2/1] mb-4 shadow-xs flex items-center justify-center p-2 [&_svg]:min-w-0 [&_svg]:max-w-full">
             <WorldMap
               spots={INTERNATIONAL_SPOTS}
               activeSlug={active}

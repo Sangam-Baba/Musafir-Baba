@@ -59,11 +59,11 @@ export default function VisaMadeEasyPanel({ durations }: { durations: VisaDurati
   }, [active, activeSpot.xPercent, activeSpot.yPercent]);
 
   return (
-    <div className="bg-[#F4F5FA] rounded-2xl p-5 md:p-6 relative overflow-hidden">
+    <div className="min-w-0 bg-[#F4F5FA] rounded-2xl p-5 md:p-6 relative overflow-hidden">
       <h3 className="text-[17px] font-semibold text-gray-900">Visa Made Easy</h3>
       <p className="text-[12.5px] text-gray-500 mb-4">Covering 180+ countries worldwide</p>
 
-      <div ref={mapRef} className="relative rounded-xl overflow-hidden bg-white/50 mb-2 aspect-[23/16] w-full">
+      <div ref={mapRef} className="relative rounded-xl overflow-hidden bg-white/50 mb-2 aspect-[23/16] w-full min-w-0 [&_svg]:max-w-full">
         <WorldMap
           spots={spots}
           activeSlug={active}
