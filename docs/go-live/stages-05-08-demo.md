@@ -136,6 +136,22 @@ Migration `0069` (usage counting: `mtr_usage_events`, daily and monthly counters
 - Usage is counted from the first search after this push (website traffic under `platform`, never billable); nothing is
   charged until plans (Stage 13).
 
+## 8d. Stage 13 (plans and billing) — with the next push
+
+Migrations `0070` … `0073` (plan versions and settings, subscriptions and overrides, SaaS invoices, dunning). The
+placeholder plans (Starter trial, A, B, C) and the query weights are added at start-up, only if missing.
+
+**Switched off by default**: nothing below happens until `B2B_BILLING_ENABLED=true` is set on the server (client plan pages say "coming soon"; admin can already prepare the plans). **When switched on** (only verified B2B clients — the website is never affected):
+- every verified client gets a subscription on the Starter trial (clients verified earlier are caught up within 10
+  minutes); searching is counted against its limit and BLOCK plans stop at the limit (bookings are never blocked);
+- after the trial / on upgrade, plan fees are invoiced (series `S2627DL…`) and **taken from the client's wallet**;
+  unpaid → reminders, and after 10 days searching and new bookings pause until paid.
+
+Before real clients rely on it: the owner confirms the plan numbers (D7) in **Admin → B2B → Plans** (a second person
+publishes), the CA confirms the SAC (placeholder 998314) and the invoice layout, and MusafirBaba's GSTIN is set in the
+pricing settings (invoices show it). A demo of a full month: `node scripts/b2b/simulate-billing.js` (in-memory, touches
+nothing real).
+
 ## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.

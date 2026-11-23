@@ -12,7 +12,7 @@ import { asStaff, auth, useInventoryApp } from './helpers/inventory-app.js';
 import { clientOwner } from './helpers/search-setup.js';
 
 const clock = { now: () => new Date('2026-11-10T06:30:00Z') };
-const app = useInventoryApp({ clock, models: [SubscriptionRecord, InvoiceRecord, OverrideRecord] });
+const app = useInventoryApp({ clock, models: [SubscriptionRecord, InvoiceRecord, OverrideRecord], env: { B2B_BILLING_ENABLED: 'true' } });
 const f1 = asStaff('f1:subscriptions.plan.manage,subscriptions.subscription.manage');
 const f2 = asStaff(
   'f2:subscriptions.plan.manage,subscriptions.plan.publish,subscriptions.subscription.manage,subscriptions.override.approve',

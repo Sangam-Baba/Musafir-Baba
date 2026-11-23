@@ -19,10 +19,15 @@ export function usageRecorder(clock) {
   return recorder;
 }
 
-/** The search gateway's hooks. @param {import('../core/clock.js').Clock} clock @returns {import('./search-gateway.js').SearchHooks} */
-export function usageHooks(clock) {
+/**
+ * The search gateway's hooks. Plan limits apply only with `B2B_BILLING_ENABLED=true` (Stage 13 — off by default).
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {import('./search-gateway.js').SearchHooks}
+ */
+export function usageHooks(clock, env = {}) {
   return {
-    before: quotaGuard(clock), // Stage 13: plan limits
+    ...(env.B2B_BILLING_ENABLED === 'true' ? { before: quotaGuard(clock) } : {}), // Stage 13: plan limits
     after: async (caller, kind, info) => {
       const now = clock.now().getTime();
       const memo = `${info.userId ?? '-'}|${kind}|${info.subject ?? '-'}`;

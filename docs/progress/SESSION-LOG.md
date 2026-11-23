@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-23 — AI (Claude) — Stage 13 subscriptions & usage billing (S13-T01 to T10)
+
+- **Goal:** plans, subscriptions, limits, SaaS invoices from the wallet, dunning, client and admin screens — simulated, as there are no real clients yet.
+- **Done:** S13-T01 … T10 → DONE. Modules `subscriptions` (plan versions published by a second person, placeholder plans + query weights seeded, one subscription per client: trial → plan, upgrade now prorated, downgrade / cancel at period end, renewal with month snapshots, overrides / top-ups by two people, quota with 80 % / 100 % alerts) and `billing` (rating engine, SaaS GST invoices `S2627DL…` paid from the wallet, PayU for unpaid ones, month-close overage, dunning day 0 / 3 / 7 → suspended day 10 → active on payment); gateway quota guard (BLOCK → 429, suspended → 403, booking never blocked); client page Plan & Billing; admin tab Plans; simulation script `node scripts/b2b/simulate-billing.js`. **Whole stage behind `B2B_BILLING_ENABLED` (off).** Migrations 0070–0073.
+- **Not done / why:** real plan numbers (D7 — placeholders), SAC / invoice layout (CA), plan changes applying immediately to existing clients (they move at renewal), invoice email (bell + page today).
+- **Files / PR:** `backend/src/b2b/modules/subscriptions/**`, `modules/billing/**`, `routes/subscriptions*.js`, `routes/quota-wiring.js`, `scripts/b2b/billing-simulation.js`, `simulate-billing.js`; frontend `business/plan`, admin `plans/` — local commits only.
+- **Tests run:** subscriptions, subscriptions-quota, subscriptions-api, subscriptions-admin, subscriptions-switch, billing-rating (3 000 random), billing, billing-dunning, stage-13-mandatory (simulated month) ✅; lint, typecheck ✅; frontend tsc ✅; full suite 1 078 ✅.
+- **Decisions / deferrals:** placeholder plans (Starter trial 30 days / 1,000; A 4,000 ₹2,999 BLOCK; B 5,000 ₹3,499 + ₹1; C 10,000 ₹5,999 + ₹0.75), booking weight 0, calendar-month periods in India, new switch `B2B_BILLING_ENABLED`.
+- **Next step:** owner: OK to push Stage 13 + run migrations 0070–0073; confirm D7. Build: Stage 15 (hotel payouts, finance & reports), then 14 (API) and 16.
+
+
 ## 2026-11-23 — AI (Claude) — Stage 12 part B B2B booking (S12-T12 to T22)
 
 - **Goal:** B2B clients book with wallet / credit / PayU through the same engine; My Bookings; cancellations and changes; offline bookings; client voucher; usage counting and screens.

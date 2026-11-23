@@ -10,9 +10,9 @@
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stages 00–12 + booking requests awaiting owner sign-off (00–07 live with hidden demo data; online booking and wallets switched off) · Phases A and B core built → **Pilot 1**, then Stage 13 |
-| **Current task(s)** | — (Stage 12 part B B2B booking built: S12-T12 … T22) |
-| **Next up** | **Build order (D36):** Pilot 1 → 13 → Pilot 2 → 14–16 · owner: push Stages 08–12B + migrations 0054–0069, GSTIN in pricing settings, bank details for wallet top-ups (`B2B_TOPUP_BANK_DETAILS`), switches for a ₹1 test, sign off Stages 00–12, CA review (D4 / D5 / D10 / D20, chart of accounts, invoice and credit note layout), lawyer on the closed wallet (D6) |
+| **Current stage(s)** | Stages 00–13 + booking requests awaiting owner sign-off (00–12 live, switched off; 13 local) · next: Stage 15, Pilot 1 in parallel |
+| **Current task(s)** | — (Stage 13 subscriptions & billing built, simulated: S13-T01 … T10) |
+| **Next up** | Build: 15 → 14 → 16, Pilot 1 and Pilot 2 in parallel · owner: push Stage 13 + migrations 0070–0073, confirm plan numbers (D7), GSTIN in pricing settings, bank details for top-ups, switches for a ₹1 test, sign off Stages 00–13, CA review (incl. SaaS SAC and invoice layout), lawyer on the closed wallet (D6) |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
@@ -35,13 +35,13 @@
 | 10 | B2B client onboarding & KYC | B | AWAITING_SIGN_OFF | 8 / 8 | 0 | 100 % | 2026-11-19 | — | [stage-10](stages/stage-10.md) |
 | 11 | Client wallet & credit | B | AWAITING_SIGN_OFF | 11 / 11 | 0 | 100 % | 2026-11-21 | — | [stage-11](stages/stage-11.md) |
 | 12 | B2B dashboard: search, booking & bookings | B | AWAITING_SIGN_OFF | 22 / 22 | 0 | 100 % | 2026-11-19 | — | [stage-12](stages/stage-12.md) |
-| 13 | Subscriptions & usage billing | B | IN_PROGRESS | 9 / 10 | 0 | 90 % | 2026-11-23 | — | [stage-13](stages/stage-13.md) |
+| 13 | Subscriptions & usage billing | B | AWAITING_SIGN_OFF | 10 / 10 | 0 | 100 % | 2026-11-23 | — | [stage-13](stages/stage-13.md) |
 | — | **Pilot 2 — B2B clients** (2–3 weeks) | B | NOT_STARTED | — | — | — | — | — | Stage 12 §10 checklist |
 | 14 | API access & webhooks | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 15 | Hotel payouts, finance & reports | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 192 of 193 tasks done (99 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 193 of 193 tasks done (100 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

@@ -21,7 +21,7 @@ import { auth } from './helpers/inventory-app.js';
 import { useOrderEngine } from './helpers/order-engine.js';
 import { clientOwner } from './helpers/search-setup.js';
 
-const E = useOrderEngine();
+const E = useOrderEngine({ env: { B2B_BILLING_ENABLED: 'true' } });
 const { app, clock, S, stay, bookedOrder } = E;
 let n = 0;
 

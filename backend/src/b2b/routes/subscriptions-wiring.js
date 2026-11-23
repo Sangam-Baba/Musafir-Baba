@@ -10,6 +10,7 @@
 import express from 'express';
 
 import { systemScope } from '../core/db/tenant-plugin.js';
+import { ServiceUnavailableError } from '../core/errors.js';
 import { EVENTS as ORG_EVENTS, OrganizationRecord } from '../modules/organizations/index.js';
 import { createOverrides, createPlans, createSubscriptions, sendQuotaAlerts, SubscriptionRecord } from '../modules/subscriptions/index.js';
 import { paymentsFromEnv } from './payments-wiring.js';
@@ -80,11 +81,17 @@ export async function runBilling(subs, billing) {
   return { subscriptions: all.length, invoices };
 }
 
-/** @param {import('../core/clock.js').Clock} clock @param {NodeJS.ProcessEnv} [env] */
+/**
+ * Background parts — only with `B2B_BILLING_ENABLED=true` (off by default: nothing starts, nothing is billed).
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {NodeJS.ProcessEnv} [env]
+ */
 export function subscriptionParts(clock, env = {}) {
   const subs = createSubscriptions({ clock });
   const overrides = createOverrides({ clock });
   const billing = billingFor(clock, env, subs);
+  // Switched off until the owner turns it on: no subscriptions start, no billing, no reminders.
+  if (env.B2B_BILLING_ENABLED !== 'true') return { subs, billing, consumers: [], schedules: [] };
   return {
     subs,
     billing,
@@ -139,6 +146,9 @@ export function stage13Routes(env, clock, logger) {
   const subs = createSubscriptions({ clock });
   const billing = billingFor(clock, env, subs);
   router.use(subscriptionAdminRoutes({ clock, plans: createPlans({ clock }), overrides: createOverrides({ clock }) }));
+  // clients see their plan only once billing is switched on (admin can prepare plans before)
+  if (env.B2B_BILLING_ENABLED !== 'true')
+    router.use(['/plans', '/subscription', '/billing'], (_req, _res, next) => next(new ServiceUnavailableError('BILLING_NOT_ENABLED')));
   router.use(
     subscriptionRoutes({
       clock,

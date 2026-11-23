@@ -4,7 +4,7 @@
 
 | | |
 | --- | --- |
-| **Status** | IN_PROGRESS |
+| **Status** | AWAITING_SIGN_OFF |
 | **Phase · Track** | B · clients |
 | **Owner(s)** | |
 | **Started** | 2026-11-23 |
@@ -39,4 +39,4 @@
 | S13-T07 | Dunning: PAST_DUE → reminders → SUSPENDED (paid features off) → reactivated on payment | §3.9 | DONE | AI (Claude) | | billing-dunning.test.js | migration 0073 `bil_dunning_attempts` (one per client × episode × step, event in the same insert): reminders day 0 / 3 / 7, day 10 SUSPENDED (search and booking off via the quota guard; existing bookings, documents, cancellations unaffected); a wallet top-up retries that client's unpaid invoices at once → ACTIVE again; hourly job; dunning board; bell + owners' email (critical) |
 | S13-T08 | Client API + screens: plans, change preview / change, usage vs limit (forecast), invoices | §3.10, §5 | DONE | AI (Claude) | | subscriptions-api.test.js (+ frontend tsc) | GET /plans, GET /subscription (starts the trial on first look; used / allowance / % / month-end forecast / pending), POST /subscription/change-preview, /change (version-checked), /cancel {undo}, GET /billing/invoices (+ printable page, strict CSP), POST /billing/invoices/:id/pay (PayU `SUBSCRIPTION` intent, unpaid only); page `/business/plan` (usage bar, plan cards with preview → confirm, invoices view / pay, cancel / keep) + menu Plan & Billing; client messages for QUOTA_EXCEEDED / SUBSCRIPTION_SUSPENDED |
 | S13-T09 | Admin API + screens: plan editor, query weights, subscriptions, overrides / top-ups, usage % for all clients, dunning board, revenue (MRR, overage) | §3.11, §5 | DONE | AI (Claude) | | subscriptions-admin.test.js (+ frontend tsc) | `routes/subscriptions-admin.js`: plan versions (draft `subscriptions.plan.manage` → publish `subscriptions.plan.publish`, sensitive, a different person), retire, query weights (sent as a list — dotted keys are refused by the input guard), subscriptions by use %, overrides / top-ups (approve `subscriptions.override.approve`), dunning board, revenue (MRR, invoiced / paid / unpaid, overage); admin tab Plans (plans + weights, clients + top-ups + approvals, revenue & dunning) |
-| S13-T10 | Mandatory tests + month simulation script (demo client through a billing month) | §8, §9 | DOING | AI (Claude) | |  |  |
+| S13-T10 | Mandatory tests + month simulation script (demo client through a billing month) | §8, §9 | DONE | AI (Claude) | | stage-13-mandatory.test.js, subscriptions-switch.test.js | simulated billing month (`scripts/b2b/billing-simulation.js`, printed by `node scripts/b2b/simulate-billing.js` on an in-memory database): trial → upgrade → 82 % / 107 % alerts → renewal unpaid → overage → reminders → suspended → top-up → active, 3 invoices S2627DL000001–3; invoice numbers at once (40 → 1…40); precedence override > top-up > plan; **whole stage behind `B2B_BILLING_ENABLED` (off)**; full suite 1 078 ✅ |

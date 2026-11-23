@@ -15,7 +15,7 @@ import { clientOwner } from './helpers/search-setup.js';
 
 const clock = { now: () => new Date('2026-11-10T06:30:00Z') };
 const S = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 'test' };
-const app = useInventoryApp({ clock, models: [SubscriptionRecord, InvoiceRecord] });
+const app = useInventoryApp({ clock, models: [SubscriptionRecord, InvoiceRecord], env: { B2B_BILLING_ENABLED: 'true' } });
 
 describe('client plan API', () => {
   it('trial on first look; plans; preview; change (stale version 409); cancel and undo; invoices', async () => {
