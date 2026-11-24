@@ -152,6 +152,26 @@ const MESSAGES: Record<string, string> = {
   MARKUP_INVALID: "Some fields need fixing — see the list.",
   NOT_SELLABLE: "Not sellable with the current rules.",
   PROPERTY_LOCATION_MISSING: "This property has no location yet, so its GST state is unknown.",
+  // Stage 14: API keys and webhooks
+  API_NOT_ENABLED: "API access isn't switched on yet. Ask MusafirBaba to enable it for your account.",
+  API_KEY_LIMIT: "You can have 2 keys at a time. Revoke or rotate one first.",
+  API_KEY_NOT_ROTATABLE: "This key can't be rotated (it's revoked or already being replaced).",
+  API_KEY_NOT_FOUND: "That key wasn't found.",
+  SCOPE_INVALID: "Pick at least one permission for the key.",
+  SCOPE_NOT_ALLOWED: "You can only give a key permissions you have yourself.",
+  PLAN_HAS_NO_API: "Your plan doesn't include API access.",
+  PLAN_HAS_NO_WEBHOOKS: "Your plan doesn't include webhooks.",
+  IP_ENTRY_INVALID: "One of the addresses isn't an IP address or range (e.g. 203.0.113.7 or 203.0.113.0/24).",
+  IP_LIST_TOO_LONG: "At most 20 addresses or ranges.",
+  URL_NOT_HTTPS: "The address must start with https://",
+  URL_INVALID: "That isn't a valid web address.",
+  URL_PRIVATE_ADDRESS: "That address is private or internal — it must be reachable on the internet.",
+  URL_HAS_CREDENTIALS: "Don't put a username or password in the address.",
+  URL_TOO_LONG: "The address is too long.",
+  EVENTS_INVALID: "Pick at least one event.",
+  WEBHOOK_ENDPOINT_LIMIT: "You can have 5 webhook addresses at most.",
+  WEBHOOK_ENDPOINT_NOT_FOUND: "That webhook address wasn't found.",
+  WEBHOOK_DELIVERY_NOT_FOUND: "That delivery wasn't found.",
 };
 
 export function errorMessage(error: unknown): string {

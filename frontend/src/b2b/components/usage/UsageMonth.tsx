@@ -36,9 +36,9 @@ export function UsageMonth({ data, userName }: { data: UsageMonthData; userName?
       </div>
       {Object.keys(data.byUser).length > 0 && (
         <div className="rounded-xl border border-slate-200 bg-white p-3">
-          <p className="mb-1 font-semibold text-slate-900">By person (all calls)</p>
+          <p className="mb-1 font-semibold text-slate-900">By person or API key (all calls)</p>
           {Object.entries(data.byUser).sort((a, b) => b[1] - a[1]).map(([u, n]) => (
-            <p key={u} className="flex justify-between border-b border-slate-100 py-1 last:border-0"><span className="text-slate-700">{userName ? userName(u) : u}</span><span className="font-medium">{n.toLocaleString("en-IN")}</span></p>
+            <p key={u} className="flex justify-between border-b border-slate-100 py-1 last:border-0"><span className="text-slate-700">{userName ? userName(u) : u.startsWith("apikey:") ? `API key …${u.slice(-6)}` : u}</span><span className="font-medium">{n.toLocaleString("en-IN")}</span></p>
           ))}
         </div>
       )}
