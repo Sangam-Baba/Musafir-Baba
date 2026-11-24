@@ -64,6 +64,7 @@ import { AmendmentRecord, BookingRecord, BookingRequestRecord, HotelFailureRecor
 import { OrderRecord } from './modules/orders/index.js';
 import { DocumentRecord } from './modules/documents/index.js';
 import { AccountRecord, createLedger, ledgerInvariants, PayoutLineRecord, seedPlatformAccounts } from './modules/wallet/index.js';
+import { ApiKeyRecord } from './modules/api-access/index.js';
 import { seedPlans, SubscriptionRecord } from './modules/subscriptions/index.js';
 import { DunningRecord } from './modules/billing/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
@@ -223,6 +224,7 @@ export const eventSources = [
   SubscriptionRecord, // Stage 13: quota alerts
   DunningRecord, // Stage 13: payment reminders, suspension
   PayoutLineRecord, // Stage 15: remittance notices
+  ApiKeyRecord, // Stage 14: key created / revoked / used from a new IP
 ];
 
 /**
