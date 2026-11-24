@@ -6,7 +6,7 @@
 #
 #   bash backend/scripts/b2b/backup-b2b.sh            # from the repo root
 #
-# Restore (drill or real): docs/runbooks/disaster-recovery.md.
+# Restore (drill or real): docs/go-live/runbooks/disaster-recovery.md.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"

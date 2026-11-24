@@ -34,4 +34,4 @@
 | Wallets and credit | Admin → Wallets | Approve a bank-transfer top-up; propose / approve credit (two people) |
 | Hotel payouts | Admin → Finance → Hotel payouts | Prepare a run, approve (someone else), bank file, mark paid; answer a statement question |
 | GST and reports | Admin → Finance → GST register / Reports | Download the month's register; lock a filed month; run reports |
-| System health and alerts | Admin → Finance → System health, `docs/runbooks/alerts.md` | Say what each alert means and who to call |
+| System health and alerts | Admin → Finance → System health, `docs/go-live/runbooks/alerts.md` | Say what each alert means and who to call |

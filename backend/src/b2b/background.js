@@ -280,7 +280,7 @@ export async function runInvariants(deps) {
     {
       to: deps.alertTo,
       subject: `[MusafirBaba B2B] Safety check failing: ${run.alerts.join(', ')}`,
-      text: `The scheduled safety checks found problems:\n\n${lines.join('\n')}\n\nSee Admin → B2B → Finance → System health, and the runbook (docs/runbooks).`,
+      text: `The scheduled safety checks found problems:\n\n${lines.join('\n')}\n\nSee Admin → B2B → Finance → System health, and the runbook (docs/go-live/runbooks).`,
     },
     { secret: deps.email.secret, clock: deps.clock },
   );

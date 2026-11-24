@@ -16,24 +16,26 @@ Backups contain customer data and secrets: keep `server-backups/` private and en
 
 Never restore into the live database for a drill. Use a fresh container.
 
-1. **Start a fresh MongoDB** next to the live one (same version, 8.0, standalone):
+1. **Start a fresh MongoDB** next to the live one (same version, 8.0, standalone). Pick a one-off password for the
+   drill and keep it only in your terminal (`read -s DRILL_PASSWORD`), then:
    ```bash
-   ssh 3mongoose 'docker run -d --name mongo-drill -e MONGO_INITDB_ROOT_USERNAME=drill -e MONGO_INITDB_ROOT_PASSWORD=drill-pass mongo:8.0'
+   ssh 3mongoose "docker run -d --name mongo-drill -e MONGO_INITDB_ROOT_USERNAME=drill -e MONGO_INITDB_ROOT_PASSWORD=$DRILL_PASSWORD mongo:8.0"
    ```
    Write down the time: **T0**.
 2. **Restore** the latest full backup, then the latest B2B backup on top (newer B2B data wins):
    ```bash
    B=server-backups/<latest full>; H=server-backups/<latest b2b-…>
-   cat $B/musafirbaba-mongo.archive.gz | ssh 3mongoose 'docker exec -i mongo-drill mongorestore -u drill -p drill-pass --authenticationDatabase admin --archive --gzip --drop'
-   cat $H/b2b.archive.gz           | ssh 3mongoose 'docker exec -i mongo-drill mongorestore -u drill -p drill-pass --authenticationDatabase admin --archive --gzip --drop'
+   cat $B/musafirbaba-mongo.archive.gz | ssh 3mongoose "docker exec -i mongo-drill mongorestore -u drill -p $DRILL_PASSWORD --authenticationDatabase admin --archive --gzip --drop"
+   cat $H/b2b.archive.gz           | ssh 3mongoose "docker exec -i mongo-drill mongorestore -u drill -p $DRILL_PASSWORD --authenticationDatabase admin --archive --gzip --drop"
    ```
-3. **Indexes and new collections** (repeat-safe):
+3. **Indexes and new collections** (repeat-safe). `DRILL_URI` is the drill database's address — user `drill`, your
+   drill password, host `127.0.0.1:27017`, database `test`, `authSource=admin`; build it in your terminal, never in a file:
    ```bash
-   ssh 3mongoose 'docker run --rm --network container:mongo-drill -e MONGO_URI="mongodb://drill:drill-pass@127.0.0.1:27017/test?authSource=admin" musafirbaba-backend node src/b2b/migrate.js'
+   ssh 3mongoose "docker run --rm --network container:mongo-drill -e MONGO_URI=\"$DRILL_URI\" musafirbaba-backend node src/b2b/migrate.js"
    ```
 4. **Safety checks** — rooms, ledger, orders, invoice numbers (read-only; exit 0 = clean):
    ```bash
-   ssh 3mongoose 'docker run --rm --network container:mongo-drill -e MONGO_URI="mongodb://drill:drill-pass@127.0.0.1:27017/test?authSource=admin" musafirbaba-backend node scripts/b2b/check-invariants.js'
+   ssh 3mongoose "docker run --rm --network container:mongo-drill -e MONGO_URI=\"$DRILL_URI\" musafirbaba-backend node scripts/b2b/check-invariants.js"
    ```
 5. **The gap** between the backup and the failure: start a backend against the drill database with `B2B_BACKGROUND=true` for 15 minutes — the reconciler finishes or undoes anything left half-way (holds, orders, cancellations, payouts), the payment poller asks PayU about every open payment, and the morning PayU settlement file is matched again. Check **Admin → B2B → Finance → Reconciliation** and **System health**.
 6. **Smoke test**: `/api/v1/health` answers `ok`; sign in to the business area; open a booking, a voucher, the wallet statement; run a search.
@@ -46,7 +48,7 @@ Never restore into the live database for a drill. Use a fresh container.
 2. Switch off new money flows while restoring: `B2B_ORDERS_ENABLED=false`, `B2B_WALLET_ENABLED=false`, `B2B_API_ENABLED=false` (the website's existing parts keep their own switches).
 3. Follow the drill steps 1–6, but restore into the live container only after the drill database passes step 4.
 4. Turn the switches back on one by one; watch **System health** for 1 hour.
-5. Incident report within 24 hours (see `docs/runbooks/incidents.md`).
+5. Incident report within 24 hours (see `docs/go-live/runbooks/incidents.md`).
 
 ## 4. Drill log
 
