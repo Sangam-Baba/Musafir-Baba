@@ -13,4 +13,9 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: 'MusafirBaba admin: finance and management reports (sales, margin, payments, ageing, plan revenue) and their CSV',
     orgTypes: ['PLATFORM'],
   },
+  periodLock: {
+    code: 'reporting.period.lock',
+    description: 'MusafirBaba finance: lock a month after the GST return is filed (no more documents dated in it)',
+    orgTypes: ['PLATFORM'],
+  },
 });

@@ -144,6 +144,7 @@ async function statement(hotelOrgId, q) {
     from: q.from,
     to: q.to,
     lines: payables.map((p) => ({
+      payableId: String(p._id), // Stage 15: so the hotel can question a line (statement disputes)
       bookingRef: p.bookingRef,
       orderRef: p.orderRef,
       checkOut: p.checkOut,
