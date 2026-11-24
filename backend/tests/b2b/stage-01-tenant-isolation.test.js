@@ -83,7 +83,7 @@ const OWNED = [
 ];
 
 /** Platform-wide on purpose (no owner): business users span orgs; catalogue and staff roles are global. */
-const PLATFORM_WIDE = ['id_users', 'acl_permissions', 'acl_staff_roles', 'org_client_categories']; // categories: Stage 10, MusafirBaba's own list
+const PLATFORM_WIDE = ['id_users', 'acl_permissions', 'acl_staff_roles', 'org_client_categories', 'id_consents', 'id_data_requests']; // categories: Stage 10, MusafirBaba's own list; consents / data requests: Stage 16, people who may have no organisation
 
 /** @type {Awaited<ReturnType<typeof startMongo>>} */
 let mongo;

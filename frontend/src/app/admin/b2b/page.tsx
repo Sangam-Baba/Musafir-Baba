@@ -21,6 +21,7 @@ import { StaffTab } from "@/b2b/components/admin/StaffTab";
 import { WalletsTab } from "@/b2b/components/admin/wallets/WalletsTab";
 import { UsageTab } from "@/b2b/components/admin/UsageTab";
 import { PlansTab } from "@/b2b/components/admin/plans/PlansTab";
+import { PrivacyTab } from "@/b2b/components/admin/PrivacyTab";
 import { ActivityTab, UsersTab } from "@/b2b/components/admin/UsersAndActivity";
 
 const TABS = [
@@ -39,6 +40,7 @@ const TABS = [
   { value: "users", label: "Users", icon: Users, title: "Business users", description: "People who sign in to the business area." },
   { value: "activity", label: "Activity", icon: Activity, title: "Activity", description: "Sign-ins and changes in every organisation." },
   { value: "staff", label: "Staff access", icon: ShieldCheck, title: "Staff access", description: "Which MusafirBaba staff can use B2B admin." },
+  { value: "privacy", label: "Privacy", icon: ShieldCheck, title: "Data requests", description: "DPDP requests: copies, corrections and deletions of personal data (30 days)." }, // Stage 16
 ];
 
 export default function B2BAdminPage() {
@@ -62,7 +64,7 @@ function B2BAdmin({ token }: { token: string }) {
         ]}
       />
       <Tabs defaultValue="kyc" className="flex flex-col gap-4">
-        <AdminTabsList tabs={TABS} gridClassName="lg:grid-cols-[repeat(15,minmax(0,1fr))]" />
+        <AdminTabsList tabs={TABS} gridClassName="lg:grid-cols-[repeat(16,minmax(0,1fr))]" />
         <TabsContent value="kyc" className="mt-0">
           <KycQueueTab token={token} />
         </TabsContent>
@@ -104,6 +106,9 @@ function B2BAdmin({ token }: { token: string }) {
         </TabsContent>
         <TabsContent value="activity" className="mt-0">
           <ActivityTab token={token} />
+        </TabsContent>
+        <TabsContent value="privacy" className="mt-0">
+          <PrivacyTab token={token} />
         </TabsContent>
         <TabsContent value="staff" className="mt-0">
           <StaffTab token={token} />

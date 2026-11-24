@@ -23,3 +23,12 @@ export { signEmailVerification, verifyEmailVerification, EMAIL_VERIFY_TTL_SECOND
 export { VIEW_AS_COLLECTION, VIEW_AS_TTL_MS, ViewAsRecord } from './models/view-as.model.js';
 export { sessionRoutes, sendTokens, REFRESH_COOKIE, REFRESH_COOKIE_PATH } from './session-routes.js';
 export { normaliseEmail, normalisePhone, parseLoginIdentifier, assertPasswordAllowed, isLocked, lockDurationMs } from './domain/user.js';
+export {
+  CONSENTS_COLLECTION,
+  DATA_REQUESTS_COLLECTION,
+  CONSENT_PURPOSES,
+  DATA_REQUEST_TYPES,
+  ConsentRecord,
+  DataRequestRecord,
+} from './models/privacy.model.js';
+export { createPrivacy, dataRequestDto } from './privacy.service.js';

@@ -197,7 +197,7 @@ export function BusinessDetailsForm({
         <label className="flex items-start gap-2 text-[13px] text-slate-700">
           <input type="checkbox" className="mt-1 accent-[#FE5300]" checked={value.termsAccepted} onChange={(e) => set({ termsAccepted: e.target.checked })} disabled={disabled} />
           <span>
-            I confirm the information is true and correct, and I accept the MusafirBaba hotel partner terms (net-rate contract).
+            I confirm the information is true and correct, I accept the MusafirBaba hotel partner terms (net-rate contract), and I have read the <a href="/privacy-policy" target="_blank" rel="noreferrer" className="text-[#FE5300] underline">privacy policy</a>.
             {errors.termsAccepted && <span className="block text-xs text-red-600">{errors.termsAccepted}</span>}
           </span>
         </label>

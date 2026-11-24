@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-24 — AI (Claude) — Stage 16 hardening (S16-T01 to T08; T09–T12 are owner tasks)
+
+- **Goal:** everything in hardening and launch that code and documents can do; prepare the owner tasks.
+- **Done:** S16-T01 … T08 → DONE. System health (safety-check runs saved, alert email once per check per day, admin view with days clean / stale); load test + order / My Bookings scenarios; last-room race at scale (500 buyers locally, staging script with test keys only); pilot-company list `B2B_PILOT_ORGS` for the switched-on client features; DPDP (checkout and registration consent recorded, public data-request form, admin Privacy queue with 30-day due dates); disaster recovery (B2B backup script, safety-check script for restores, drill runbook); runbooks (top 20 alerts, incidents with CERT-In 6 h / DPDP, support replies, training plan, go-live checklist).
+- **Not done / why:** S16-T09 … T12 need people: pilots, external penetration test, load / soak and DR drill on staging, on-call, status page, CERT-In contact, 180-day log retention, training, sign-offs.
+- **Files / PR:** `backend/src/b2b/modules/reporting/health.service.js`, `modules/identity/privacy.service.js`, `routes/system-health.js`, `routes/pilot.js`, `routes/privacy.js`; scripts `backup-b2b.sh`, `check-invariants.js`, `race-at-scale.js`, `load-test.js`; frontend `HealthPanel.tsx`, `PrivacyTab.tsx`, `app/business/privacy`, checkout consent; `docs/go-live/runbooks/*`. Migrations 0081–0082. Local commits, not pushed.
+- **Tests run:** system-health, race-at-scale (500 buyers), pilot, privacy ✅; check-invariants.js on a fresh database ✅; full suite ✅; lint, typecheck ✅; frontend `tsc` + `next build` ✅. A safety-checker finding (runbooks outside the allowed folders, a placeholder password in an example) fixed; the commit gate now includes the safety checker.
+- **Decisions / deferrals:** pilot list optional (unset = no change); legal wording (privacy notice, incident steps) to be confirmed by a lawyer.
+- **Next step:** owner: push Stages 13–16, run migrations 0070–0082, Pilot 1 and 2, pen test, staging load / DR drill, then the go-live checklist.
+
+
 ## 2026-11-24 — AI (Claude) — Stage 14 API access & webhooks (S14-T01 to T11)
 
 - **Goal:** let a B2B client's own software search, book, pay and cancel with API keys, and receive signed booking updates — self-service, behind a switch.

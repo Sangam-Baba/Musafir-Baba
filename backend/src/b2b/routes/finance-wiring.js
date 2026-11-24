@@ -14,6 +14,7 @@ import { financePortalRoutes } from './finance-portal.js';
 import { createFiles } from './files.js';
 import { adminReportsFor, clientReportsFor } from './reports-wiring.js';
 import { systemHealthRoutes } from './system-health.js';
+import { privacyRoutes } from './privacy.js';
 
 const SCOPE = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 'payouts: hotel facts' };
 
@@ -62,5 +63,6 @@ export function stage15Routes(env, clock) {
   router.use(stage15AdminRoutes({ clock, runs, disputes, reports: adminReportsFor({ clock }) }));
   router.use(financePortalRoutes({ runs, disputes, clientReports: clientReportsFor() }));
   router.use(systemHealthRoutes({ clock })); // Stage 16
+  router.use(privacyRoutes({ clock })); // Stage 16: DPDP consents and data requests
   return router;
 }

@@ -22,6 +22,7 @@ import { fieldErrors, TERMS_VERSION, type KycApplication } from "@/b2b/kyc";
 import { errorMessage } from "@/b2b/messages";
 import { useBusinessSession } from "@/b2b/session-store";
 import type { Tokens } from "@/b2b/types";
+import { recordConsent } from "@/b2b/privacy";
 
 const HEADINGS = [
   ["Choose your", "partnership type", "Tell us what kind of business you are."],
@@ -69,6 +70,7 @@ export default function RegisterWizard() {
       const body = { details: toRequest(details, TERMS_VERSION, kind), owner: signedInAtStart ? undefined : owner };
       const r = await b2b<Tokens>(kind === "CLIENT" ? "/registrations/client" : "/registrations/hotel", { method: "POST", body });
       setToken(r.accessToken);
+      recordConsent("business-registration", null); // Stage 16 (DPDP); the terms version is kept with the application
       setCreated(true);
       setStep(4);
       toast.success(signedInAtStart ? "Business added to your account" : "Account created — we've emailed you a link to confirm your address");

@@ -12,6 +12,7 @@ import { B2BError } from "../api";
 import { errorMessage } from "../messages";
 import { createOrder, loadCheckoutOffer, NAME_RE, randomId, saveCheckoutOffer, type CheckoutOffer } from "./checkout";
 import { guestsText, inr, MEAL_LABEL } from "./hotels";
+import { PRIVACY_NOTICE_URL, recordConsent } from "@/b2b/privacy";
 
 const EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[^\s@]{2,63}$/;
 const field = "mt-1 block h-10 w-full rounded-lg border border-slate-200 px-3 text-sm";
@@ -60,6 +61,7 @@ export function CheckoutView() {
   const [guests, setGuests] = useState<string[]>([]);
   const [contact, setContact] = useState({ name: "", email: "", phone: "" });
   const [requests, setRequests] = useState("");
+  const [agreed, setAgreed] = useState(false); // Stage 16 (DPDP): privacy notice
   const [requestKey, setRequestKey] = useState(() => randomId());
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<Problem>(null);
@@ -81,6 +83,7 @@ export function CheckoutView() {
     setProblem(null);
     try {
       const order = await createOrder({ priceToken: offer.offer.priceToken, rooms: guests.map((g) => ({ leadGuest: g.trim() })), contact, specialRequests: requests.trim() || null, confirmDuplicate }, requestKey);
+      recordConsent("hotel-checkout", order.ref);
       router.push(`/hotels/booking/${order.ref}${order.linkKey ? `?key=${order.linkKey}` : ""}`);
     } catch (e) {
       const d = e instanceof B2BError ? e.details : {};
@@ -118,8 +121,12 @@ export function CheckoutView() {
         <label className="block text-sm text-slate-700">Special requests (optional — passed to the hotel, not guaranteed)
           <textarea className="mt-1 block h-20 w-full rounded-lg border border-slate-200 p-3 text-sm" value={requests} maxLength={500} onChange={(e) => setRequests(e.target.value)} />
         </label>
+        <label className="flex items-start gap-2 text-xs text-slate-600">
+          <input type="checkbox" className="mt-0.5 accent-[#FE5300]" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
+          <span>I have read the <a href={PRIVACY_NOTICE_URL} target="_blank" rel="noreferrer" className="text-[#FE5300] underline">privacy policy</a> and agree that MusafirBaba uses these details for this booking and shares the guest names with the hotel.</span>
+        </label>
         <ProblemBox p={problem} c={offer} onAccept={acceptPrice} onDuplicate={() => void submit(true)} />
-        <button disabled={!valid || busy} className="w-full rounded-lg bg-[#FE5300] py-3 text-sm font-semibold text-white disabled:opacity-50">
+        <button disabled={!valid || !agreed || busy} className="w-full rounded-lg bg-[#FE5300] py-3 text-sm font-semibold text-white disabled:opacity-50">
           {busy ? "Holding your rooms…" : `Continue — ${inr(offer.offer.price.totalPaise)}`}
         </button>
         <p className="text-xs text-slate-500">We hold the rooms for 15 minutes while you pay. Names: letters, spaces, dot, apostrophe and hyphen.</p>

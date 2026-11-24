@@ -189,6 +189,20 @@ set it once and never change it, or every key stops), `B2B_API_ENV=test` only on
 With plans switched on (Stage 13), keys need a plan with `api` and webhooks a plan with `webhooks` (placeholder plans:
 B and C / C).
 
+## 8g. Stage 16 (hardening) — with the next push
+
+Migrations `0081` (safety-check runs) and `0082` (DPDP consents, data requests). New, all optional:
+- `B2B_OPS_ALERT_EMAIL` — where safety-check alerts go (once per check per day). Without it, problems are only logged
+  and shown in **Admin → B2B → Finance → System health**.
+- `B2B_PILOT_ORGS` — comma-separated client company ids: switched-on client features work only for them. Unset =
+  everyone (as today).
+- Grant `reporting.health.read` (System health) and `platform.privacy.manage` (Admin → B2B → Privacy) to the staff
+  who need them.
+- Website hotel checkout now has a required privacy checkbox (only when hotel booking on the website is switched on).
+- Runbooks: `docs/go-live/runbooks/` — alerts, incidents (CERT-In / DPDP), disaster recovery drill, support replies
+  and training, go-live checklist. Scripts: `backend/scripts/b2b/backup-b2b.sh`, `check-invariants.js`,
+  `load-test.js`, `race-at-scale.js` (staging only).
+
 ## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.
