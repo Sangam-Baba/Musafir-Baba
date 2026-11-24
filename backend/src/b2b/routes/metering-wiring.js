@@ -6,6 +6,7 @@
  */
 import { logger as defaultLogger } from '../core/logger.js';
 import { createUsageRecorder, recountDay, usageOf } from '../modules/metering/index.js';
+import { quotaGuard } from './quota-wiring.js';
 
 /** @type {ReturnType<typeof createUsageRecorder> | null} */
 let recorder = null;
@@ -18,16 +19,22 @@ export function usageRecorder(clock) {
   return recorder;
 }
 
-/** The search gateway's hooks. @param {import('../core/clock.js').Clock} clock @returns {import('./search-gateway.js').SearchHooks} */
-export function usageHooks(clock) {
+/**
+ * The search gateway's hooks. Plan limits apply only with `B2B_BILLING_ENABLED=true` (Stage 13 — off by default).
+ * @param {import('../core/clock.js').Clock} clock
+ * @param {NodeJS.ProcessEnv} [env]
+ * @returns {import('./search-gateway.js').SearchHooks}
+ */
+export function usageHooks(clock, env = {}) {
   return {
+    ...(env.B2B_BILLING_ENABLED === 'true' ? { before: quotaGuard(clock) } : {}), // Stage 13: plan limits
     after: async (caller, kind, info) => {
       const now = clock.now().getTime();
       const memo = `${info.userId ?? '-'}|${kind}|${info.subject ?? '-'}`;
       const u = usageOf({
         metric: kind,
         clientOrgId: caller.clientOrgId,
-        apiKey: false,
+        apiKey: info.apiKey === true,
         refresh: info.refresh,
         lastFreeRefreshAt: freeRefreshAt.get(memo) ?? null,
         now,
@@ -40,7 +47,8 @@ export function usageHooks(clock) {
       usageRecorder(clock).record({
         orgId: caller.clientOrgId ?? 'platform',
         userId: info.userId,
-        channel: caller.channel,
+        apiKeyId: info.userId?.startsWith('apikey:') ? info.userId.slice(7) : null, // Stage 14
+        channel: info.apiKey ? 'B2B_API' : caller.channel,
         metric: kind,
         billable: u.billable,
         statusCode: info.statusCode,

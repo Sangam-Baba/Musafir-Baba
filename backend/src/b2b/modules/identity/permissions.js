@@ -6,6 +6,11 @@
 import { definePermissions } from '../../core/permissions.js';
 
 export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePermissions('Users', {
+  privacyManage: {
+    code: 'platform.privacy.manage',
+    description: 'MusafirBaba admin: data requests (access, correction, deletion) under DPDP',
+    orgTypes: ['PLATFORM'],
+  },
   platformUserRead: { code: 'platform.user.read', description: 'MusafirBaba admin: search business users', orgTypes: ['PLATFORM'] },
   platformUserManage: {
     code: 'platform.user.manage',

@@ -206,7 +206,7 @@ function hotelEdits(deps, gstinUsedElsewhere) {
       const { orgId } = orgOf(ctx);
       const doc = loadEditable(await loadApplication(orgId));
       const stored = protectBank(bank, { orgId, key: deps.fieldKey });
-      return saveEdit(doc, { bank: stored.bank, 'sensitive.accountSealed': stored.accountSealed });
+      return saveEdit(doc, { bank: stored.bank, 'sensitive.accountSealed': stored.accountSealed, bankChangedAt: deps.clock.now() });
     },
 
     /** @param {import('../../core/context.js').RequestContext} ctx @param {string} key */

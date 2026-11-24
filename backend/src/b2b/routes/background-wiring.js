@@ -30,6 +30,8 @@ import { dailyReconciliation, EVENTS as PAYMENT_EVENTS, pollPayments, POLL_EVERY
 import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { walletParts } from './wallet-wiring.js';
 import { usageRecorder, usageSchedules } from './metering-wiring.js';
+import { subscriptionParts } from './subscriptions-wiring.js';
+import { webhookParts } from './webhooks-wiring.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
 
@@ -75,6 +77,8 @@ export function startDatabase(env, log, hub, identity) {
   const email = config.B2B_AUTH_SECRET ? { sender: emailSenderFromConfig(config, log), secret: config.B2B_AUTH_SECRET } : null;
   const emails = emailConsumers(engine, config, email);
   const wallet = walletParts(systemClock);
+  const subscriptions = subscriptionParts(systemClock, env);
+  const webhooks = webhookParts(systemClock, env); // Stage 14: nothing unless B2B_API_ENABLED=true
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -85,6 +89,7 @@ export function startDatabase(env, log, hub, identity) {
         email,
         publicUrl: config.B2B_PUBLIC_URL,
         onStop: () => usageRecorder(systemClock).stop(),
+        opsAlertEmail: env.B2B_OPS_ALERT_EMAIL || undefined, // Stage 16: safety-check alerts
         rules: [...orderReconcileRules(engine.ordersDeps), cancellingRule(engine.ordersDeps)],
         consumers: [
           ...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
@@ -94,27 +99,13 @@ export function startDatabase(env, log, hub, identity) {
           summaries.consumer,
           ...payables.consumers,
           ...[wallet.consumer, wallet.topUps],
+          ...subscriptions.consumers,
+          ...webhooks.consumers,
         ],
         invariants: invariantsOf(engine, wallet),
         schedules: [
-          retentionSchedule(env, config, log),
-          CALENDAR_WINDOW_SCHEDULE,
-          { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
-          payables.completion,
-          ...usageSchedules(systemClock),
-          wallet.schedule,
-          { name: 'hotel-booking-no-show-settle', everyMs: 10 * 60_000, run: () => settleNoShows(engine.ordersDeps) },
-          { name: 'hotel-booking-ack-reminders', everyMs: 60_000, run: () => ackEscalation({ clock: systemClock }) },
-          { name: 'reporting-summaries-rebuild', everyMs: SUMMARIES_REBUILD_EVERY_MS, run: () => summaries.summaries.rebuild() },
-          { name: 'documents-retry', everyMs: DOCUMENTS_RETRY_EVERY_MS, run: () => documents.retryMissing() },
-          { name: 'orders-sweeper', everyMs: ORDER_SWEEP_EVERY_MS, run: () => sweepOrders(engine.ordersDeps) },
-          { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
-          { name: 'payments-poller', everyMs: POLL_EVERY_MS, run: () => pollPayments(paymentsFromEnv(env, systemClock, log).deps) },
-          {
-            name: 'payments-daily-reconciliation',
-            everyMs: 24 * 60 * 60_000,
-            run: () => dailyReconciliation(paymentsFromEnv(env, systemClock, log).deps),
-          },
+          ...schedulesOf(env, log, engine, { config, documents, summaries, payables, wallet, subscriptions }),
+          ...webhooks.schedules,
         ],
       }),
     )
@@ -209,5 +200,37 @@ function invariantsOf(engine, wallet) {
     ...documentInvariants({ clock: systemClock }),
     ...wallet.invariants,
     ...bookingInvariants({ clock: systemClock, owners: () => bookedNightOwners(systemClock) }),
+  ];
+}
+
+/**
+ * Every schedule background work runs (the booking engine's jobs, wallets, usage, subscriptions, payments).
+ * @param {NodeJS.ProcessEnv} env
+ * @param {import('../core/logger.js').Logger} log
+ * @param {ReturnType<typeof bookingEngine>} engine
+ * @param {{ config: ReturnType<typeof loadConfig>, documents: any, summaries: any, payables: any, wallet: ReturnType<typeof walletParts>, subscriptions: ReturnType<typeof subscriptionParts> }} parts
+ */
+function schedulesOf(env, log, engine, parts) {
+  const { config, documents, summaries, payables, wallet } = parts;
+  return [
+    retentionSchedule(env, config, log),
+    CALENDAR_WINDOW_SCHEDULE,
+    { name: 'inventory-hold-sweeper', everyMs: SWEEP_EVERY_MS, run: () => sweepHolds({ clock: systemClock, logger: log }) },
+    payables.completion,
+    ...usageSchedules(systemClock),
+    wallet.schedule,
+    { name: 'hotel-booking-no-show-settle', everyMs: 10 * 60_000, run: () => settleNoShows(engine.ordersDeps) },
+    { name: 'hotel-booking-ack-reminders', everyMs: 60_000, run: () => ackEscalation({ clock: systemClock }) },
+    { name: 'reporting-summaries-rebuild', everyMs: SUMMARIES_REBUILD_EVERY_MS, run: () => summaries.summaries.rebuild() },
+    { name: 'documents-retry', everyMs: DOCUMENTS_RETRY_EVERY_MS, run: () => documents.retryMissing() },
+    { name: 'orders-sweeper', everyMs: ORDER_SWEEP_EVERY_MS, run: () => sweepOrders(engine.ordersDeps) },
+    { name: 'ledger-balances-rollup', everyMs: ROLLUP_EVERY_MS, run: () => rollUpBalances({ clock: systemClock }) },
+    { name: 'payments-poller', everyMs: POLL_EVERY_MS, run: () => pollPayments(paymentsFromEnv(env, systemClock, log).deps) },
+    {
+      name: 'payments-daily-reconciliation',
+      everyMs: 24 * 60 * 60_000,
+      run: () => dailyReconciliation(paymentsFromEnv(env, systemClock, log).deps),
+    },
+    ...parts.subscriptions.schedules,
   ];
 }

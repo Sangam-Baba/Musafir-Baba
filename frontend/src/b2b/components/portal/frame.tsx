@@ -1,7 +1,7 @@
 "use client";
 // The partner portal frame: dark sidebar (only pages that work today), top bar with the business switcher,
 // the bell and the account menu. Behaviour (switching business, log out, view-as) stays in BusinessShell.
-import { Activity, Building2, CalendarCheck, ClipboardList, FileSpreadsheet, Hotel, Headphones, Home, LogOut, Menu, Percent, Search, Settings, ShieldCheck, Users, Wallet, BarChart3, X, type LucideIcon } from "lucide-react";
+import { Activity, Building2, CalendarCheck, ClipboardList, FileSpreadsheet, Hotel, Headphones, Home, LogOut, Menu, Percent, Search, Settings, ShieldCheck, Users, Wallet, BarChart3, CreditCard, X, Banknote, PieChart, Palette, Code2, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ const MAIN: NavItem[] = [
   // hotels (Stage 08): confirmed bookings to acknowledge — the acknowledge permission is hotel-only, so clients never see it
   { href: "/business/bookings", label: "Bookings", icon: CalendarCheck, permission: "hotel-booking.booking.acknowledge" },
   { href: "/business/statement", label: "Statement", icon: FileSpreadsheet, permission: "wallet.statement.read" },
+  { href: "/business/payouts", label: "Payouts", icon: Banknote, permission: "wallet.statement.read" }, // Stage 15: hotels
   // B2B clients (Stage 12 part A) — shown only to roles that have these permissions, so hotels never see them
   { href: "/business/hotels", label: "Search Hotels", icon: Search, permission: "hotel-search.search.use" },
   { href: "/business/my-bookings", label: "My Bookings", icon: CalendarCheck, permission: "orders.order.read" }, // Stage 12B: clients
@@ -27,6 +28,10 @@ const MAIN: NavItem[] = [
   { href: "/business/markup", label: "My Markup", icon: Percent, permission: "pricing.markup.read" },
   { href: "/business/wallet", label: "Wallet", icon: Wallet, permission: "wallet.account.read" }, // Stage 11: clients only
   { href: "/business/usage", label: "Usage", icon: BarChart3, permission: "metering.usage.read" }, // Stage 12B: clients
+  { href: "/business/plan", label: "Plan & Billing", icon: CreditCard, permission: "subscriptions.subscription.read" }, // Stage 13: clients
+  { href: "/business/reports", label: "Reports", icon: PieChart, permission: "orders.export.read" }, // Stage 15: clients
+  { href: "/business/branding", label: "Voucher Branding", icon: Palette, permission: "orders.order.read" }, // Stage 15: clients (orders.order.read is client-only)
+  { href: "/business/developers", label: "Developers", icon: Code2, permission: "api-access.key.read" }, // Stage 14: client Owner
 ];
 const ADMIN: NavItem[] = [
   { href: "/business/team", label: "Team & Access", icon: Users },

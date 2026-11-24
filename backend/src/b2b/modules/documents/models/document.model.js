@@ -28,6 +28,20 @@ const schema = new b2bMongoose.Schema(
     clientOrgId: { type: String, default: null },
     hotelOrgId: { type: String, default: null },
     issuedAt: { type: Date, required: true },
+    // Stage 15: the amounts the GST registers need (tax invoices and credit notes)
+    tax: {
+      type: {
+        taxablePaise: Number,
+        cgstPaise: Number,
+        sgstPaise: Number,
+        igstPaise: Number,
+        placeOfSupply: String,
+        sac: String,
+        buyerGstin: String,
+      },
+      default: null,
+      _id: false,
+    },
     ...eventFields(b2bMongoose),
   },
   { timestamps: true, versionKey: false, strict: 'throw' },

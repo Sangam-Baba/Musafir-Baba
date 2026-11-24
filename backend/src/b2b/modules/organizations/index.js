@@ -18,3 +18,5 @@ export {
   seedClientCategories,
   createClientCategoriesService,
 } from './client-categories.service.js';
+export { BRANDING_COLLECTION, BrandingRecord } from './models/branding.model.js';
+export { brandingOf, brandOf, checkBrand, saveBranding, HEX_COLOUR, LOGO_URL } from './branding.service.js';

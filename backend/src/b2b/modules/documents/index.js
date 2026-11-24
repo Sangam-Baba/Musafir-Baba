@@ -16,4 +16,4 @@ export { esc, page } from './domain/html.js';
 export { voucherHtml, clientVoucherHtml, taxInvoiceHtml, receiptHtml, invoiceLines, creditNoteHtml } from './domain/templates.js';
 export { DOCUMENTS_COLLECTION, DOCUMENT_TYPES, DocumentRecord } from './models/document.model.js';
 export { NUMBER_SERIES_COLLECTION, NumberSeriesRecord } from './models/number-series.model.js';
-export { createDocuments, reserveNumber, documentInvariants } from './documents.service.js';
+export { createDocuments, reserveNumber, documentInvariants, taxDocumentsBetween, invoiceTax } from './documents.service.js';

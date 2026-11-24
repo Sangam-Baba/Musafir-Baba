@@ -11,4 +11,6 @@ export const EVENTS = /** @type {const} */ ({
   lowBalance: 'wallet.account.low-balance',
   /** a client's credit went past its due date (once until the wallet is back to zero) — `{ orgId, amountPaise }` (used) */
   creditOverdue: 'wallet.credit.overdue',
+  /** Stage 15: a hotel was paid in a payout run — `{ orgId, amountPaise, ref, bankReference }` (remittance) */
+  payoutPaid: 'wallet.payout.paid',
 });

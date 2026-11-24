@@ -1,6 +1,7 @@
 "use client";
 // B2B admin → Finance (Stage 07): accounts and corrections, payments and refunds, reconciliation, and a ₹1 test
-// payment that proves the PayU connection end to end (Super Admin only).
+// payment that proves the PayU connection end to end (Super Admin only). Stage 15: hotel payouts, GST register,
+// reports and the accounting export.
 import { FlaskConical } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -11,11 +12,18 @@ import { adminCall } from "../AdminPassGate";
 import { FleetPanel, Input, inputSm, PrimaryBtn } from "../kit";
 import { LedgerPanel } from "./LedgerPanel";
 import { PaymentsPanel } from "./PaymentsPanel";
+import { PayoutRunsPanel } from "./PayoutRunsPanel";
+import { ReportsPanel } from "./ReportsPanel";
+import { HealthPanel } from "./HealthPanel";
 
 const SECTIONS = [
   { key: "ledger", label: "Accounts & corrections" },
   { key: "payments", label: "Payments & refunds" },
   { key: "reconciliation", label: "Reconciliation" },
+  { key: "payouts", label: "Hotel payouts" }, // Stage 15
+  { key: "gst", label: "GST register" },
+  { key: "reports", label: "Reports & exports" },
+  { key: "health", label: "System health" }, // Stage 16
   { key: "test", label: "Test payment" },
 ] as const;
 
@@ -74,6 +82,10 @@ export function FinanceTab({ token }: { token: string }) {
       {section === "ledger" && <LedgerPanel token={token} />}
       {section === "payments" && <PaymentsPanel token={token} view="payments" />}
       {section === "reconciliation" && <PaymentsPanel token={token} view="reconciliation" />}
+      {section === "payouts" && <PayoutRunsPanel token={token} />}
+      {section === "gst" && <ReportsPanel token={token} view="gst" />}
+      {section === "reports" && <ReportsPanel token={token} view="reports" />}
+      {section === "health" && <HealthPanel token={token} />}
       {section === "test" && <TestPayment token={token} />}
     </div>
   );

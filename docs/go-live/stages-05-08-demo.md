@@ -136,6 +136,73 @@ Migration `0069` (usage counting: `mtr_usage_events`, daily and monthly counters
 - Usage is counted from the first search after this push (website traffic under `platform`, never billable); nothing is
   charged until plans (Stage 13).
 
+## 8d. Stage 13 (plans and billing) — with the next push
+
+Migrations `0070` … `0073` (plan versions and settings, subscriptions and overrides, SaaS invoices, dunning). The
+placeholder plans (Starter trial, A, B, C) and the query weights are added at start-up, only if missing.
+
+**Switched off by default**: nothing below happens until `B2B_BILLING_ENABLED=true` is set on the server (client plan pages say "coming soon"; admin can already prepare the plans). **When switched on** (only verified B2B clients — the website is never affected):
+- every verified client gets a subscription on the Starter trial (clients verified earlier are caught up within 10
+  minutes); searching is counted against its limit and BLOCK plans stop at the limit (bookings are never blocked);
+- after the trial / on upgrade, plan fees are invoiced (series `S2627DL…`) and **taken from the client's wallet**;
+  unpaid → reminders, and after 10 days searching and new bookings pause until paid.
+
+Before real clients rely on it: the owner confirms the plan numbers (D7) in **Admin → B2B → Plans** (a second person
+publishes), the CA confirms the SAC (placeholder 998314) and the invoice layout, and MusafirBaba's GSTIN is set in the
+pricing settings (invoices show it). A demo of a full month: `node scripts/b2b/simulate-billing.js` (in-memory, touches
+nothing real).
+
+## 8e. Stage 15 (hotel payouts, GST registers, reports, branding) — with the next push
+
+Migrations `0074` … `0077` (payout runs / lines / deduction rules, statement questions, period locks, client
+branding). **Nothing runs by itself** — no new background job; every action is a person clicking in the admin panel.
+
+Before finance uses it, give the finance staff these permissions (Admin → B2B → Staff access):
+- `wallet.payout.record` — prepare payout runs, hold / release hotels, see statement questions;
+- `wallet.payout.approve` — approve runs (must be a different person), bank file, mark paid, deduction rules, answer questions;
+- `reporting.reports.read` — GST register, reports, accounting export;
+- `reporting.period.lock` — lock a month after the GST return is filed (only a finished month, once).
+
+Where: **Admin → B2B → Finance → Hotel payouts · GST register · Reports & exports**. Hotels see **Payouts** (owners);
+clients see **Reports** and **Voucher Branding** in the business area.
+
+Before the first real payout: the CA sets deductions (TDS — none until then), MusafirBaba's bank confirms its bulk
+transfer file format (the bank file is a generic CSV until then), and hotels' KYC is approved with bank details (lines
+are held otherwise, and for 72 hours after a bank change). The CA confirms the GST register layout before filing.
+
+## 8f. Stage 14 (API keys and webhooks) — with the next push
+
+Migrations `0078` … `0080` (API keys, webhook endpoints, webhook deliveries). **Switched off by default**: nothing
+changes until `B2B_API_ENABLED=true` is set on the server. While off, `mb_…` keys get 401 `API_NOT_ENABLED`, the
+Developers page says "not switched on", no webhook is queued or sent. The API description
+(`/api/v1/openapi.json`) and the guides page (`/business/developers/docs`) are public either way.
+
+**When switched on** (verified B2B clients only — the website is never affected):
+- client Owners see **Developers** in the business area: keys (shown once, 2 at a time, IP limits, rotate, revoke) and
+  webhook addresses; a key acts for its creator within its scopes, at the dashboard's B2B prices, counted in the same
+  usage / plan pool (per key on the Usage page);
+- booking updates are sent signed to the clients' HTTPS addresses every 15 seconds (retries ~22 h; an address failing
+  24 h is switched off and the Owner emailed).
+
+Optional server settings: `B2B_API_KEY_PEPPER` (a long random value for key hashing — falls back to `B2B_AUTH_SECRET`;
+set it once and never change it, or every key stops), `B2B_API_ENV=test` only on a staging server (test keys).
+With plans switched on (Stage 13), keys need a plan with `api` and webhooks a plan with `webhooks` (placeholder plans:
+B and C / C).
+
+## 8g. Stage 16 (hardening) — with the next push
+
+Migrations `0081` (safety-check runs) and `0082` (DPDP consents, data requests). New, all optional:
+- `B2B_OPS_ALERT_EMAIL` — where safety-check alerts go (once per check per day). Without it, problems are only logged
+  and shown in **Admin → B2B → Finance → System health**.
+- `B2B_PILOT_ORGS` — comma-separated client company ids: switched-on client features work only for them. Unset =
+  everyone (as today).
+- Grant `reporting.health.read` (System health) and `platform.privacy.manage` (Admin → B2B → Privacy) to the staff
+  who need them.
+- Website hotel checkout now has a required privacy checkbox (only when hotel booking on the website is switched on).
+- Runbooks: `docs/go-live/runbooks/` — alerts, incidents (CERT-In / DPDP), disaster recovery drill, support replies
+  and training, go-live checklist. Scripts: `backend/scripts/b2b/backup-b2b.sh`, `check-invariants.js`,
+  `load-test.js`, `race-at-scale.js` (staging only).
+
 ## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.

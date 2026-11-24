@@ -17,7 +17,7 @@ import { AuditEventRecord } from '../../src/b2b/modules/audit/index.js';
 import { SessionRecord, UserRecord, ViewAsRecord } from '../../src/b2b/modules/identity/index.js';
 import { MfaRecord } from '../../src/b2b/modules/identity/models/mfa.model.js';
 import { OtpRecord } from '../../src/b2b/modules/identity/models/otp.model.js';
-import { InvitationRecord, MemberRecord, OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
+import { BrandingRecord, InvitationRecord, MemberRecord, OrganizationRecord } from '../../src/b2b/modules/organizations/index.js';
 import { BranchRecord } from '../../src/b2b/modules/organizations/models/branch.model.js';
 import { MIGRATIONS } from '../../src/b2b/migrations/index.js';
 import { startMongo } from './helpers/mongo.js';
@@ -69,6 +69,12 @@ const OWNED = [
     }),
   ],
   [
+    'org_branding', // Stage 15: a client's voucher brand
+    BrandingRecord,
+    'orgId',
+    (o) => ({ orgId: o, name: `Brand ${o}`, updatedBy: 'u' }),
+  ],
+  [
     'aud_events',
     AuditEventRecord,
     'orgId',
@@ -77,7 +83,7 @@ const OWNED = [
 ];
 
 /** Platform-wide on purpose (no owner): business users span orgs; catalogue and staff roles are global. */
-const PLATFORM_WIDE = ['id_users', 'acl_permissions', 'acl_staff_roles', 'org_client_categories']; // categories: Stage 10, MusafirBaba's own list
+const PLATFORM_WIDE = ['id_users', 'acl_permissions', 'acl_staff_roles', 'org_client_categories', 'id_consents', 'id_data_requests']; // categories: Stage 10, MusafirBaba's own list; consents / data requests: Stage 16, people who may have no organisation
 
 /** @type {Awaited<ReturnType<typeof startMongo>>} */
 let mongo;

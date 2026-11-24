@@ -52,13 +52,14 @@ import {
 import { useInventoryApp } from './inventory-app.js';
 import { seedPricing, sellableHotel } from './search-setup.js';
 
-/** @returns {any} */
-export function useOrderEngine() {
+/** @param {{ env?: Record<string, string> }} [options] @returns {any} */
+export function useOrderEngine(options = {}) {
   let nowMs = Date.parse('2026-11-19T10:00:00Z');
   const clock = { now: () => new Date(nowMs) };
   const S = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 'test' };
   const app = useInventoryApp({
     clock,
+    env: options.env,
     models: [
       OrderRecord,
       BookingRecord,

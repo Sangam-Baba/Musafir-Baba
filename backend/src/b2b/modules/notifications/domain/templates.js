@@ -199,6 +199,31 @@ export const TEMPLATES = Object.freeze({
     subject: 'MusafirBaba made a booking for {{orgName}}',
     text: 'Hello,\n\nMusafirBaba booked a stay for {{orgName}} as you asked, paid from your wallet.\n\nSee it here: {{link}}\n\nMusafirBaba Business',
   },
+  // Stage 13: plan limits
+  'subscription.quota': {
+    version: 1,
+    vars: ['orgName', 'link', 'percent'],
+    title: 'Monthly query limit: {{percent}} used',
+    body: "{{orgName}} has used {{percent}} of this month's queries. Upgrade your plan or ask us for a top-up to keep searching.",
+    subject: 'You have used {{percent}} of your monthly queries',
+    text: "Hello,\n\n{{orgName}} has used {{percent}} of this month's queries on MusafirBaba Business.\n\nSee your plan: {{link}}\n\nMusafirBaba Business",
+  },
+  'billing.reminder': {
+    version: 1,
+    vars: ['orgName', 'link', 'amount'],
+    title: 'Invoice unpaid: {{amount}}',
+    body: '{{amount}} for your MusafirBaba plan is unpaid. Add money to your wallet or pay by PayU — searching stops after 10 days unpaid.',
+    subject: 'Your MusafirBaba invoice is unpaid ({{amount}})',
+    text: 'Hello,\n\n{{amount}} for the {{orgName}} plan on MusafirBaba Business is unpaid. Add money to your wallet (it is taken automatically) or pay by PayU. After 10 days unpaid, searching and new bookings are paused; your existing bookings stay as they are.\n\nPay now: {{link}}\n\nMusafirBaba Business',
+  },
+  'billing.suspended': {
+    version: 1,
+    vars: ['orgName', 'link', 'amount'],
+    title: 'Searching and booking paused',
+    body: '{{amount}} has been unpaid for 10 days, so searching and new bookings are paused for {{orgName}}. Existing bookings are not affected. Pay to switch it back on at once.',
+    subject: 'Searching and booking paused — {{amount}} unpaid',
+    text: 'Hello,\n\n{{amount}} has been unpaid for 10 days, so searching and new bookings are paused for {{orgName}} on MusafirBaba Business. Your existing bookings, documents and cancellations are not affected. As soon as it is paid, everything is switched back on.\n\nPay now: {{link}}\n\nMusafirBaba Business',
+  },
   // Stage 11: client wallets
   'wallet.topup-credited': {
     version: 1,
@@ -223,6 +248,22 @@ export const TEMPLATES = Object.freeze({
     body: '{{amount}} of credit used by {{orgName}} is past its due date. New bookings are paused until it is paid.',
     subject: 'Credit payment overdue — new bookings paused',
     text: 'Hello,\n\n{{amount}} of credit used by {{orgName}} is past its due date. New bookings are paused until the wallet is topped up.\n\nPay now: {{link}}\n\nMusafirBaba Business',
+  }, // Stage 14: API keys and webhooks
+  'api.key-new-ip': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'API key used from a new address',
+    body: 'One of the {{orgName}} API keys was just used from an address it has not used before. If this was not your software, revoke the key now.',
+    subject: 'Your MusafirBaba API key was used from a new address',
+    text: 'Hello,\n\nOne of the {{orgName}} API keys was just used from an internet address it has not used before. If this was not your own software, revoke the key now and create a new one.\n\nSee your keys: {{link}}\n\nMusafirBaba Business',
+  },
+  'webhooks.endpoint-disabled': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Webhook address switched off',
+    body: 'A {{orgName}} webhook address has failed for 24 hours, so MusafirBaba stopped sending to it. Fix it and switch it back on.',
+    subject: 'Your MusafirBaba webhook address was switched off',
+    text: 'Hello,\n\nA {{orgName}} webhook address has not accepted our booking updates for 24 hours, so we stopped sending to it. Fix the address, then switch it back on and send any missed updates again from the delivery log.\n\nOpen Developers: {{link}}\n\nMusafirBaba Business',
   },
 });
 

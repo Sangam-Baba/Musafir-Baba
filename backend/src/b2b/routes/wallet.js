@@ -37,7 +37,10 @@ import {
 import { AccountRecord } from '../modules/wallet/index.js';
 import { walletAdminRoutes } from './wallet-admin.js';
 import { usageRoutes } from './usage.js';
+import { stage13Routes } from './subscriptions-wiring.js';
+import { stage15Routes } from './finance-wiring.js';
 import { paymentsFromEnv } from './payments-wiring.js';
+import { pilotGate } from './pilot.js';
 
 const KEY = /^[A-Za-z0-9_-]{16,64}$/;
 export const TOPUP_MIN_PAISE = 10_000; // ₹100
@@ -216,8 +219,11 @@ function statementRoutes(router, deps) {
 export function stage11Routes(env, clock, logger) {
   const router = express.Router();
   router.use(usageRoutes({ clock })); // Stage 12B: usage screens (not behind the wallet switch)
+  router.use(stage13Routes(env, clock, logger)); // Stage 13: plan and billing
+  router.use(stage15Routes(env, clock)); // Stage 15: payouts, GST registers, reports, branding
   if (env.B2B_WALLET_ENABLED !== 'true')
     router.use(['/wallet', '/credit'], (_req, _res, next) => next(new ServiceUnavailableError('WALLET_NOT_ENABLED')));
+  router.use(['/wallet', '/credit'], pilotGate(env, 'WALLET_NOT_ENABLED')); // Stage 16: pilot companies first
   const { deps, payments } = paymentsFromEnv(env, clock, logger);
   const wallets = createLiveWallets({ clock, ledger: deps.ledger });
   const manualTopUps = createManualTopUps({ clock, ledger: deps.ledger, wallets });

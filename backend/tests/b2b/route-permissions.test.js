@@ -65,8 +65,11 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /invitations/lookup',
         'GET /media/*key', // local development: public hotel photos from disk (fixed key format, public folder only)
         'GET /meta/version',
+        'GET /openapi.json', // Stage 14: the client API description (no data, cached)
         'GET /stream',
         'POST /invitations/accept',
+        'POST /privacy/consents', // Stage 16 DPDP: records an agreement only, limited per address
+        'POST /privacy/requests', // Stage 16 DPDP: a person's data request, limited per address
         'POST /login',
         'POST /logout',
         'POST /logout-all',

@@ -23,7 +23,7 @@ import { createSearchGate } from './search-gateway.js';
  */
 export function searchParts(env, clock, identity) {
   const catalog = createSearchCatalog({ clock });
-  const gate = createSearchGate({ clock, orgInfo: (orgId) => identity.orgs.basicInfo(orgId), hooks: usageHooks(clock) }); // Stage 12B: usage counted
+  const gate = createSearchGate({ clock, orgInfo: (orgId) => identity.orgs.basicInfo(orgId), hooks: usageHooks(clock, env) }); // Stage 12B: usage counted; Stage 13 limits behind B2B_BILLING_ENABLED
   const availability = createAvailabilityService({ clock });
   const terms = createPlanTermsService();
   const quotes = createQuoteService({ clock });

@@ -114,6 +114,7 @@ const schema = new b2bMongoose.Schema(
       default: [],
     },
     remindedAt: { type: Date, default: null }, // S02-T11: unfinished-registration reminder sent
+    bankChangedAt: { type: Date, default: null }, // Stage 15: payouts held for 72 hours after a bank change
     submittedAt: { type: Date, default: null },
     decidedAt: { type: Date, default: null },
     createdBy: { type: String, required: true },

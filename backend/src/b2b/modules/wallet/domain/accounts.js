@@ -24,6 +24,7 @@ export const ACCOUNT_TYPES = Object.freeze({
   TAX_PAYABLE_CGST: { owner: 'PLATFORM', normal: 'CREDIT', name: 'CGST payable', mode: 'DERIVED' },
   TAX_PAYABLE_SGST: { owner: 'PLATFORM', normal: 'CREDIT', name: 'SGST payable', mode: 'DERIVED' },
   TAX_PAYABLE_IGST: { owner: 'PLATFORM', normal: 'CREDIT', name: 'IGST payable', mode: 'DERIVED' },
+  DEDUCTIONS_PAYABLE: { owner: 'PLATFORM', normal: 'CREDIT', name: 'TDS / deductions from hotel payouts (payable)', mode: 'DERIVED' }, // Stage 15
   // each hotel company
   PAYABLE: { owner: 'HOTEL', normal: 'CREDIT', name: 'Payable to the hotel', mode: 'DERIVED' },
   // each B2B client (opened with Stage 11)

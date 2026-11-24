@@ -4,6 +4,50 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-24 — AI (Claude) — Stage 16 hardening (S16-T01 to T08; T09–T12 are owner tasks)
+
+- **Goal:** everything in hardening and launch that code and documents can do; prepare the owner tasks.
+- **Done:** S16-T01 … T08 → DONE. System health (safety-check runs saved, alert email once per check per day, admin view with days clean / stale); load test + order / My Bookings scenarios; last-room race at scale (500 buyers locally, staging script with test keys only); pilot-company list `B2B_PILOT_ORGS` for the switched-on client features; DPDP (checkout and registration consent recorded, public data-request form, admin Privacy queue with 30-day due dates); disaster recovery (B2B backup script, safety-check script for restores, drill runbook); runbooks (top 20 alerts, incidents with CERT-In 6 h / DPDP, support replies, training plan, go-live checklist).
+- **Not done / why:** S16-T09 … T12 need people: pilots, external penetration test, load / soak and DR drill on staging, on-call, status page, CERT-In contact, 180-day log retention, training, sign-offs.
+- **Files / PR:** `backend/src/b2b/modules/reporting/health.service.js`, `modules/identity/privacy.service.js`, `routes/system-health.js`, `routes/pilot.js`, `routes/privacy.js`; scripts `backup-b2b.sh`, `check-invariants.js`, `race-at-scale.js`, `load-test.js`; frontend `HealthPanel.tsx`, `PrivacyTab.tsx`, `app/business/privacy`, checkout consent; `docs/go-live/runbooks/*`. Migrations 0081–0082. Local commits, not pushed.
+- **Tests run:** system-health, race-at-scale (500 buyers), pilot, privacy ✅; check-invariants.js on a fresh database ✅; full suite ✅; lint, typecheck ✅; frontend `tsc` + `next build` ✅. A safety-checker finding (runbooks outside the allowed folders, a placeholder password in an example) fixed; the commit gate now includes the safety checker.
+- **Decisions / deferrals:** pilot list optional (unset = no change); legal wording (privacy notice, incident steps) to be confirmed by a lawyer.
+- **Next step:** owner: push Stages 13–16, run migrations 0070–0082, Pilot 1 and 2, pen test, staging load / DR drill, then the go-live checklist.
+
+
+## 2026-11-24 — AI (Claude) — Stage 14 API access & webhooks (S14-T01 to T11)
+
+- **Goal:** let a B2B client's own software search, book, pay and cancel with API keys, and receive signed booking updates — self-service, behind a switch.
+- **Done:** S14-T01 … T11 → DONE. Modules `api-access` (hashed keys shown once, scopes within the creator's permissions and the plan, 2 lasting keys, rotation with 24 h overlap, revoke ≤ 5 s, IP allow-list, new-IP notice) and `webhooks` (HTTPS endpoints, sealed secrets with 24 h dual signing, guarded sender — DNS checked, pinned connection, no redirects, 10 s, 1 KB; deliveries with retries 1 m … 12 h, auto-disable after 24 h with an Owner notice, replay with the same event id, test event); key sign-in in the gateway (B2B_API channel, usage per key, per-key rate limit); routes; Developers page; public OpenAPI file and guides (signature code in 4 languages, each run).
+- **Not done / why:** staging test mode extras (DEF-042); a rendered OpenAPI viewer (needs an outside script).
+- **Files / PR:** `backend/src/b2b/modules/api-access/**`, `modules/webhooks/**`, `routes/api-keys-wiring.js`, `webhooks-wiring.js`, `developers.js`, `openapi.js`; one optional field on the Actor type (`core/context.js`); frontend `app/business/developers/**`, `src/b2b/developers.ts`. Migrations 0078–0080. Local commits, not pushed.
+- **Tests run:** api-keys, api-gateway, developers-api (incl. two-factor step-up), webhooks-endpoints (SSRF suite), webhooks-deliveries, openapi, stage-14-mandatory (4-channel last-room race 3 / 3) ✅; full suite ✅; lint, typecheck ✅; frontend `tsc` and `next build` ✅. Bug found and fixed by the tests: the blocked-address list matched every IPv4 address.
+- **Decisions / deferrals:** switch `B2B_API_ENABLED` (off); keys act as their creator; API prices = dashboard prices; DEF-042.
+- **Next step:** owner: OK to push Stages 13, 15 and 14, run migrations 0070–0080. Build: Stage 16 (hardening & launch).
+
+
+## 2026-11-24 — AI (Claude) — Stage 15 hotel payouts, finance & reports (S15-T01 to T10)
+
+- **Goal:** pay hotels correctly with statements and questions, GST registers with month locks, management and client reports, accounting export, client voucher branding.
+- **Done:** S15-T01 … T10 → DONE. Payout runs (deductions — own rule before all, capped; holds — KYC, bank details, bank changed < 72 h, open question; a second person approves; totals locked by a hash; bank file with the account number read through KYC; paid → balanced journal per hotel + remittance), statement questions, GST register (hotel invoices − credit notes + plan invoices; B2B / B2C, place of supply, SAC; CSV) and period locks, 11 admin reports + client reports (CSV), journal export, client branding on the voucher; routes and screens (admin Finance sections, hotel Payouts, client Reports and Voucher Branding).
+- **Not done / why:** report extras (DEF-040), editable platform templates and plan gating of branding (DEF-041), clawbacks after payout (DEF-039), automatic weekly proposal (one click instead), payout API (bank file for now).
+- **Files / PR:** `backend/src/b2b/modules/wallet/payout-runs*.js`, `disputes.service.js`, `journal-export.service.js`, `modules/billing/gst-registers.service.js`, `modules/reporting/*reports*.js`, `modules/organizations/branding.service.js`, `routes/payout-finance-admin.js`, `finance-portal.js`, `finance-wiring.js`, `reports-wiring.js`; frontend `src/b2b/payouts.ts`, `components/admin/finance/PayoutRunsPanel.tsx`, `ReportsPanel.tsx`, `app/business/{payouts,reports,branding}`. Migrations 0074–0077. Local commits, not pushed.
+- **Tests run:** payout-runs, payout-disputes, gst-registers, admin-reports, client-reports, branding, finance-api, stage-15-mandatory (a seeded month ties to the ledger) ✅; full suite 1,100 / 1,100 ✅; lint, typecheck ✅; frontend `tsc` ✅ and `next build` ✅.
+- **Decisions / deferrals:** DEF-040, DEF-041; DEF-038 narrowed. Also fixed today outside the plan: the website's Pay Now button (expired PayU invoice link → new PayU Payment Button, PR #223, merged).
+- **Next step:** owner: OK to push Stage 13 + 15, run migrations 0070–0077, grant finance permissions (go-live 8e); CA: deductions and GST register layout. Build: Stage 14 (API access & webhooks), then 16.
+
+
+## 2026-11-23 — AI (Claude) — Stage 13 subscriptions & usage billing (S13-T01 to T10)
+
+- **Goal:** plans, subscriptions, limits, SaaS invoices from the wallet, dunning, client and admin screens — simulated, as there are no real clients yet.
+- **Done:** S13-T01 … T10 → DONE. Modules `subscriptions` (plan versions published by a second person, placeholder plans + query weights seeded, one subscription per client: trial → plan, upgrade now prorated, downgrade / cancel at period end, renewal with month snapshots, overrides / top-ups by two people, quota with 80 % / 100 % alerts) and `billing` (rating engine, SaaS GST invoices `S2627DL…` paid from the wallet, PayU for unpaid ones, month-close overage, dunning day 0 / 3 / 7 → suspended day 10 → active on payment); gateway quota guard (BLOCK → 429, suspended → 403, booking never blocked); client page Plan & Billing; admin tab Plans; simulation script `node scripts/b2b/simulate-billing.js`. **Whole stage behind `B2B_BILLING_ENABLED` (off).** Migrations 0070–0073.
+- **Not done / why:** real plan numbers (D7 — placeholders), SAC / invoice layout (CA), plan changes applying immediately to existing clients (they move at renewal), invoice email (bell + page today).
+- **Files / PR:** `backend/src/b2b/modules/subscriptions/**`, `modules/billing/**`, `routes/subscriptions*.js`, `routes/quota-wiring.js`, `scripts/b2b/billing-simulation.js`, `simulate-billing.js`; frontend `business/plan`, admin `plans/` — local commits only.
+- **Tests run:** subscriptions, subscriptions-quota, subscriptions-api, subscriptions-admin, subscriptions-switch, billing-rating (3 000 random), billing, billing-dunning, stage-13-mandatory (simulated month) ✅; lint, typecheck ✅; frontend tsc ✅; full suite 1 078 ✅.
+- **Decisions / deferrals:** placeholder plans (Starter trial 30 days / 1,000; A 4,000 ₹2,999 BLOCK; B 5,000 ₹3,499 + ₹1; C 10,000 ₹5,999 + ₹0.75), booking weight 0, calendar-month periods in India, new switch `B2B_BILLING_ENABLED`.
+- **Next step:** owner: OK to push Stage 13 + run migrations 0070–0073; confirm D7. Build: Stage 15 (hotel payouts, finance & reports), then 14 (API) and 16.
+
+
 ## 2026-11-23 — AI (Claude) — Stage 12 part B B2B booking (S12-T12 to T22)
 
 - **Goal:** B2B clients book with wallet / credit / PayU through the same engine; My Bookings; cancellations and changes; offline bookings; client voucher; usage counting and screens.

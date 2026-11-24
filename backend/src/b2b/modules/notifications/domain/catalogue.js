@@ -153,6 +153,31 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/my-bookings',
   },
+  // Stage 13: plan limits
+  'subscription.quota': {
+    audience: 'ORG',
+    permission: 'subscriptions.subscription.read',
+    critical: false,
+    label: 'Monthly query limit',
+    emailTo: 'OWNERS',
+    link: '/business/plan',
+  },
+  'billing.reminder': {
+    audience: 'ORG',
+    permission: 'subscriptions.subscription.read',
+    critical: true,
+    label: 'Invoice unpaid',
+    emailTo: 'OWNERS',
+    link: '/business/plan',
+  },
+  'billing.suspended': {
+    audience: 'ORG',
+    permission: 'subscriptions.subscription.read',
+    critical: true,
+    label: 'Searching and booking paused',
+    emailTo: 'OWNERS',
+    link: '/business/plan',
+  },
   // Stage 11: client wallets
   'wallet.topup-credited': {
     audience: 'ORG',
@@ -177,6 +202,22 @@ export const CATEGORIES = Object.freeze({
     label: 'Credit payment overdue',
     emailTo: 'OWNERS',
     link: '/business/wallet',
+  }, // Stage 14: API keys and webhooks
+  'api.key-new-ip': {
+    audience: 'ORG',
+    permission: 'api-access.key.read',
+    critical: true,
+    label: 'API key used from a new address',
+    emailTo: 'OWNERS',
+    link: '/business/developers',
+  },
+  'webhooks.endpoint-disabled': {
+    audience: 'ORG',
+    permission: 'webhooks.endpoint.manage',
+    critical: true,
+    label: 'Webhook address switched off',
+    emailTo: 'OWNERS',
+    link: '/business/developers',
   },
 });
 
@@ -201,9 +242,14 @@ export const EVENT_CATEGORIES = Object.freeze({
   'hotel-booking.booking.ack-escalated': 'booking.escalated',
   'hotel-booking.booking.cancelled': 'booking.cancelled',
   'orders.order.booked-offline': 'order.booked-offline',
+  'subscriptions.quota.reached': 'subscription.quota',
+  'billing.dunning.reminded': 'billing.reminder',
+  'billing.subscription.suspended': 'billing.suspended',
   'wallet.topup.credited': 'wallet.topup-credited',
   'wallet.account.low-balance': 'wallet.low-balance',
   'wallet.credit.overdue': 'wallet.credit-overdue',
+  'api-access.key.used-new-ip': 'api.key-new-ip',
+  'webhooks.endpoint.disabled': 'webhooks.endpoint-disabled',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */
@@ -234,6 +280,8 @@ export const ADMIN_QUEUES = Object.freeze({
   'hotel-booking.no-show.resolved': 'no-show-disputes',
   'hotel-booking.booking.hotel-failed': 'hotel-failures',
   'hotel-booking.hotel-failure.resolved': 'hotel-failures',
+  'subscriptions.quota.reached': 'client-quota', // Stage 13: clients near / over their limit
+  'billing.subscription.suspended': 'dunning',
 });
 
 /** @param {string} key @returns {Category | null} */

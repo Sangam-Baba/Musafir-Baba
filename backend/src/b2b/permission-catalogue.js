@@ -23,6 +23,9 @@ import { PERMISSION_CATALOGUE as notifications } from './modules/notifications/i
 import { PERMISSION_CATALOGUE as organizations } from './modules/organizations/index.js';
 import { PERMISSION_CATALOGUE as pricing } from './modules/pricing/index.js';
 import { PERMISSION_CATALOGUE as metering } from './modules/metering/index.js';
+import { PERMISSION_CATALOGUE as subscriptions } from './modules/subscriptions/index.js';
+import { PERMISSION_CATALOGUE as apiAccess } from './modules/api-access/index.js';
+import { PERMISSION_CATALOGUE as webhooks } from './modules/webhooks/index.js';
 
 export const PERMISSION_CATALOGUE = mergeCatalogues([
   identity,
@@ -43,4 +46,7 @@ export const PERMISSION_CATALOGUE = mergeCatalogues([
   wallet,
   payments,
   metering,
+  subscriptions,
+  apiAccess,
+  webhooks,
 ]);

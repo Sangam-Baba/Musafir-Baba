@@ -95,6 +95,7 @@ const varsFrom = (payload) => ({
   decision: payload.decision === 'APPROVED' ? 'approved' : 'not approved',
   reason: stringOrNull(payload.reason) ?? 'see your listing for details',
   amount: typeof payload.amountPaise === 'number' ? rupees(payload.amountPaise) : 'money',
+  percent: typeof payload.percent === 'number' ? `${payload.percent}%` : 'most',
 });
 
 /**

@@ -54,14 +54,24 @@ ${it.specialRequests ? `<h2>Special requests</h2><p>${esc(it.specialRequests)} <
 }
 
 /**
- * The B2B client's own voucher for its guest (plan Stage 12 §3.6): the client's name instead of MusafirBaba's, the stay
- * and guests only — never a price, the hotel rate or MusafirBaba's margin.
+ * The B2B client's own voucher for its guest (plan Stage 12 §3.6, Stage 15 white-label): the client's name, logo,
+ * colour and contact instead of MusafirBaba's, the stay and guests only — never a price, the hotel rate or MusafirBaba's
+ * margin. Colour and logo are checked again here (only `#rrggbb` and an `https://` link are ever printed).
  * @param {OrderFacts} f
- * @param {{ name: string }} brand
+ * @param {{ name: string, contactPhone?: string | null, contactEmail?: string | null, colour?: string | null, logoUrl?: string | null }} brand
  */
 export function clientVoucherHtml(f, brand) {
-  const body = `<header><div><div class="brand">${esc(brand.name)}</div></div><div style="text-align:right"><h1>Hotel voucher</h1><div class="muted">Booking ${esc(f.order.ref)}</div></div></header><p>Lead guest: <strong>${esc(f.items[0]?.rooms[0]?.leadGuest ?? f.order.contact.name)}</strong> · <strong>Confirmed</strong></p>
-${f.items.map(voucherItem).join('<hr>')}<p>Please carry a government photo ID for every guest. Show this voucher at check-in.</p><footer>Booked through ${esc(brand.name)} — contact them for any help with this booking.</footer>`;
+  const colour = brand.colour && /^#[0-9a-fA-F]{6}$/.test(brand.colour) ? ` style="color:${brand.colour}"` : '';
+  const logo =
+    brand.logoUrl && /^https:\/\/[^\s"'<>()\\]+$/.test(brand.logoUrl)
+      ? `<img src="${esc(brand.logoUrl)}" alt="" style="max-height:48px;max-width:180px;display:block;padding-bottom:4px">`
+      : '';
+  const contact = [brand.contactPhone, brand.contactEmail]
+    .filter(Boolean)
+    .map((c) => esc(String(c)))
+    .join(' · ');
+  const body = `<header><div>${logo}<div class="brand"${colour}>${esc(brand.name)}</div></div><div style="text-align:right"><h1>Hotel voucher</h1><div class="muted">Booking ${esc(f.order.ref)}</div></div></header><p>Lead guest: <strong>${esc(f.items[0]?.rooms[0]?.leadGuest ?? f.order.contact.name)}</strong> · <strong>Confirmed</strong></p>
+${f.items.map(voucherItem).join('<hr>')}<p>Please carry a government photo ID for every guest. Show this voucher at check-in.</p><footer>Booked through ${esc(brand.name)} — contact them for any help with this booking${contact ? `: ${contact}` : '.'}</footer>`;
   return page(`Voucher ${f.order.ref}`, body);
 }
 

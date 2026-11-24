@@ -63,7 +63,12 @@ import { createSearchCacheSignals } from './modules/hotel-search/index.js';
 import { AmendmentRecord, BookingRecord, BookingRequestRecord, HotelFailureRecord, NoShowRecord } from './modules/hotel-booking/index.js';
 import { OrderRecord } from './modules/orders/index.js';
 import { DocumentRecord } from './modules/documents/index.js';
-import { AccountRecord, createLedger, ledgerInvariants, seedPlatformAccounts } from './modules/wallet/index.js';
+import { AccountRecord, createLedger, ledgerInvariants, PayoutLineRecord, seedPlatformAccounts } from './modules/wallet/index.js';
+import { ApiKeyRecord } from './modules/api-access/index.js';
+import { recordInvariantRun } from './modules/reporting/index.js';
+import { EndpointRecord } from './modules/webhooks/index.js';
+import { seedPlans, SubscriptionRecord } from './modules/subscriptions/index.js';
+import { DunningRecord } from './modules/billing/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import { createAccessChangeNotifier } from './routes/access-cache.js';
@@ -218,6 +223,11 @@ export const eventSources = [
   NoShowRecord,
   HotelFailureRecord,
   AccountRecord, // Stage 11: client wallet alerts
+  SubscriptionRecord, // Stage 13: quota alerts
+  DunningRecord, // Stage 13: payment reminders, suspension
+  PayoutLineRecord, // Stage 15: remittance notices
+  ApiKeyRecord, // Stage 14: key created / revoked / used from a new IP
+  EndpointRecord, // Stage 14: webhook endpoint switched off after 24 h of failures
 ];
 
 /**
@@ -232,6 +242,7 @@ export const startupTasks = [
   { name: 'pricing: settings with the owner defaults (only if missing)', run: () => seedPricingSettings() },
   { name: 'organizations: starter client categories (adds only what is missing)', run: () => seedClientCategories() },
   { name: 'wallet: MusafirBaba ledger accounts (opens only what is missing)', run: () => seedPlatformAccounts() },
+  { name: 'subscriptions: placeholder plans and query weights (adds only what is missing)', run: () => seedPlans() },
 ];
 
 export const RECONCILE_EVERY_MS = 30_000;
@@ -253,6 +264,29 @@ export function routeSignal(signal, hub) {
 }
 
 /**
+ * Stage 16: run the safety checks, save the run (System health), and email the ops address about checks that started
+ * failing today (once per check per day). Errors are logged only — never thrown into the app.
+ * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger,
+ *   email?: { sender: import('./core/email.js').EmailSender, secret: string } | null, alertTo?: string }} deps
+ */
+export async function runInvariants(deps) {
+  const reports = await invariantChecks.runAll(deps.logger);
+  const run = await recordInvariantRun(deps, reports);
+  if (run.alerts.length === 0 || !deps.alertTo || !deps.email) return;
+  const lines = run.checks
+    .filter((c) => run.alerts.includes(c.name))
+    .map((c) => `- ${c.name}: ${c.error ?? `${c.violations} problem(s)`}\n  ${c.sample.join('\n  ')}`);
+  await queueEmail(
+    {
+      to: deps.alertTo,
+      subject: `[MusafirBaba B2B] Safety check failing: ${run.alerts.join(', ')}`,
+      text: `The scheduled safety checks found problems:\n\n${lines.join('\n')}\n\nSee Admin → B2B → Finance → System health, and the runbook (docs/go-live/runbooks).`,
+    },
+    { secret: deps.email.secret, clock: deps.clock },
+  );
+}
+
+/**
  * Starts the background loops. The live-update reader always runs; jobs, schedules and the event
  * relay run unless `runJobs` is false (B2B_BACKGROUND=false).
  * @param {{ clock: import('./core/clock.js').Clock, logger: import('./core/logger.js').Logger, runJobs: boolean,
@@ -262,7 +296,7 @@ export function routeSignal(signal, hub) {
  *   rules?: import('./core/jobs/reconciler.js').ReconcileRule[],
  *   consumers?: { consumer: string, types: string[], handler: (event: any) => Promise<void> }[],
  *   invariants?: { name: string, check: () => Promise<{ id: string, detail: string }[]> }[],
- *   onStop?: () => Promise<unknown> }} options
+ *   onStop?: () => Promise<unknown>, opsAlertEmail?: string }} options
  *   `onStop`: last work when background stops (Stage 12B: the usage counter's final flush) — errors are logged only
  *   `rules` / `consumers`: parts built with the process's settings (the booking engine) — registered once here
  * @returns {{ stop: () => Promise<void> }}
@@ -293,7 +327,11 @@ export function startBackground(options) {
   scheduler.register({ name: 'reconciler', everyMs: RECONCILE_EVERY_MS, run: () => reconciler.runOnce(deps).then(() => undefined) });
   for (const s of options.schedules ?? [])
     scheduler.register({ name: s.name, everyMs: s.everyMs, run: () => s.run().then(() => undefined) });
-  scheduler.register({ name: 'invariants', everyMs: INVARIANTS_EVERY_MS, run: () => invariantChecks.runAll(logger).then(() => undefined) });
+  scheduler.register({
+    name: 'invariants',
+    everyMs: INVARIANTS_EVERY_MS,
+    run: () => runInvariants({ ...deps, email: options.email, alertTo: options.opsAlertEmail }),
+  });
   const handlers = new Map([...jobHandlers, ...consumerJobHandlers(eventBus, options.clock)]);
   if (options.email) handlers.set(EMAIL_JOB, emailJobHandler(options.email));
   const runner = createJobRunner({ handlers, workerId, ...deps });
