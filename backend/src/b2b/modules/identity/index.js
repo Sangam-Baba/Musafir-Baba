@@ -5,7 +5,7 @@ export { PERMISSION_CATALOGUE, PERMISSIONS } from './permissions.js';
 export { USERS_COLLECTION, UserRecord } from './models/user.model.js';
 export { SESSIONS_COLLECTION, SessionRecord } from './models/session.model.js';
 export { createUserRepository } from './users.repository.js';
-export { createSessionService } from './sessions.service.js';
+export { createSessionService, STEP_UP_TTL_MS } from './sessions.service.js';
 export { verifyAccessToken, signAccessToken } from './access-token.js';
 export { signAdminToken, verifyAdminToken, ADMIN_TOKEN_TTL_SECONDS } from './admin-token.js';
 export { createLoginService, LOGIN_LIMITS, failureDelayMs } from './login.service.js';

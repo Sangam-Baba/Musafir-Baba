@@ -45,6 +45,7 @@ import { clientBookingRoutes } from './client-bookings.js';
 import { offlineBookingRoutes } from './offline-bookings.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
+import { stage14Routes } from './developers.js';
 
 /**
  * The engine for this process (routes, and later the background consumers).
@@ -204,6 +205,7 @@ export function stage08Routes(env, clock, logger, identity) {
   );
   const admin = createOrderAdmin(engine.ordersDeps);
   router.use(orderAdminRoutes({ admin, detail: (o) => adminDetail(engine, admin, o), overdue: () => overdueAcknowledgements({ clock }) }));
+  router.use(stage14Routes({ env, clock, mfa: identity.mfa, sessions: identity.sessions })); // Stage 14: API keys and webhooks (own switch)
   return router;
 }
 
