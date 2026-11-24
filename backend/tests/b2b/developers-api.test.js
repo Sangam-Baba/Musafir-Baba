@@ -67,6 +67,13 @@ describe('API keys over HTTP', () => {
   });
 });
 
+describe('the API description', () => {
+  it('GET /openapi.json is public', async () => {
+    const r = await app.srv.get('/api/v1/openapi.json');
+    expect([r.status, r.body.openapi]).toEqual([200, '3.1.0']);
+  });
+});
+
 describe('webhooks over HTTP', () => {
   it('endpoint CRUD, secret once, rotate, test event and deliveries, replay; private URL refused; key with webhooks:manage', async () => {
     nowMs = Date.parse('2026-11-24T09:00:00Z');

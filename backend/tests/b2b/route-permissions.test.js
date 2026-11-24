@@ -65,6 +65,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /invitations/lookup',
         'GET /media/*key', // local development: public hotel photos from disk (fixed key format, public folder only)
         'GET /meta/version',
+        'GET /openapi.json', // Stage 14: the client API description (no data, cached)
         'GET /stream',
         'POST /invitations/accept',
         'POST /login',

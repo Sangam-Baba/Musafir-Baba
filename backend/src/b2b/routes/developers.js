@@ -22,6 +22,7 @@ import { DELIVERY_STATUSES, PERMISSIONS as WHK, WEBHOOK_EVENTS } from '../module
 import { apiEnabled, apiKeysFor, forgetCachedKeys } from './api-keys-wiring.js';
 import { handle } from './payout-finance-admin.js';
 import { deliveriesFor } from './webhooks-wiring.js';
+import { openApiRoute } from './openapi.js';
 import { createEndpoints } from '../modules/webhooks/index.js';
 import { publishedPlan, subscriptionOf } from '../modules/subscriptions/index.js';
 
@@ -207,6 +208,7 @@ function deliveryRoutes(router, deps) {
  */
 export function stage14Routes(deps) {
   const router = express.Router();
+  openApiRoute(router, deps.env); // the description is public even while the API is off
   if (!apiEnabled(deps.env)) {
     router.use(['/api-keys', '/webhook-endpoints', '/webhook-deliveries'], (_req, _res, next) =>
       next(new ServiceUnavailableError('API_NOT_ENABLED')),

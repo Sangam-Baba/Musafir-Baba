@@ -247,7 +247,11 @@ function Developers({ permissions }: { permissions: string[] }) {
   const [tab, setTab] = useState<Tab>(tabs[0]?.value ?? "keys");
   return (
     <div className="space-y-4">
-      <PageHeader title="Developers" subtitle="Connect your own software to MusafirBaba: search, book and cancel through the API, and get booking updates on your server." />
+      <PageHeader
+        title="Developers"
+        subtitle="Connect your own software to MusafirBaba: search, book and cancel through the API, and get booking updates on your server."
+        actions={<a href="/business/developers/docs" className={btn}>API guides →</a>}
+      />
       <Tabs tabs={tabs} value={tab} onChange={setTab} />
       {tab === "keys" && <Keys canManage={can("api-access.key.manage")} />}
       {tab === "webhooks" && <Webhooks />}
