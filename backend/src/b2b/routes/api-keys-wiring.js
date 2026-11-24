@@ -14,6 +14,7 @@ import { clientIp, createRateLimiter } from '../core/rate-limit.js';
 import { matchesPattern } from '../modules/access/index.js';
 import { createApiKeys, ipAllowed, SCOPE_RULES } from '../modules/api-access/index.js';
 import { publishedPlan, subscriptionOf } from '../modules/subscriptions/index.js';
+import { inPilot } from './pilot.js';
 
 export const KEY_CACHE_MS = 5_000;
 export const KEY_CALLS_PER_MINUTE = 600;
@@ -69,6 +70,7 @@ export function createApiKeyAuthenticator(deps) {
     }
     if (!k || (k.expiresAt && new Date(k.expiresAt).getTime() <= deps.clock.now().getTime()))
       throw new UnauthorizedError('API_KEY_INVALID');
+    if (!inPilot(deps.env, k.orgId)) throw new UnauthorizedError('API_NOT_ENABLED'); // Stage 16: pilot companies first
     const ip = clientIp(req);
     if (!ipAllowed(ip, k.ipAllowList ?? [])) throw new ForbiddenError('API_KEY_IP_NOT_ALLOWED');
     const r = await limiter.consume(String(k._id));

@@ -11,6 +11,7 @@ import { EVENTS as SUBSCRIPTION } from '../modules/subscriptions/index.js';
 import { EVENTS as WALLET } from '../modules/wallet/index.js';
 import { createDeliveries } from '../modules/webhooks/index.js';
 import { apiEnabled } from './api-keys-wiring.js';
+import { inPilot } from './pilot.js';
 
 export const WEBHOOK_SEND_EVERY_MS = 15_000;
 const SCOPE = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 'webhooks: whose event' };
@@ -87,7 +88,7 @@ export function webhookParts(clock, env) {
         types: WEBHOOK_SOURCE_EVENTS,
         handler: async (/** @type {any} */ event) => {
           const m = await toPublicEvent(event);
-          if (m)
+          if (m && inPilot(env, m.orgId))
             await deliveries.enqueue(m.orgId, {
               eventId: `evt_${event.eventId}`,
               type: m.type,

@@ -25,6 +25,7 @@ import { deliveriesFor } from './webhooks-wiring.js';
 import { openApiRoute } from './openapi.js';
 import { createEndpoints } from '../modules/webhooks/index.js';
 import { publishedPlan, subscriptionOf } from '../modules/subscriptions/index.js';
+import { pilotGate } from './pilot.js';
 
 const Id = z.string().regex(/^[a-f0-9]{24}$/);
 const Name = z.string().trim().min(2).max(60);
@@ -215,6 +216,7 @@ export function stage14Routes(deps) {
     );
     return router;
   }
+  router.use(['/api-keys', '/webhook-endpoints', '/webhook-deliveries'], pilotGate(deps.env, 'API_NOT_ENABLED')); // Stage 16
   keyRoutes(router, deps);
   endpointRoutes(router, deps);
   deliveryRoutes(router, deps);

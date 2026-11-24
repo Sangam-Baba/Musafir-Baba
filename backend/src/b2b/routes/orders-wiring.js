@@ -46,6 +46,7 @@ import { offlineBookingRoutes } from './offline-bookings.js';
 import { paymentsFromEnv } from './payments-wiring.js';
 import { searchParts } from './search-wiring.js';
 import { stage14Routes } from './developers.js';
+import { pilotGate } from './pilot.js';
 
 /**
  * The engine for this process (routes, and later the background consumers).
@@ -158,6 +159,7 @@ export function stage08Routes(env, clock, logger, identity) {
     router.use(['/orders', '/bookings', '/client/orders', '/client/bookings', '/admin/offline-bookings'], (_req, _res, next) =>
       next(new ServiceUnavailableError('ORDERS_NOT_ENABLED')),
     );
+  router.use(['/client/orders', '/client/bookings'], pilotGate(env, 'ORDERS_NOT_ENABLED')); // Stage 16: pilot companies first (no list = everyone)
   const engine = bookingEngine(env, clock, logger, identity);
   router.use(
     orderRoutes({

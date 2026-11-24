@@ -21,16 +21,17 @@ import { createGstRegistrations } from '../modules/kyc/index.js';
 import { EVENTS as PAYMENT_EVENTS } from '../modules/payments/index.js';
 import { readSettings } from '../modules/pricing/index.js';
 import { createLedger, createLiveWallets, EVENTS as WALLET_EVENTS } from '../modules/wallet/index.js';
+import { inPilot, pilotGate } from './pilot.js';
 
 const SCOPE = systemScope('subscriptions: start for verified clients', { routine: true });
 
-/** Active clients without a subscription → started. @param {ReturnType<typeof createSubscriptions>} subs */
-export async function startMissingSubscriptions(subs) {
+/** Active clients without a subscription → started (pilot companies only while `B2B_PILOT_ORGS` is set). @param {ReturnType<typeof createSubscriptions>} subs @param {NodeJS.ProcessEnv} [env] */
+export async function startMissingSubscriptions(subs, env = {}) {
   const clients = await OrganizationRecord.find({ type: 'CLIENT', status: 'ACTIVE' }, { _id: 1 }).setOptions(SCOPE).limit(2000).lean();
   const have = new Set((await SubscriptionRecord.find({}, { clientOrgId: 1 }).setOptions(SCOPE).lean()).map((s) => String(s.clientOrgId)));
   let started = 0;
   for (const c of clients)
-    if (!have.has(String(c._id))) {
+    if (!have.has(String(c._id)) && inPilot(env, String(c._id))) {
       await subs.start(String(c._id));
       started += 1;
     }
@@ -117,7 +118,7 @@ export function subscriptionParts(clock, env = {}) {
         types: [ORG_EVENTS.orgActivated],
         /** @param {any} event */
         handler: async (event) => {
-          if (event.payload.type === 'CLIENT') await subs.start(String(event.payload.orgId));
+          if (event.payload.type === 'CLIENT' && inPilot(env, String(event.payload.orgId))) await subs.start(String(event.payload.orgId));
         },
       },
     ],
@@ -125,7 +126,7 @@ export function subscriptionParts(clock, env = {}) {
       {
         name: 'subscriptions-housekeeping',
         everyMs: 10 * 60_000,
-        run: async () => ({ started: await startMissingSubscriptions(subs), ...(await overrides.applyDue()) }),
+        run: async () => ({ started: await startMissingSubscriptions(subs, env), ...(await overrides.applyDue()) }),
       },
       { name: 'subscriptions-quota-alerts', everyMs: 5 * 60_000, run: () => sendQuotaAlerts({ clock }) },
       { name: 'billing-run', everyMs: 10 * 60_000, run: () => runBilling(subs, billing) },
@@ -149,6 +150,7 @@ export function stage13Routes(env, clock, logger) {
   // clients see their plan only once billing is switched on (admin can prepare plans before)
   if (env.B2B_BILLING_ENABLED !== 'true')
     router.use(['/plans', '/subscription', '/billing'], (_req, _res, next) => next(new ServiceUnavailableError('BILLING_NOT_ENABLED')));
+  router.use(['/plans', '/subscription', '/billing'], pilotGate(env, 'BILLING_NOT_ENABLED')); // Stage 16: pilot companies first
   router.use(
     subscriptionRoutes({
       clock,
