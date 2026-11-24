@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-24 — AI (Claude) — Stage 15 hotel payouts, finance & reports (S15-T01 to T10)
+
+- **Goal:** pay hotels correctly with statements and questions, GST registers with month locks, management and client reports, accounting export, client voucher branding.
+- **Done:** S15-T01 … T10 → DONE. Payout runs (deductions — own rule before all, capped; holds — KYC, bank details, bank changed < 72 h, open question; a second person approves; totals locked by a hash; bank file with the account number read through KYC; paid → balanced journal per hotel + remittance), statement questions, GST register (hotel invoices − credit notes + plan invoices; B2B / B2C, place of supply, SAC; CSV) and period locks, 11 admin reports + client reports (CSV), journal export, client branding on the voucher; routes and screens (admin Finance sections, hotel Payouts, client Reports and Voucher Branding).
+- **Not done / why:** report extras (DEF-040), editable platform templates and plan gating of branding (DEF-041), clawbacks after payout (DEF-039), automatic weekly proposal (one click instead), payout API (bank file for now).
+- **Files / PR:** `backend/src/b2b/modules/wallet/payout-runs*.js`, `disputes.service.js`, `journal-export.service.js`, `modules/billing/gst-registers.service.js`, `modules/reporting/*reports*.js`, `modules/organizations/branding.service.js`, `routes/payout-finance-admin.js`, `finance-portal.js`, `finance-wiring.js`, `reports-wiring.js`; frontend `src/b2b/payouts.ts`, `components/admin/finance/PayoutRunsPanel.tsx`, `ReportsPanel.tsx`, `app/business/{payouts,reports,branding}`. Migrations 0074–0077. Local commits, not pushed.
+- **Tests run:** payout-runs, payout-disputes, gst-registers, admin-reports, client-reports, branding, finance-api, stage-15-mandatory (a seeded month ties to the ledger) ✅; full suite 1,100 / 1,100 ✅; lint, typecheck ✅; frontend `tsc` ✅ and `next build` ✅.
+- **Decisions / deferrals:** DEF-040, DEF-041; DEF-038 narrowed. Also fixed today outside the plan: the website's Pay Now button (expired PayU invoice link → new PayU Payment Button, PR #223, merged).
+- **Next step:** owner: OK to push Stage 13 + 15, run migrations 0070–0077, grant finance permissions (go-live 8e); CA: deductions and GST register layout. Build: Stage 14 (API access & webhooks), then 16.
+
+
 ## 2026-11-23 — AI (Claude) — Stage 13 subscriptions & usage billing (S13-T01 to T10)
 
 - **Goal:** plans, subscriptions, limits, SaaS invoices from the wallet, dunning, client and admin screens — simulated, as there are no real clients yet.

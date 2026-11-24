@@ -3,16 +3,16 @@
 > The one page that says where the build is. Rules: `docs/progress/README.md`.
 > Numbers inside the generated block come from `npm run progress` — don't edit them by hand.
 
-**Last updated:** 2026-11-21 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
+**Last updated:** 2026-11-24 by AI (Claude) · **Plan version:** v2.4 (zero-impact, no transactions) · **Branch:** `b2b/stage-00`
 
 ## Now
 
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stages 00–13 + booking requests awaiting owner sign-off (00–12 live, switched off; 13 local) · next: Stage 15, Pilot 1 in parallel |
-| **Current task(s)** | — (Stage 13 subscriptions & billing built, simulated: S13-T01 … T10) |
-| **Next up** | Build: 15 → 14 → 16, Pilot 1 and Pilot 2 in parallel · owner: push Stage 13 + migrations 0070–0073, confirm plan numbers (D7), GSTIN in pricing settings, bank details for top-ups, switches for a ₹1 test, sign off Stages 00–13, CA review (incl. SaaS SAC and invoice layout), lawyer on the closed wallet (D6) |
+| **Current stage(s)** | Stages 00–13 and 15 + booking requests awaiting owner sign-off (00–12 live, switched off; 13 and 15 local) · next: Stage 14, Pilot 1 in parallel |
+| **Current task(s)** | — (Stage 15 payouts, GST registers, reports, branding built: S15-T01 … T10) |
+| **Next up** | Build: 14 → 16, Pilot 1 and Pilot 2 in parallel · owner: push Stages 13 + 15 and run migrations 0070–0077, grant finance permissions (go-live 8e), confirm plan numbers (D7) and payout cycle / deductions (D11), GSTIN in pricing settings, bank details for top-ups, CA review (SaaS SAC, invoice layout, GST register layout, TDS), lawyer on the closed wallet (D6), sign off Stages 00–13 and 15 |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 
@@ -38,10 +38,10 @@
 | 13 | Subscriptions & usage billing | B | AWAITING_SIGN_OFF | 10 / 10 | 0 | 100 % | 2026-11-23 | — | [stage-13](stages/stage-13.md) |
 | — | **Pilot 2 — B2B clients** (2–3 weeks) | B | NOT_STARTED | — | — | — | — | — | Stage 12 §10 checklist |
 | 14 | API access & webhooks | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
-| 15 | Hotel payouts, finance & reports | C | IN_PROGRESS | 6 / 10 | 0 | 60 % | 2026-11-23 | — | [stage-15](stages/stage-15.md) |
+| 15 | Hotel payouts, finance & reports | C | AWAITING_SIGN_OFF | 10 / 10 | 0 | 100 % | 2026-11-23 | — | [stage-15](stages/stage-15.md) |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 199 of 203 tasks done (98 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 203 of 203 tasks done (100 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).

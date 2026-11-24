@@ -152,6 +152,24 @@ publishes), the CA confirms the SAC (placeholder 998314) and the invoice layout,
 pricing settings (invoices show it). A demo of a full month: `node scripts/b2b/simulate-billing.js` (in-memory, touches
 nothing real).
 
+## 8e. Stage 15 (hotel payouts, GST registers, reports, branding) — with the next push
+
+Migrations `0074` … `0077` (payout runs / lines / deduction rules, statement questions, period locks, client
+branding). **Nothing runs by itself** — no new background job; every action is a person clicking in the admin panel.
+
+Before finance uses it, give the finance staff these permissions (Admin → B2B → Staff access):
+- `wallet.payout.record` — prepare payout runs, hold / release hotels, see statement questions;
+- `wallet.payout.approve` — approve runs (must be a different person), bank file, mark paid, deduction rules, answer questions;
+- `reporting.reports.read` — GST register, reports, accounting export;
+- `reporting.period.lock` — lock a month after the GST return is filed (only a finished month, once).
+
+Where: **Admin → B2B → Finance → Hotel payouts · GST register · Reports & exports**. Hotels see **Payouts** (owners);
+clients see **Reports** and **Voucher Branding** in the business area.
+
+Before the first real payout: the CA sets deductions (TDS — none until then), MusafirBaba's bank confirms its bulk
+transfer file format (the bank file is a generic CSV until then), and hotels' KYC is approved with bank details (lines
+are held otherwise, and for 72 hours after a bank change). The CA confirms the GST register layout before filing.
+
 ## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.
