@@ -124,7 +124,7 @@ export function createEndpoints(deps) {
   };
 }
 
-/** The secrets to sign with now: current, and the previous one while it is still valid. @param {EndpointDeps} deps @param {Record<string, any>} e */
+/** The secrets to sign with now: current, and the previous one while it is still valid. @param {{ clock: import('../../core/clock.js').Clock, sealKey: string }} deps @param {Record<string, any>} e */
 export function secretsOf(deps, e) {
   const open = (/** @type {string} */ s) => String(unseal(s, { secret: deps.sealKey, purpose: `webhook:${e.orgId}` }));
   const out = [open(e.secretEnc)];

@@ -202,6 +202,22 @@ export const CATEGORIES = Object.freeze({
     label: 'Credit payment overdue',
     emailTo: 'OWNERS',
     link: '/business/wallet',
+  }, // Stage 14: API keys and webhooks
+  'api.key-new-ip': {
+    audience: 'ORG',
+    permission: 'api-access.key.read',
+    critical: true,
+    label: 'API key used from a new address',
+    emailTo: 'OWNERS',
+    link: '/business/developers',
+  },
+  'webhooks.endpoint-disabled': {
+    audience: 'ORG',
+    permission: 'webhooks.endpoint.manage',
+    critical: true,
+    label: 'Webhook address switched off',
+    emailTo: 'OWNERS',
+    link: '/business/developers',
   },
 });
 
@@ -232,6 +248,8 @@ export const EVENT_CATEGORIES = Object.freeze({
   'wallet.topup.credited': 'wallet.topup-credited',
   'wallet.account.low-balance': 'wallet.low-balance',
   'wallet.credit.overdue': 'wallet.credit-overdue',
+  'api-access.key.used-new-ip': 'api.key-new-ip',
+  'webhooks.endpoint.disabled': 'webhooks.endpoint-disabled',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */

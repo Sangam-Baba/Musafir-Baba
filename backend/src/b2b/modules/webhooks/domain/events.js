@@ -15,6 +15,7 @@ export const WEBHOOK_EVENTS = /** @type {const} */ ([
   'quota.threshold_reached',
 ]);
 /** @typedef {typeof WEBHOOK_EVENTS[number]} WebhookEvent */
+/** @typedef {WebhookEvent} WebhookEventType */
 
 /**
  * @param {{ id: string, type: WebhookEvent | 'webhook.test', createdAt: Date, data: Record<string, unknown> }} e

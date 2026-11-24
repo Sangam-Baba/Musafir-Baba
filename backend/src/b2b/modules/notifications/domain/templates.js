@@ -248,6 +248,22 @@ export const TEMPLATES = Object.freeze({
     body: '{{amount}} of credit used by {{orgName}} is past its due date. New bookings are paused until it is paid.',
     subject: 'Credit payment overdue — new bookings paused',
     text: 'Hello,\n\n{{amount}} of credit used by {{orgName}} is past its due date. New bookings are paused until the wallet is topped up.\n\nPay now: {{link}}\n\nMusafirBaba Business',
+  }, // Stage 14: API keys and webhooks
+  'api.key-new-ip': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'API key used from a new address',
+    body: 'One of the {{orgName}} API keys was just used from an address it has not used before. If this was not your software, revoke the key now.',
+    subject: 'Your MusafirBaba API key was used from a new address',
+    text: 'Hello,\n\nOne of the {{orgName}} API keys was just used from an internet address it has not used before. If this was not your own software, revoke the key now and create a new one.\n\nSee your keys: {{link}}\n\nMusafirBaba Business',
+  },
+  'webhooks.endpoint-disabled': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Webhook address switched off',
+    body: 'A {{orgName}} webhook address has failed for 24 hours, so MusafirBaba stopped sending to it. Fix it and switch it back on.',
+    subject: 'Your MusafirBaba webhook address was switched off',
+    text: 'Hello,\n\nA {{orgName}} webhook address has not accepted our booking updates for 24 hours, so we stopped sending to it. Fix the address, then switch it back on and send any missed updates again from the delivery log.\n\nOpen Developers: {{link}}\n\nMusafirBaba Business',
   },
 });
 

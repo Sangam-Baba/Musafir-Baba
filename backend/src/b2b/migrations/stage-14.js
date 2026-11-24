@@ -1,7 +1,7 @@
 // @ts-check
 /** Stage 14 — API access and webhooks (new collections with allowed prefixes only). */
 import { API_KEYS_COLLECTION } from '../modules/api-access/index.js';
-import { ENDPOINTS_COLLECTION } from '../modules/webhooks/index.js';
+import { DELIVERIES_COLLECTION, ENDPOINTS_COLLECTION } from '../modules/webhooks/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_14 = [
@@ -30,6 +30,20 @@ export const STAGE_14 = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0080-whk-deliveries',
+    description: 'Webhook deliveries: once per event per endpoint (replays apart), due list, log per company',
+    up: async (ctx) => {
+      await ctx.createCollection(DELIVERIES_COLLECTION);
+      await ctx.createIndex(
+        DELIVERIES_COLLECTION,
+        { endpointId: 1, eventId: 1 },
+        { name: 'event_once_per_endpoint', unique: true, partialFilterExpression: { replayOf: null } },
+      );
+      await ctx.createIndex(DELIVERIES_COLLECTION, { status: 1, nextAttemptAt: 1 }, { name: 'due' });
+      await ctx.createIndex(DELIVERIES_COLLECTION, { orgId: 1, createdAt: -1 }, { name: 'org_recent' });
     },
   },
 ];

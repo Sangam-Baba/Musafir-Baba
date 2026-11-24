@@ -31,6 +31,7 @@ import { rollUpBalances, ROLLUP_EVERY_MS } from '../modules/wallet/index.js';
 import { walletParts } from './wallet-wiring.js';
 import { usageRecorder, usageSchedules } from './metering-wiring.js';
 import { subscriptionParts } from './subscriptions-wiring.js';
+import { webhookParts } from './webhooks-wiring.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
 
@@ -77,6 +78,7 @@ export function startDatabase(env, log, hub, identity) {
   const emails = emailConsumers(engine, config, email);
   const wallet = walletParts(systemClock);
   const subscriptions = subscriptionParts(systemClock, env);
+  const webhooks = webhookParts(systemClock, env); // Stage 14: nothing unless B2B_API_ENABLED=true
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -97,9 +99,13 @@ export function startDatabase(env, log, hub, identity) {
           ...payables.consumers,
           ...[wallet.consumer, wallet.topUps],
           ...subscriptions.consumers,
+          ...webhooks.consumers,
         ],
         invariants: invariantsOf(engine, wallet),
-        schedules: schedulesOf(env, log, engine, { config, documents, summaries, payables, wallet, subscriptions }),
+        schedules: [
+          ...schedulesOf(env, log, engine, { config, documents, summaries, payables, wallet, subscriptions }),
+          ...webhooks.schedules,
+        ],
       }),
     )
     .catch((error) => {
