@@ -39,9 +39,9 @@
 | — | **Pilot 2 — B2B clients** (2–3 weeks) | B | NOT_STARTED | — | — | — | — | — | Stage 12 §10 checklist |
 | 14 | API access & webhooks | C | AWAITING_SIGN_OFF | 11 / 11 | 0 | 100 % | 2026-11-24 | — | [stage-14](stages/stage-14.md) |
 | 15 | Hotel payouts, finance & reports | C | AWAITING_SIGN_OFF | 10 / 10 | 0 | 100 % | 2026-11-23 | — | [stage-15](stages/stage-15.md) |
-| 16 | Hardening & public launch | C | IN_PROGRESS | 3 / 12 | 0 | 25 % | 2026-11-24 | — | [stage-16](stages/stage-16.md) |
+| 16 | Hardening & public launch | C | IN_PROGRESS | 4 / 12 | 0 | 33 % | 2026-11-24 | — | [stage-16](stages/stage-16.md) |
 
-**Overall (stages with task lists):** 217 of 226 tasks done (96 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 218 of 226 tasks done (96 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).
