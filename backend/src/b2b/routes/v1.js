@@ -73,6 +73,7 @@ import { createViewAsAuthenticator, viewAsReadOnly, viewAsRoutes } from './view-
 import { createViewAsService } from '../modules/identity/index.js';
 import { createStaffRoles } from './admin-wiring.js';
 import { realtimeRoutes } from './realtime.js';
+import { apiKeysFor, createApiKeyAuthenticator } from './api-keys-wiring.js';
 
 const BODY_LIMIT = '1mb';
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -113,6 +114,7 @@ export function createB2BRouter(options = {}) {
   };
   // business tokens, view-as passes, the B2B admin pass, then existing customer/admin logins (read-only)
   const authenticate = firstMatch(
+    createApiKeyAuthenticator({ env, clock, keys: apiKeysFor(env, clock), resolveMember: identity.resolveMember }), // Stage 14 (off unless B2B_API_ENABLED)
     identity.businessAuthenticate,
     createViewAsAuthenticator(viewAsDeps),
     createAdminAuthenticator({ secret: env.B2B_AUTH_SECRET, clock, staffRoles }),

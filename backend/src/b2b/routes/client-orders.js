@@ -139,7 +139,8 @@ function createRoute(router, deps) {
           { scope, key, requestHash: hashRequest({ method: 'POST', path: '/client/orders', body }), clock: deps.clock },
           async () => {
             const order = await deps.orders.create(contextOf(res), {
-              channel: 'B2B_PORTAL',
+              channel:
+                contextOf(res).actor.type === 'member' && /** @type {any} */ (contextOf(res).actor).apiKeyId ? 'B2B_API' : 'B2B_PORTAL', // Stage 14: API keys
               buyer: { clientOrgId: m.orgId, customerId: null, guestKey: null },
               createdBy: `user:${m.userId}`,
               branchId: branchFor(m, body.branchId),

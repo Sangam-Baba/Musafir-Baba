@@ -15,7 +15,8 @@ import { systemClock } from './clock.js';
  *   | { type: 'user', userId: string, sessionId: string }
  *   | { type: 'member', userId: string, orgId: string, permissions: readonly string[], sessionId?: string,
  *       orgType?: 'PLATFORM' | 'CLIENT' | 'HOTEL', roles?: readonly string[], branchIds?: readonly string[], propertyIds?: readonly string[], ownOnly?: boolean,
- *       viewAs?: { id: string, staffId: string, mode: 'READ' | 'WRITE', expiresAt: Date, reason: string } }
+ *       viewAs?: { id: string, staffId: string, mode: 'READ' | 'WRITE', expiresAt: Date, reason: string },
+ *       apiKeyId?: string }
  *   | { type: 'system', reason: string }} Actor
  */
 

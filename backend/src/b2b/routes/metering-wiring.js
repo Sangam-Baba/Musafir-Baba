@@ -34,7 +34,7 @@ export function usageHooks(clock, env = {}) {
       const u = usageOf({
         metric: kind,
         clientOrgId: caller.clientOrgId,
-        apiKey: false,
+        apiKey: info.apiKey === true,
         refresh: info.refresh,
         lastFreeRefreshAt: freeRefreshAt.get(memo) ?? null,
         now,
@@ -47,7 +47,8 @@ export function usageHooks(clock, env = {}) {
       usageRecorder(clock).record({
         orgId: caller.clientOrgId ?? 'platform',
         userId: info.userId,
-        channel: caller.channel,
+        apiKeyId: info.userId?.startsWith('apikey:') ? info.userId.slice(7) : null, // Stage 14
+        channel: info.apiKey ? 'B2B_API' : caller.channel,
         metric: kind,
         billable: u.billable,
         statusCode: info.statusCode,

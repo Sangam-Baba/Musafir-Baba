@@ -22,7 +22,7 @@ export const SEARCH_LIMITS = Object.freeze({
 
 /**
  * @typedef {import('../modules/hotel-search/index.js').SearchCaller} SearchCaller
- * @typedef {{ statusCode: number, userId: string | null, requestId: string | null, refresh: boolean, subject: string | null }} AfterInfo
+ * @typedef {{ statusCode: number, userId: string | null, requestId: string | null, refresh: boolean, subject: string | null, apiKey?: boolean }} AfterInfo
  *   `refresh`: the dashboard's own refresh after a live update (`X-MB-Refresh: realtime`); `subject`: the hotel asked about
  * @typedef {{ before?: (caller: SearchCaller, kind: string) => Promise<void>, after?: (caller: SearchCaller, kind: string, info: AfterInfo) => Promise<void> }} SearchHooks
  */
@@ -128,9 +128,11 @@ export function createSearchGate(deps) {
         const ctx = contextOf(res);
         const info = {
           statusCode: res.statusCode,
-          userId: ctx.actor.type === 'member' ? ctx.actor.userId : null,
+          // Stage 14: an API key counts as itself (usage per key) and never gets the dashboard's free refresh
+          userId: ctx.actor.type === 'member' ? (ctx.actor.apiKeyId ? `apikey:${ctx.actor.apiKeyId}` : ctx.actor.userId) : null,
           requestId: ctx.requestId ?? null,
-          refresh: req.get('x-mb-refresh') === 'realtime',
+          refresh: !(ctx.actor.type === 'member' && ctx.actor.apiKeyId) && req.get('x-mb-refresh') === 'realtime',
+          apiKey: ctx.actor.type === 'member' && Boolean(ctx.actor.apiKeyId),
           subject: typeof req.params?.ref === 'string' ? req.params.ref : null,
         };
         hooks.after?.(caller, kind, info).catch(() => undefined);

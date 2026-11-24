@@ -91,6 +91,7 @@ export function createIdentity(env, clock, permissionsOf, memberCache) {
   };
   return {
     businessAuthenticate: createBusinessAuthenticator({ secret, clock, sessions, resolveMember }),
+    resolveMember, // Stage 14: API keys act as the member who created them
     legacyAuthenticate: createLegacyAuthenticator({ secret: env.JWT_ACCESS_SECRET }),
     mfa,
     auth,

@@ -56,6 +56,11 @@ export const keyDto = (k) => ({
   lastUsedIp: k.lastUsedIp,
 });
 
+/** Keys need the server's pepper — checked when a key is made or used, never at start-up. @param {KeyDeps} deps */
+function needPepper(deps) {
+  if (!deps.pepper || deps.pepper.length < 16) throw new Error('[b2b] API key pepper missing (B2B_API_KEY_PEPPER or B2B_AUTH_SECRET)');
+}
+
 /** @param {string[]} ips */
 function allowList(ips) {
   const r = normaliseAllowList(ips);
@@ -75,6 +80,7 @@ async function assertMayIssue(deps, who, scopes) {
 
 /** @param {KeyDeps} deps @param {Creator} who @param {{ name: string, scopes: string[], ipAllowList: string[] }} a */
 async function insertKey(deps, who, a) {
+  needPepper(deps);
   const prefix = randomText(randomBytes, 8);
   const secret = randomText(randomBytes, 40);
   const doc = await ApiKeyRecord.create({
@@ -106,7 +112,6 @@ async function ownKey(orgId, id) {
 
 /** @param {KeyDeps} deps */
 export function createApiKeys(deps) {
-  if (!deps.pepper || deps.pepper.length < 16) throw new Error('[b2b] API key pepper missing (B2B_API_KEY_PEPPER or B2B_AUTH_SECRET)');
   return {
     /** @param {Creator} who @param {{ name: string, scopes: string[], ipAllowList?: string[] }} a */
     async create(who, a) {
@@ -165,6 +170,7 @@ export function createApiKeys(deps) {
 async function resolveKey(deps, token) {
   const p = parseKey(token);
   if (!p || p.env !== deps.env) return null;
+  needPepper(deps);
   const k = /** @type {Record<string, any> | null} */ (await ApiKeyRecord.findOne({ prefix: p.prefix }).setOptions(SCOPE).lean());
   if (!k || k.status !== 'ACTIVE' || !secretMatches(p.secret, deps.pepper, k.secretHash)) return null;
   if (k.expiresAt && new Date(k.expiresAt).getTime() <= deps.clock.now().getTime()) return null;
