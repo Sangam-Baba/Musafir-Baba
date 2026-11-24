@@ -10,9 +10,9 @@
 | | |
 | --- | --- |
 | **Phase** | A — hotels + website (working system) |
-| **Current stage(s)** | Stages 00–15 awaiting owner sign-off; Stage 16: everything codeable done (T01–T08), owner tasks left (pilots, pen test, staging load / DR drill, on-call, sign-off) |
+| **Current stage(s)** | Stages 00–15 awaiting owner sign-off — **all live on the server, switched off** (migrations 0001–0082 run 2026-11-24); Stage 16: codeable part done (T01–T08), owner tasks left |
 | **Current task(s)** | — (S16-T09 … T12 are owner tasks) |
-| **Next up** | Owner: Stage 16 owner tasks, Pilot 1 and Pilot 2 in parallel · owner: push Stages 13–16 and run migrations 0070–0082, grant finance permissions (go-live 8e), confirm plan numbers (D7) and payout cycle / deductions (D11), GSTIN in pricing settings, bank details for top-ups, CA review (SaaS SAC, invoice layout, GST register layout, TDS), lawyer on the closed wallet (D6), sign off Stages 00–13 and 15 |
+| **Next up** | Owner: Stage 16 owner tasks, Pilot 1 and Pilot 2 in parallel · owner: grant finance permissions (go-live 8e), confirm plan numbers (D7) and payout cycle / deductions (D11), GSTIN in pricing settings, bank details for top-ups, CA review (SaaS SAC, invoice layout, GST register layout, TDS), lawyer on the closed wallet (D6), sign off Stages 00–13 and 15 |
 | **Blockers** | B1 — owner checks O1, O2, O4, O5 from the system map (don't block coding; block Stage 00 DoD / first deploy) |
 | **Decisions needed soon** | Owner sign-off of Stages 00–03 · email delivery log / template editor before launch (DEF-025) · CAPTCHA provider (DEF-023) · CA engaged before Stage 05 (Q1–Q7, incl. unregistered-hotel tax treatment) |
 

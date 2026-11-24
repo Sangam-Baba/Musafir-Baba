@@ -4,6 +4,14 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-24 — AI (Claude) — Release: Stages 13–16 live (switched off)
+
+- **Goal:** put the merged Stages 13–16 on the server without changing anything people see.
+- **Done:** PR #224 merged by the owner; backend redeployed from `main`; migrations 0070–0082 run on the server (13 applied, 69 already done; a second run applied none). Checked: `/api/v1/health` ok (database up, reconciler running), `/openapi.json` 200, an API key → 401 `API_NOT_ENABLED`, `/api-keys` → 503 (switch off), musafirbaba.com and the existing API 200, safety-check runs being saved (all 9 checks clean), no errors in the backend log except the deliberate switched-off check.
+- **Not done / why:** switches stay off (billing, API, pilot list unset) until the owner decides; staff permissions for the new admin screens to be granted by the owner.
+- **Next step:** owner tasks of Stage 16 (pilots, pen test, staging load / DR drill, on-call, sign-offs); set `B2B_OPS_ALERT_EMAIL` on the server so safety-check alerts reach a person.
+
+
 ## 2026-11-24 — AI (Claude) — Stage 16 hardening (S16-T01 to T08; T09–T12 are owner tasks)
 
 - **Goal:** everything in hardening and launch that code and documents can do; prepare the owner tasks.
