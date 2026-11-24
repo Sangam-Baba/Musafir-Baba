@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-24 — AI (Claude) — Stage 14 API access & webhooks (S14-T01 to T11)
+
+- **Goal:** let a B2B client's own software search, book, pay and cancel with API keys, and receive signed booking updates — self-service, behind a switch.
+- **Done:** S14-T01 … T11 → DONE. Modules `api-access` (hashed keys shown once, scopes within the creator's permissions and the plan, 2 lasting keys, rotation with 24 h overlap, revoke ≤ 5 s, IP allow-list, new-IP notice) and `webhooks` (HTTPS endpoints, sealed secrets with 24 h dual signing, guarded sender — DNS checked, pinned connection, no redirects, 10 s, 1 KB; deliveries with retries 1 m … 12 h, auto-disable after 24 h with an Owner notice, replay with the same event id, test event); key sign-in in the gateway (B2B_API channel, usage per key, per-key rate limit); routes; Developers page; public OpenAPI file and guides (signature code in 4 languages, each run).
+- **Not done / why:** staging test mode extras (DEF-042); a rendered OpenAPI viewer (needs an outside script).
+- **Files / PR:** `backend/src/b2b/modules/api-access/**`, `modules/webhooks/**`, `routes/api-keys-wiring.js`, `webhooks-wiring.js`, `developers.js`, `openapi.js`; one optional field on the Actor type (`core/context.js`); frontend `app/business/developers/**`, `src/b2b/developers.ts`. Migrations 0078–0080. Local commits, not pushed.
+- **Tests run:** api-keys, api-gateway, developers-api (incl. two-factor step-up), webhooks-endpoints (SSRF suite), webhooks-deliveries, openapi, stage-14-mandatory (4-channel last-room race 3 / 3) ✅; full suite ✅; lint, typecheck ✅; frontend `tsc` and `next build` ✅. Bug found and fixed by the tests: the blocked-address list matched every IPv4 address.
+- **Decisions / deferrals:** switch `B2B_API_ENABLED` (off); keys act as their creator; API prices = dashboard prices; DEF-042.
+- **Next step:** owner: OK to push Stages 13, 15 and 14, run migrations 0070–0080. Build: Stage 16 (hardening & launch).
+
+
 ## 2026-11-24 — AI (Claude) — Stage 15 hotel payouts, finance & reports (S15-T01 to T10)
 
 - **Goal:** pay hotels correctly with statements and questions, GST registers with month locks, management and client reports, accounting export, client voucher branding.

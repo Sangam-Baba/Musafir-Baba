@@ -170,6 +170,25 @@ Before the first real payout: the CA sets deductions (TDS — none until then), 
 transfer file format (the bank file is a generic CSV until then), and hotels' KYC is approved with bank details (lines
 are held otherwise, and for 72 hours after a bank change). The CA confirms the GST register layout before filing.
 
+## 8f. Stage 14 (API keys and webhooks) — with the next push
+
+Migrations `0078` … `0080` (API keys, webhook endpoints, webhook deliveries). **Switched off by default**: nothing
+changes until `B2B_API_ENABLED=true` is set on the server. While off, `mb_…` keys get 401 `API_NOT_ENABLED`, the
+Developers page says "not switched on", no webhook is queued or sent. The API description
+(`/api/v1/openapi.json`) and the guides page (`/business/developers/docs`) are public either way.
+
+**When switched on** (verified B2B clients only — the website is never affected):
+- client Owners see **Developers** in the business area: keys (shown once, 2 at a time, IP limits, rotate, revoke) and
+  webhook addresses; a key acts for its creator within its scopes, at the dashboard's B2B prices, counted in the same
+  usage / plan pool (per key on the Usage page);
+- booking updates are sent signed to the clients' HTTPS addresses every 15 seconds (retries ~22 h; an address failing
+  24 h is switched off and the Owner emailed).
+
+Optional server settings: `B2B_API_KEY_PEPPER` (a long random value for key hashing — falls back to `B2B_AUTH_SECRET`;
+set it once and never change it, or every key stops), `B2B_API_ENV=test` only on a staging server (test keys).
+With plans switched on (Stage 13), keys need a plan with `api` and webhooks a plan with `webhooks` (placeholder plans:
+B and C / C).
+
 ## 9. Roll back
 
 - Everything new off: `B2B_ENABLED=false` → `docker compose up -d`. The website, apps and admin work exactly as before.
