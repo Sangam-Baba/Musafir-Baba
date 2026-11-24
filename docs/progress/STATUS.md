@@ -37,11 +37,11 @@
 | 12 | B2B dashboard: search, booking & bookings | B | AWAITING_SIGN_OFF | 22 / 22 | 0 | 100 % | 2026-11-19 | — | [stage-12](stages/stage-12.md) |
 | 13 | Subscriptions & usage billing | B | AWAITING_SIGN_OFF | 10 / 10 | 0 | 100 % | 2026-11-23 | — | [stage-13](stages/stage-13.md) |
 | — | **Pilot 2 — B2B clients** (2–3 weeks) | B | NOT_STARTED | — | — | — | — | — | Stage 12 §10 checklist |
-| 14 | API access & webhooks | C | IN_PROGRESS | 3 / 11 | 0 | 27 % | 2026-11-24 | — | [stage-14](stages/stage-14.md) |
+| 14 | API access & webhooks | C | IN_PROGRESS | 5 / 11 | 0 | 45 % | 2026-11-24 | — | [stage-14](stages/stage-14.md) |
 | 15 | Hotel payouts, finance & reports | C | AWAITING_SIGN_OFF | 10 / 10 | 0 | 100 % | 2026-11-23 | — | [stage-15](stages/stage-15.md) |
 | 16 | Hardening & public launch | C | NOT_STARTED | 0 / 0 | 0 | 0 % | — | — | — |
 
-**Overall (stages with task lists):** 206 of 214 tasks done (96 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
+**Overall (stages with task lists):** 208 of 214 tasks done (97 %) · deferred on purpose: 2 (see `DEFERRED.md`, which also lists the plan-level deferrals)
 <!-- progress:end -->
 
 Task totals are 0 until a stage starts and its task list is written (rule 2).
