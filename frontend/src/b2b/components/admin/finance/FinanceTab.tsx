@@ -14,6 +14,7 @@ import { LedgerPanel } from "./LedgerPanel";
 import { PaymentsPanel } from "./PaymentsPanel";
 import { PayoutRunsPanel } from "./PayoutRunsPanel";
 import { ReportsPanel } from "./ReportsPanel";
+import { HealthPanel } from "./HealthPanel";
 
 const SECTIONS = [
   { key: "ledger", label: "Accounts & corrections" },
@@ -22,6 +23,7 @@ const SECTIONS = [
   { key: "payouts", label: "Hotel payouts" }, // Stage 15
   { key: "gst", label: "GST register" },
   { key: "reports", label: "Reports & exports" },
+  { key: "health", label: "System health" }, // Stage 16
   { key: "test", label: "Test payment" },
 ] as const;
 
@@ -83,6 +85,7 @@ export function FinanceTab({ token }: { token: string }) {
       {section === "payouts" && <PayoutRunsPanel token={token} />}
       {section === "gst" && <ReportsPanel token={token} view="gst" />}
       {section === "reports" && <ReportsPanel token={token} view="reports" />}
+      {section === "health" && <HealthPanel token={token} />}
       {section === "test" && <TestPayment token={token} />}
     </div>
   );

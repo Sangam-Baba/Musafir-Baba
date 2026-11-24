@@ -13,6 +13,7 @@ import { stage15AdminRoutes } from './payout-finance-admin.js';
 import { financePortalRoutes } from './finance-portal.js';
 import { createFiles } from './files.js';
 import { adminReportsFor, clientReportsFor } from './reports-wiring.js';
+import { systemHealthRoutes } from './system-health.js';
 
 const SCOPE = { tenantScope: /** @type {const} */ ('SYSTEM'), tenantReason: 'payouts: hotel facts' };
 
@@ -60,5 +61,6 @@ export function stage15Routes(env, clock) {
   const disputes = createStatementDisputes({ clock });
   router.use(stage15AdminRoutes({ clock, runs, disputes, reports: adminReportsFor({ clock }) }));
   router.use(financePortalRoutes({ runs, disputes, clientReports: clientReportsFor() }));
+  router.use(systemHealthRoutes({ clock })); // Stage 16
   return router;
 }

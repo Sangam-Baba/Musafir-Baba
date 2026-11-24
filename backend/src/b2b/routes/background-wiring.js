@@ -89,6 +89,7 @@ export function startDatabase(env, log, hub, identity) {
         email,
         publicUrl: config.B2B_PUBLIC_URL,
         onStop: () => usageRecorder(systemClock).stop(),
+        opsAlertEmail: env.B2B_OPS_ALERT_EMAIL || undefined, // Stage 16: safety-check alerts
         rules: [...orderReconcileRules(engine.ordersDeps), cancellingRule(engine.ordersDeps)],
         consumers: [
           ...orderConsumers(engine.ordersDeps, PAYMENT_EVENTS),
