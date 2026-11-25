@@ -11,5 +11,7 @@ describe('bus switch off', () => {
     const r = await app.srv.post('/api/v1/registrations/operator', { details: {} }, { 'x-b2b-auth': '1' });
     expect([r.status, r.body.code]).toEqual([503, 'BUS_NOT_ENABLED']);
     expect((await app.srv.post('/api/v1/registrations/hotel', { details: {} }, { 'x-b2b-auth': '1' })).status).toBe(400); // reaches the form check
+    expect((await app.srv.get('/api/v1/bus/vehicles')).body.code).toBe('BUS_NOT_ENABLED');
+    expect((await app.srv.get('/api/v1/admin/bus/vehicles')).body.code).toBe('BUS_NOT_ENABLED');
   });
 });

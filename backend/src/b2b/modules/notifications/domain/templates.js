@@ -6,6 +6,7 @@
  * plain text, and the bell shows text only, so markup in a company name is shown as typed, never run. Pure.
  */
 import { DomainError } from '../../../core/errors.js';
+import { BUS_TEMPLATES } from './templates-bus.js';
 
 /** @typedef {{ version: number, vars: readonly string[], title: string, body: string, subject: string, text: string }} Template */
 
@@ -257,6 +258,7 @@ export const TEMPLATES = Object.freeze({
     subject: 'Your MusafirBaba API key was used from a new address',
     text: 'Hello,\n\nOne of the {{orgName}} API keys was just used from an internet address it has not used before. If this was not your own software, revoke the key now and create a new one.\n\nSee your keys: {{link}}\n\nMusafirBaba Business',
   },
+  ...BUS_TEMPLATES, // Stage 18: bus operators
   'webhooks.endpoint-disabled': {
     version: 1,
     vars: ['orgName', 'link'],

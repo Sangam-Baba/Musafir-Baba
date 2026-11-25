@@ -6,6 +6,7 @@
  * whose permissions include the category's permission. Pure.
  */
 
+import { BUS_CATEGORIES } from './catalogue-bus.js';
 /** @typedef {'ORG' | 'USER'} Audience */
 /**
  * @typedef {{ audience: Audience, permission: string | null, critical: boolean, label: string,
@@ -211,6 +212,7 @@ export const CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/developers',
   },
+  ...BUS_CATEGORIES, // Stage 18: bus operators
   'webhooks.endpoint-disabled': {
     audience: 'ORG',
     permission: 'webhooks.endpoint.manage',
@@ -250,11 +252,17 @@ export const EVENT_CATEGORIES = Object.freeze({
   'wallet.credit.overdue': 'wallet.credit-overdue',
   'api-access.key.used-new-ip': 'api.key-new-ip',
   'webhooks.endpoint.disabled': 'webhooks.endpoint-disabled',
+  'bus-catalog.vehicle.approved': 'bus.vehicle-approved',
+  'bus-catalog.vehicle.changes-requested': 'bus.vehicle-changes',
+  'bus-catalog.vehicle.suspended': 'bus.vehicle-suspended',
+  'bus-catalog.paper.expiring': 'bus.paper-expiring',
+  'bus-catalog.paper.expired': 'bus.paper-expired',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */
 export const ADMIN_QUEUES = Object.freeze({
   'kyc.application.submitted': 'kyc',
+  'bus-catalog.vehicle.submitted': 'buses', // Stage 18: buses waiting for review
   'kyc.application.resubmitted': 'kyc',
   'kyc.application.assigned': 'kyc',
   'kyc.application.approved': 'kyc',

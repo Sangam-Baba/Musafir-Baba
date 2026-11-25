@@ -1,0 +1,44 @@
+// @ts-check
+/** Notification categories for bus operators (Stage 18) — merged into CATEGORIES. */
+export const BUS_CATEGORIES = Object.freeze({
+  'bus.vehicle-approved': {
+    audience: 'ORG',
+    permission: 'bus-catalog.vehicle.read',
+    critical: false,
+    label: 'Bus approved',
+    emailTo: 'OWNERS',
+    link: '/business/buses',
+  },
+  'bus.vehicle-changes': {
+    audience: 'ORG',
+    permission: 'bus-catalog.vehicle.read',
+    critical: true,
+    label: 'Bus needs changes',
+    emailTo: 'OWNERS',
+    link: '/business/buses',
+  },
+  'bus.vehicle-suspended': {
+    audience: 'ORG',
+    permission: 'bus-catalog.vehicle.read',
+    critical: true,
+    label: 'Bus suspended',
+    emailTo: 'OWNERS',
+    link: '/business/buses',
+  },
+  'bus.paper-expiring': {
+    audience: 'ORG',
+    permission: 'bus-catalog.vehicle.read',
+    critical: false,
+    label: 'Bus papers expiring soon',
+    emailTo: 'OWNERS',
+    link: '/business/buses',
+  },
+  'bus.paper-expired': {
+    audience: 'ORG',
+    permission: 'bus-catalog.vehicle.read',
+    critical: true,
+    label: 'Bus papers expired',
+    emailTo: 'OWNERS',
+    link: '/business/buses',
+  },
+});

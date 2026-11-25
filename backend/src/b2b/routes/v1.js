@@ -74,6 +74,7 @@ import { createViewAsService } from '../modules/identity/index.js';
 import { createStaffRoles } from './admin-wiring.js';
 import { realtimeRoutes } from './realtime.js';
 import { apiKeysFor, createApiKeyAuthenticator } from './api-keys-wiring.js';
+import { busCatalogRoutes } from './bus-catalog.js';
 
 const BODY_LIMIT = '1mb';
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -166,6 +167,7 @@ function stage02Routes(env, clock, identity) {
   const files = createFiles(env, clock);
   const kyc = createKycService({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(fileRoutes(files));
+  router.use(busCatalogRoutes({ clock, env, files })); // Stage 18 (503 unless B2B_BUS_ENABLED)
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
   const isOwnOrg = ownOrgCheck(identity);
   const gst = createGstRegistrations({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET, isOwnOrg });

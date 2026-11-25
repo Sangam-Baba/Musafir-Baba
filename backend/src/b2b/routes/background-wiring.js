@@ -32,6 +32,8 @@ import { walletParts } from './wallet-wiring.js';
 import { usageRecorder, usageSchedules } from './metering-wiring.js';
 import { subscriptionParts } from './subscriptions-wiring.js';
 import { webhookParts } from './webhooks-wiring.js';
+import { createBusReview } from '../modules/bus-catalog/index.js';
+import { todayIn } from '../core/dates.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
 
@@ -79,6 +81,7 @@ export function startDatabase(env, log, hub, identity) {
   const wallet = walletParts(systemClock);
   const subscriptions = subscriptionParts(systemClock, env);
   const webhooks = webhookParts(systemClock, env); // Stage 14: nothing unless B2B_API_ENABLED=true
+  const busSchedules = env.B2B_BUS_ENABLED === 'true' ? [busPaperReminders()] : []; // Stage 18
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -106,6 +109,7 @@ export function startDatabase(env, log, hub, identity) {
         schedules: [
           ...schedulesOf(env, log, engine, { config, documents, summaries, payables, wallet, subscriptions }),
           ...webhooks.schedules,
+          ...busSchedules,
         ],
       }),
     )
@@ -233,4 +237,10 @@ function schedulesOf(env, log, engine, parts) {
     },
     ...parts.subscriptions.schedules,
   ];
+}
+
+/** Stage 18: bus paper reminders (30 / 7 days before expiry and on expiry), every 6 hours, repeat-safe. */
+function busPaperReminders() {
+  const review = createBusReview({ clock: systemClock, today: () => todayIn(systemClock, 'Asia/Kolkata') });
+  return { name: 'bus-paper-reminders', everyMs: 6 * 60 * 60_000, run: () => review.reminders() };
 }

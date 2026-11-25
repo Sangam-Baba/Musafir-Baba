@@ -21,7 +21,9 @@ import { validate } from '../core/http/validate.js';
 import { createFilesService, fileStoreFromConfig, MAX_FILE_BYTES } from '../modules/files/index.js';
 import { PERMISSIONS as KYC } from '../modules/kyc/index.js';
 
-export const FILE_PURPOSES = /** @type {const} */ (['kyc-document']);
+export const FILE_PURPOSES = /** @type {const} */ (['kyc-document', 'bus-paper']); // bus-paper: Stage 18 (bus RC / permit / insurance / fitness)
+/** Who may upload each kind of file. */
+const UPLOAD_PERMISSION = /** @type {const} */ ({ 'kyc-document': KYC.applicationSubmit, 'bus-paper': 'bus-catalog.vehicle.manage' });
 
 /**
  * @param {NodeJS.ProcessEnv} env
@@ -39,12 +41,28 @@ export function createFiles(env, clock) {
   return createFilesService({ store, masterKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET, clock });
 }
 
+/**
+ * The upload permission follows the kind of file (`?purpose=`): KYC documents need `kyc.application.submit` (as
+ * before), bus papers `bus-catalog.vehicle.manage`; anything else is checked against the KYC rule, then refused by the
+ * query check. Labelled like `requirePermission` so the route-guard check sees it.
+ * @type {import('express').RequestHandler & { b2bAccess: string }}
+ */
+const uploadGuard = Object.assign(
+  /** @type {import('express').RequestHandler} */ (
+    (req, res, next) => {
+      const purpose = /** @type {keyof typeof UPLOAD_PERMISSION} */ (String(req.query.purpose));
+      return requirePermission(UPLOAD_PERMISSION[purpose] ?? KYC.applicationSubmit)(req, res, next);
+    }
+  ),
+  { b2bAccess: 'permission:by-purpose (kyc.application.submit | bus-catalog.vehicle.manage)' },
+);
+
 /** @param {ReturnType<typeof createFilesService>} files */
 export function fileRoutes(files) {
   const router = express.Router();
   router.post(
     '/files',
-    requirePermission(KYC.applicationSubmit),
+    uploadGuard,
     validate({ query: z.strictObject({ purpose: z.enum(FILE_PURPOSES) }) }),
     express.raw({ type: () => true, limit: MAX_FILE_BYTES }),
     (req, res, next) => {
