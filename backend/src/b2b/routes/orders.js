@@ -219,7 +219,8 @@ export function orderRoutes(deps) {
           async () => ({
             statusCode: 201,
             body: await deps.payments.start(contextOf(res), order, {
-              returnUrl: `${deps.publicUrl}/hotels/booking/${order.ref}?key=${link}`,
+              // Stage 18: a bus order comes back to the bus booking page; hotel orders exactly as before
+              returnUrl: `${deps.publicUrl}/${order.items?.[0]?.type === 'BUS' ? 'buses' : 'hotels'}/booking/${order.ref}?key=${link}`,
             }),
           }),
         );
