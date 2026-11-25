@@ -55,8 +55,8 @@ async function finish(deps, order, item) {
   await cancelOrderIfDone(deps, order);
 }
 
-/** @param {PayDeps} deps @param {Record<string, any>} order */
-async function cancelOrderIfDone(deps, order) {
+/** The order CANCELLED when every item is (also used by part-cancel.js). @param {PayDeps} deps @param {Record<string, any>} order */
+export async function cancelOrderIfDone(deps, order) {
   for (const it of order.items) if ((await deps.handlers.get(it.type).view(it, 'BUYER')).status !== 'CANCELLED') return;
   const event = newEvent(
     EVENTS.orderCancelled,

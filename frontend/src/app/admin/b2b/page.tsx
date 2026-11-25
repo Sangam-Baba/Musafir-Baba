@@ -14,6 +14,7 @@ import { AdminBell } from "@/b2b/components/admin/AdminBell";
 import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
 import { BookingRequestsTab } from "@/b2b/components/admin/BookingRequestsTab";
 import { BusReviewTab } from "@/b2b/components/admin/BusReviewTab";
+import { BusOpsCancellations } from "@/b2b/components/admin/BusOpsCancellations";
 import { FinanceTab } from "@/b2b/components/admin/finance/FinanceTab";
 import { KycQueueTab } from "@/b2b/components/admin/KycQueueTab";
 import { AdminPageHeader, AdminTabsList, FleetKpiStrip, FleetPage, SECTION, Tabs, TabsContent } from "@/b2b/components/admin/kit";
@@ -57,6 +58,7 @@ const AREAS: AreaDef[] = [
     icon: Briefcase,
     tagline: "What we provide to them — bookings and after-booking care, the hotel catalogue and prices, wallets, plans and usage.",
     tabs: [
+      ...(BUS_ON ? [{ value: "bus-cancels", label: "Bus cancellations", icon: BusFront, title: "Bus cancellations", description: "Cancel a bus booking or a whole trip with a full refund — two people.", render: (t: string) => <BusOpsCancellations token={t} /> } satisfies TabDef] : []),
       { value: "orders", label: "Orders", icon: ShoppingBag, title: "Orders", description: "Every booking (website and B2B): search, timeline, actions with two people.", render: (t) => <OrdersTab token={t} /> },
       { value: "operations", label: "Operations", icon: Headset, title: "Operations", description: "Change requests, no-show disputes, hotel failures, cancellations, hotels not answering.", render: (t) => <OperationsTab token={t} /> },
       { value: "requests", label: "Booking requests", icon: ClipboardList, title: "Booking requests", description: "B2B clients asking MusafirBaba to arrange a stay.", render: (t) => <BookingRequestsTab token={t} /> },

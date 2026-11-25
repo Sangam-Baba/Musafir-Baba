@@ -31,7 +31,11 @@ import { DomainError } from '../../core/errors.js';
  *   cancelRooms: (ctx: Ctx, item: OrderItem) => Promise<void>,
  *   cancelLedgerLines: (item: OrderItem, amounts?: { chargePaise: number, refundPaise: number }) => Promise<{ refundPaise: number, lines: LedgerLine[] }>,
  *   cancelDone: (ctx: Ctx, item: OrderItem) => Promise<void>,
- * }} ItemHandler
+ *   partStart?: (ctx: Ctx, item: OrderItem, part: Record<string, unknown>) => Promise<{ started: boolean, status: string }>,
+ *   partRelease?: (ctx: Ctx, item: OrderItem, partId: string) => Promise<void>,
+ *   partLedgerLines?: (item: OrderItem, partId: string) => Promise<{ refundPaise: number, lines: LedgerLine[] }>,
+ *   partDone?: (ctx: Ctx, item: OrderItem, partId: string) => Promise<void>,
+ * }} ItemHandler   part*: optional — cancelling part of a booking (bus seats, Stage 18 B7)
  * @typedef {{
  *   start: (ctx: Ctx, order: Record<string, any>, opts: { windowMinutes: number, returnUrl: string }) =>
  *     Promise<{ intentId: string, txnId: string, action: string, fields: Record<string, string> }>,

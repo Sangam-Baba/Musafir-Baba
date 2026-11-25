@@ -34,8 +34,10 @@ import {
 import { createHolds, createLiveWallets } from '../modules/wallet/index.js';
 import { createBusItemHandler, createBusSearch } from '../modules/bus-booking/index.js';
 import { createClaims } from '../modules/bus-inventory/index.js';
+import { createCancellationPolicies } from '../modules/bus-catalog/index.js';
 import { busOperators, cityStateOf } from './bus-http.js';
 import { busOrderRoutes } from './bus-orders.js';
+import { busCancelRoutes } from './bus-cancel.js';
 import { documentsFor } from './documents-wiring.js';
 import { hotelBookingRoutes } from './hotel-bookings.js';
 import { customerBookingRoutes } from './customer-bookings.js';
@@ -85,6 +87,7 @@ export function bookingEngine(env, clock, logger, identity) {
       search: createBusSearch({ clock, operators: busOperators, stateOf: cityStateOf }),
       claims: createClaims({ clock }),
       ledger: paymentsDeps.ledger,
+      policies: createCancellationPolicies({ clock }),
     }),
   );
   const modes = createPaymentModes();
@@ -191,6 +194,7 @@ export function stage08Routes(env, clock, logger, identity) {
   );
   router.use(clientOrdersFor(env, clock, engine, identity));
   router.use(busOrderRoutes({ env, clock, engine })); // Stage 18 B6: bus seats through the same engine (switch-gated)
+  router.use(busCancelRoutes({ env, clock, engine })); // Stage 18 B7: cancelling bus seats (buyers, ops)
   const noShows = createNoShows({ clock });
   const failures = createHotelFailures({ clock });
   router.use(hotelBookingRoutes({ bookings: createHotelBookingsService({ clock }), noShows, failures }));

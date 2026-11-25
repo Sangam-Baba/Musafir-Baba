@@ -29,3 +29,6 @@ export { createSchedules, scheduleDto } from './schedules.service.js';
 export { MIN_FARE_PAISE, MAX_FARE_PAISE, checkFares, fareFor, fareKey, fareChangeSummary } from './domain/fares.js';
 export { FARES_COLLECTION, FareRecord } from './models/fare.model.js';
 export { createFares } from './fares.service.js';
+export { DEFAULT_BUS_SLABS, MAX_SLABS, slabProblems, chargePercent, slabText } from './domain/cancellation.js';
+export { CANCELLATION_POLICIES_COLLECTION, CancellationPolicyRecord } from './models/cancellation-policy.model.js';
+export { createCancellationPolicies } from './cancellation-policies.service.js';

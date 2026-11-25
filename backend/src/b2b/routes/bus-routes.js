@@ -7,6 +7,7 @@
  *             (`bus-catalog.route.read` to read, `.manage` to change)
  *             GET /bus/trips?from&to&routeId · GET /bus/trips/:id   (`bus-inventory.trip.read`)
  *             GET / PUT /bus/routes/:id/fares {rows, rules, expectedVersion}   (read: route.read · save: `bus-catalog.fare.manage`)
+ *             GET / PUT /bus/cancellation-policy {slabs, expectedVersion}   (read: route.read · save: `bus-catalog.fare.manage`)
  *   admin     GET /admin/bus/routes?status · POST /admin/bus/routes/:id/decide {move, note}   (`platform.bus.review`)
  */
 import { z } from 'zod';
@@ -16,6 +17,7 @@ import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import {
   addDays,
+  createCancellationPolicies,
   createFares,
   createRouteReview,
   createRoutes,
@@ -230,6 +232,26 @@ function fareRoutes(router, fares) {
   );
 }
 
+/** @param {import('express').Router} router @param {ReturnType<typeof createCancellationPolicies>} policies */
+function policyRoutes(router, policies) {
+  router.get(
+    '/bus/cancellation-policy',
+    requirePermission(BUS.routeRead),
+    handle(async (_q, res) => policies.get(operatorOf(res).orgId)),
+  );
+  router.put(
+    '/bus/cancellation-policy',
+    requirePermission(BUS.fareManage),
+    validate({
+      body: z.strictObject({
+        slabs: z.array(z.strictObject({ hoursBefore: z.number().int(), percent: z.number().int() })).max(8),
+        expectedVersion: z.number().int().min(0),
+      }),
+    }),
+    handle(async (_q, res) => policies.save(operatorOf(res), input(res).body)),
+  );
+}
+
 /** @param {import('express').Router} router @param {ReturnType<typeof createRouteReview>} review */
 function routeReviewRoutes(router, review) {
   const reviewer = requirePermission(BUS.platformReview);
@@ -255,6 +277,7 @@ export function addBusRouteRoutes(router, deps) {
   stopRoutes(router, stops);
   routeRoutes(router, createRoutes({ clock: deps.clock, stops }));
   fareRoutes(router, createFares({ clock: deps.clock }));
+  policyRoutes(router, createCancellationPolicies({ clock: deps.clock }));
   scheduleRoutes(router, schedules, trips);
   tripRoutes(router, trips, deps.today);
   routeReviewRoutes(router, createRouteReview({ clock: deps.clock }));

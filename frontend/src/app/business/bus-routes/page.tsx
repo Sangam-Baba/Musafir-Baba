@@ -2,12 +2,13 @@
 // Routes & schedules (bus operators, Stage 18 B3): boarding / dropping points, routes (stops and times, sent to
 // MusafirBaba for approval) and schedules (bus + days). Trips for 90 days ahead are made from schedules.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CalendarClock, MapPin, Route as RouteIcon } from "lucide-react";
+import { CalendarClock, MapPin, Route as RouteIcon, Undo2 } from "lucide-react";
 import { useState } from "react";
 
 import { b2b } from "@/b2b/api";
 import type { Bus, BusRoute, BusSchedule, BusStop } from "@/b2b/bus";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { PolicyPanel } from "@/b2b/components/bus/PolicyPanel";
 import { RoutesPanel } from "@/b2b/components/bus/RoutesPanel";
 import { SchedulesPanel } from "@/b2b/components/bus/SchedulesPanel";
 import { StopsPanel } from "@/b2b/components/bus/StopsPanel";
@@ -16,7 +17,7 @@ import type { Masters } from "@/b2b/listing";
 import { useBusinessSession } from "@/b2b/session-store";
 import type { Me } from "@/b2b/types";
 
-type Tab = "routes" | "schedules" | "points";
+type Tab = "routes" | "schedules" | "points" | "cancellation";
 
 export default function BusRoutesPage() {
   return <BusinessShell>{(me) => <BusRoutes me={me} />}</BusinessShell>;
@@ -45,10 +46,12 @@ function BusRoutes({ me }: { me: Me }) {
           { value: "routes", label: "Routes", icon: RouteIcon },
           { value: "schedules", label: "Schedules", icon: CalendarClock },
           { value: "points", label: `Points (${points.length})`, icon: MapPin },
+          { value: "cancellation", label: "Cancellation", icon: Undo2 },
         ]}
         value={tab}
         onChange={setTab}
       />
+      {tab === "cancellation" && <PolicyPanel canManage={me.permissions.includes("bus-catalog.fare.manage") && !me.viewAs} />}
       {tab === "points" && <StopsPanel stops={points} cities={masters.data?.cities ?? []} canManage={canManage} onChanged={refresh} />}
       {tab === "routes" && <RoutesPanel routes={routes.data?.data ?? []} points={points} canManage={canManage} canFares={me.permissions.includes("bus-catalog.fare.manage") && !me.viewAs} onChanged={refresh} />}
       {tab === "schedules" && <SchedulesPanel schedules={schedules.data?.data ?? []} routes={routes.data?.data ?? []} buses={buses.data?.data ?? []} canManage={canManage} onChanged={refresh} />}

@@ -1,6 +1,7 @@
 // @ts-check
 /** Stage 18 — bus service (new collections with the `bus_` prefix only, ADR-0016). */
 import {
+  CANCELLATION_POLICIES_COLLECTION,
   FARES_COLLECTION,
   LAYOUTS_COLLECTION,
   ROUTES_COLLECTION,
@@ -8,7 +9,7 @@ import {
   STOPS_COLLECTION,
   VEHICLES_COLLECTION,
 } from '../modules/bus-catalog/index.js';
-import { BOOKINGS_COLLECTION } from '../modules/bus-booking/index.js';
+import { BOOKINGS_COLLECTION, OPS_CANCELLATIONS_COLLECTION } from '../modules/bus-booking/index.js';
 import { CLAIMS_COLLECTION, TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -98,6 +99,21 @@ export const STAGE_18 = [
         BOOKINGS_COLLECTION,
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+    },
+  },
+  {
+    id: '0087-bus-cancellations',
+    description: 'Bus cancellation slabs (one per company), ops cancellations (queue), partial cancellations left pending (reconciler)',
+    up: async (ctx) => {
+      await ctx.createCollection(CANCELLATION_POLICIES_COLLECTION);
+      await ctx.createIndex(CANCELLATION_POLICIES_COLLECTION, { operatorOrgId: 1 }, { name: 'operator_unique', unique: true });
+      await ctx.createCollection(OPS_CANCELLATIONS_COLLECTION);
+      await ctx.createIndex(OPS_CANCELLATIONS_COLLECTION, { status: 1, createdAt: -1 }, { name: 'queue' });
+      await ctx.createIndex(
+        BOOKINGS_COLLECTION,
+        { 'parts.status': 1 },
+        { name: 'parts_pending', partialFilterExpression: { 'parts.status': 'PENDING' } },
       );
     },
   },

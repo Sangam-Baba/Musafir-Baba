@@ -73,4 +73,12 @@ export const BUS_CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/bus-bookings',
   },
+  'bus.booking-cancelled': {
+    audience: 'ORG',
+    permission: 'bus-booking.booking.read',
+    critical: false,
+    label: 'Bus seats cancelled',
+    emailTo: 'OWNERS',
+    link: '/business/bus-bookings',
+  },
 });

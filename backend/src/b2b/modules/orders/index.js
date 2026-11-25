@@ -39,6 +39,7 @@ export { createOrderPayments, confirmForward, refundOrder, MAX_PAYMENT_ATTEMPTS 
 export { sweepOrders, orderInvariants, expireOrder, ORDER_SWEEP_EVERY_MS } from './sweeper.js';
 export { createOrderAdmin } from './admin.service.js';
 export { createOrderCancellations } from './cancel.service.js';
+export { createPartCancellations } from './part-cancel.js';
 export { ADMIN_ACTIONS_COLLECTION, ADMIN_ACTIONS, ADMIN_ACTION_STATUSES, AdminActionRecord } from './models/admin-action.model.js';
 /** @typedef {import('./registry.js').ItemHandler} ItemHandler */
 /** @typedef {import('./registry.js').PaymentMode} PaymentMode */

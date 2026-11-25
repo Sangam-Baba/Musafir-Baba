@@ -13,7 +13,6 @@
  */
 import { createHash } from 'node:crypto';
 
-import { systemScope } from '../../core/db/tenant-plugin.js';
 import { newEvent } from '../../core/db/events.js';
 import { ConflictError, NotFoundError, ValidationError } from '../../core/errors.js';
 import { newReference } from '../../core/ids.js';
@@ -22,7 +21,10 @@ import { checkPassengers, ladiesOkSeats } from './domain/passengers.js';
 import { EVENTS } from './events.js';
 import { BusBookingRecord } from './models/booking.model.js';
 
-export const ENGINE = systemScope('bus-booking: booking engine', { routine: true });
+import { partSteps } from './booking-cancel.js';
+import { ENGINE } from './engine-scope.js';
+
+export { ENGINE };
 
 /**
  * @typedef {import('../orders/index.js').ItemHandler} ItemHandler
@@ -31,7 +33,8 @@ export const ENGINE = systemScope('bus-booking: booking engine', { routine: true
  * @typedef {{ clock: import('../../core/clock.js').Clock, logger: import('../../core/logger.js').Logger,
  *   search: ReturnType<typeof import('./search.service.js').createBusSearch>,
  *   claims: ReturnType<typeof import('../bus-inventory/index.js').createClaims>,
- *   ledger: ReturnType<typeof import('../wallet/index.js').createLedger> }} BusEngineDeps
+ *   ledger: ReturnType<typeof import('../wallet/index.js').createLedger>,
+ *   policies: { forSale: (operatorOrgId: string) => Promise<{ slabs: { hoursBefore: number, percent: number }[], summary: string }> } }} BusEngineDeps
  * @typedef {{ caller: { channel: 'WEBSITE' | 'B2B_PORTAL' | 'B2B_API', clientOrgId: string | null, clientCategory: string | null },
  *   tripId: string, fromStopId: string, toStopId: string, expectedTotalPaise?: number | null,
  *   seats: import('./domain/passengers.js').SeatPassenger[] }} BusItemInput
@@ -80,13 +83,14 @@ async function price(deps, input) {
   const totalPaise = q.breakdown.totals.totalPaise;
   if (typeof input.expectedTotalPaise === 'number' && input.expectedTotalPaise !== totalPaise)
     throw new ConflictError('PRICE_CHANGED', { quotedTotalPaise: input.expectedTotalPaise, totalPaise });
+  const policy = await deps.policies.forSale(q.trip.operatorOrgId);
   const key = [input.tripId, input.fromStopId, input.toStopId, ...input.seats.map((s) => s.no).sort()].join('|');
   return {
     totalPaise,
     gstPaise: q.breakdown.totals.gstPaise,
     supplierOrgId: q.trip.operatorOrgId,
     tokenHash: createHash('sha256').update(`bus:${key}`).digest('base64url').slice(0, 32),
-    data: { q, input },
+    data: { q, input, policy: { slabs: policy.slabs, summary: policy.summary } },
   };
 }
 
@@ -140,7 +144,7 @@ async function prepare(deps, order, priced) {
   const b = await BusBookingRecord.findOneAndUpdate(
     { orderId: order.id },
     {
-      $setOnInsert: newBooking(deps, { order, q, input, claimId: claim.id }),
+      $setOnInsert: { ...newBooking(deps, { order, q, input, claimId: claim.id }), cancellationPolicy: priced.data.policy },
     },
     { upsert: true, new: true },
   )
@@ -268,15 +272,25 @@ export function busBookingView(b, audience) {
     seats: b.seats,
     price: busPriceView(b.price, b.channel === 'WEBSITE' ? 'WEBSITE' : 'CLIENT'),
     confirmedAt: b.confirmedAt,
+    cancellationPolicy: b.cancellationPolicy,
+    cancelledSeats: b.cancelledSeats ?? [],
+    parts: (b.parts ?? []).map((/** @type {any} */ p) => ({
+      id: p.id,
+      seats: p.seats,
+      chargePaise: p.chargePaise,
+      refundPaise: p.refundPaise,
+      status: p.status,
+      at: p.at,
+    })),
   };
   return audience === 'BUYER'
     ? view
     : { ...view, operatorOrgId: b.operatorOrgId, tripId: b.tripId, claimIds: b.claimIds, priceBreakdown: b.price };
 }
 
-/** Cancellations of bus bookings come in B7 — until then refused cleanly. */
+/** The hotel-style whole-booking cancel isn't used for buses: seats are cancelled with the part steps. */
 const notYet = async () => {
-  throw new ConflictError('BUS_CANCELLATION_NOT_AVAILABLE');
+  throw new ConflictError('USE_BUS_CANCELLATION');
 };
 
 /** @param {BusEngineDeps} deps @returns {ItemHandler} */
@@ -298,9 +312,11 @@ export function createBusItemHandler(deps) {
         by: h.by,
         note: h.note ?? null,
       })),
+    // whole-booking cancellation goes through the partial steps (all seats) — see booking-cancel.js
     cancelStart: notYet,
     cancelRooms: notYet,
     cancelLedgerLines: notYet,
     cancelDone: notYet,
+    ...partSteps(deps),
   };
 }

@@ -201,6 +201,9 @@ export interface BusTicketView {
   seats: { no: string; seatType: SeatType; deck: Deck; passenger: { name: string; age: number; gender: "F" | "M" | "O" } }[];
   price: { totalPaise: number; gstPaise: number };
   confirmedAt: string | null;
+  cancellationPolicy: { slabs: { hoursBefore: number; percent: number }[]; summary: string } | null;
+  cancelledSeats: string[];
+  parts: { id: string; seats: string[]; chargePaise: number; refundPaise: number; status: string; at: string }[];
 }
 export const isBusItem = (it: unknown): it is BusTicketView => (it as { product?: string })?.product === "BUS";
 export const GENDER_LABEL = { F: "Female", M: "Male", O: "Other" } as const;
@@ -208,3 +211,8 @@ export const GENDER_LABEL = { F: "Female", M: "Male", O: "Other" } as const;
 // ── Stage 18 B6: operator bookings and manifests ──
 export interface OperatorBusBooking { bookingId: string; ref: string; status: string; tripId: string; date: string; from: { name: string; at: string }; to: { name: string; at: string }; seats: BusTicketView["seats"]; contact: { name: string; phone: string }; channel: string; netPaise: number; confirmedAt: string | null }
 export interface Manifest { trip: { id: string; date: string; departAt: string; stops: { name: string; at: string }[]; seatCount: number }; rows: { seat: string; deck: Deck; name: string; age: number; gender: "F" | "M" | "O"; boarding: string; boardingAt: string; dropping: string; pnr: string; phone: string }[] }
+
+// ── Stage 18 B7: cancellations ──
+export interface CancelQuote { seats: string[]; percent: number; chargePaise: number; refundPaise: number; policy: string | null }
+export interface CancellationPolicy { slabs: { hoursBefore: number; percent: number }[]; summary: string; isDefault: boolean; version: number }
+export interface OpsCancellation { _id: string; scope: "BOOKING" | "TRIP"; bookingRef: string | null; tripId: string | null; operatorOrgId: string; reason: string; status: "PROPOSED" | "DONE" | "REJECTED"; proposedBy: string; decidedBy: string | null; createdAt: string; results: { bookingRef: string; refundPaise: number; error: string | null }[] }

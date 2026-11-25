@@ -211,6 +211,13 @@ export function createClaims(deps) {
     },
     /** The active hold an order took (for giving back an unfinished checkout). @param {string} by */
     activeHoldBy: async (by) => ClaimRecord.findOne({ kind: 'HOLD', status: 'ACTIVE', by }).setOptions(SCOPE).lean(),
+    /** Some seats of a confirmed claim given back (a partial cancellation; repeat-safe). @param {string} id @param {string[]} seats */
+    async releaseSeats(id, seats) {
+      const c = await ClaimRecord.findOne({ _id: id }).setOptions(SCOPE).lean();
+      if (!c) return;
+      await giveBackSeats(c.tripId, seats, id);
+      await ClaimRecord.updateOne({ _id: id }, { $pull: { seats: { $in: seats } } }).setOptions(SCOPE);
+    },
     /** Give back a hold (not paid) or a booking's seats (cancelled). @param {string} id */
     releaseHold: (id) => release({ _id: id, kind: 'HOLD' }),
     extend: extendHold,

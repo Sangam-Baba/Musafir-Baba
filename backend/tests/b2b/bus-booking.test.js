@@ -21,7 +21,7 @@ import {
   createBusSearch,
   createOperatorBookings,
 } from '../../src/b2b/modules/bus-booking/index.js';
-import { FareRecord, RouteRecord, VehicleRecord } from '../../src/b2b/modules/bus-catalog/index.js';
+import { createCancellationPolicies, FareRecord, RouteRecord, VehicleRecord } from '../../src/b2b/modules/bus-catalog/index.js';
 import { ClaimRecord, createClaims, TripRecord, TripSeatRecord } from '../../src/b2b/modules/bus-inventory/index.js';
 import {
   createItemHandlers,
@@ -183,7 +183,17 @@ beforeAll(async () => {
     operators: async (ids) => new Map(ids.map((id) => [id, { name: 'Shree Travels', active: true }])),
     stateOf: async () => '07',
   });
-  handlers.register('BUS', createBusItemHandler({ clock, logger, search, claims: createClaims({ clock }), ledger }));
+  handlers.register(
+    'BUS',
+    createBusItemHandler({
+      clock,
+      logger,
+      search,
+      claims: createClaims({ clock }),
+      ledger,
+      policies: createCancellationPolicies({ clock }),
+    }),
+  );
   const modes = createPaymentModes();
   const walletDeps = { clock, ledger };
   const wallets = createLiveWallets(walletDeps);
@@ -281,7 +291,7 @@ describe('bus booking', () => {
     await expect(createOperatorBookings().manifest('65f0000000000000000b9999', tripId)).rejects.toMatchObject({ code: 'TRIP_NOT_FOUND' });
     await expect(
       engine.handlers.get('BUS').cancelStart(ctx(), o.items[0], { chargePaise: 0, refundPaise: 0, by: 'x' }),
-    ).rejects.toMatchObject({ code: 'BUS_CANCELLATION_NOT_AVAILABLE' });
+    ).rejects.toMatchObject({ code: 'USE_BUS_CANCELLATION' });
   });
 
   it('refused before anything is taken: passengers, ladies seat, changed price, seat taken', async () => {

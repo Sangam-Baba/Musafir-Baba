@@ -2,7 +2,7 @@
 /**
  * Stage 18 B6: emails to bus buyers (sent once per event, from the notification templates): the e-ticket when the
  * order is confirmed, and "seats gone — refund on the way" when a payment arrived after the seats were taken (the
- * engine refunds automatically). Hotel orders keep their own emails (customer-emails.js skips bus orders).
+ * engine refunds automatically), and "seats cancelled — refund" (B7). Hotel orders keep their own emails (customer-emails.js skips bus orders).
  * B2B orders go to the person who booked them; website orders to the checkout email.
  */
 import { renderTemplate } from '../modules/notifications/index.js';
@@ -28,7 +28,7 @@ const ist = (at) =>
  *   ordersDeps: import('../modules/orders/payment.service.js').PayDeps,
  *   publicUrl: string, linkSecret: string,
  *   send: ((message: { to: string, subject: string, text: string }) => Promise<unknown>) | null,
- *   events: { orderConfirmed: string, orderFailed: string },
+ *   events: { orderConfirmed: string, orderFailed: string, busBookingCancelled?: string },
  * }} deps
  */
 export function busEmailConsumers(deps) {
@@ -72,6 +72,19 @@ export function busEmailConsumers(deps) {
         const o = await load(String(e.payload.orderId));
         if (!o || !o.payment?.verified || o.failure?.code !== 'ROOMS_LOST') return; // the engine's "item lost after payment"
         await mail(o, 'bus.refunding-customer', {});
+      },
+    },
+    {
+      consumer: 'bus-email-cancelled',
+      types: [deps.events.busBookingCancelled ?? 'bus-booking.booking.cancelled'],
+      handler: async (/** @type {{ payload: any }} */ e) => {
+        const o = await load(String(e.payload.orderId));
+        if (!o) return;
+        await mail(o, 'bus.cancelled-customer', {
+          pnr: String(e.payload.ref),
+          seats: (e.payload.seats ?? []).join(', '),
+          refund: rupees(Number(e.payload.refundPaise ?? 0)),
+        });
       },
     },
   ];

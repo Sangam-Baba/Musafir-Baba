@@ -67,6 +67,8 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /buses/search', // Stage 18: website / client bus search through the search gateway (own permission and limits)
         'GET /buses/trips/:id/seats', // Stage 18: seat map for a journey (gateway; prices without net fares or margins)
         'POST /bus-orders', // Stage 18 B6: website bus booking — customers and guests like POST /orders (per-IP limit, gateway, idempotency)
+        'GET /bookings/buses/:ref/cancel-quote', // Stage 18 B7: the buyer's cancel quote — owner checked like /bookings/hotels/:ref (else 404)
+        'POST /bookings/buses/:ref/cancel', // Stage 18 B7: the buyer cancels seats — owner checked, Idempotency-Key, refund guard
         'POST /hotels/offers/price-check', // token-bound re-price for the caller who got the token, per-IP limit
         'POST /hotels/:ref/offers', // LIVE visible hotel only, the caller's price view (no hotel rate), per-IP limit
         'GET /invitations/lookup',

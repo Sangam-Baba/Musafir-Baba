@@ -9,3 +9,7 @@ export { createBusSearch } from './search.service.js';
 export { BOOKINGS_COLLECTION, BOOKING_STATUSES, BusBookingRecord } from './models/booking.model.js';
 export { createBusItemHandler, busBookingView } from './booking.service.js';
 export { createOperatorBookings } from './operator-bookings.service.js';
+export { seatTotals, partCharge, partReversal } from './domain/cancel.js';
+export { OPS_CANCELLATIONS_COLLECTION, OpsCancellationRecord } from './models/ops-cancellation.model.js';
+export { createBusCancellations } from './cancel.service.js';
+export { ENGINE as BUS_ENGINE_SCOPE } from './engine-scope.js';

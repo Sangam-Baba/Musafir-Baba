@@ -224,6 +224,12 @@ const MESSAGES: Record<string, string> = {
   BUS_SELLING_NOT_ENABLED: "Bus booking isn't switched on yet (B2B_BUS_SELLING_ENABLED).",
   FROM_TO_SAME_CITY: "Pick two different cities.",
   TRAVEL_DATE_INVALID: "Pick a travel date from today up to 120 days ahead.",
+  SEATS_NOT_CANCELLABLE: "Those seats can't be cancelled (already cancelled, or not on this booking).",
+  ORDER_NOT_CANCELLABLE: "This order can't be cancelled right now.",
+  REFUND_CHANGED: "The refund changed (a cancellation slab started). Check the new amount and confirm again.",
+  SLABS_INVALID: "The cancellation slabs have problems — charges must rise as departure gets closer.",
+  CANCELLATION_ALREADY_DECIDED: "Someone already decided this.",
+  USE_BUS_CANCELLATION: "Cancel bus seats from the ticket.",
 };
 
 export function errorMessage(error: unknown): string {

@@ -111,7 +111,7 @@ export function ClientOrder({ orderRef, canPay }: { orderRef: string; canPay: bo
           {o.customerReference && <span className="text-slate-500">· your ref {o.customerReference}</span>}
           <span className="ml-auto font-semibold text-slate-900">{inr(o.totalPaise)} <span className="font-normal text-slate-500">incl. GST {inr(o.gstPaise)}</span></span>
         </div>
-        {o.items.map((it) => isBusItem(it) ? <BusTicket key={it.ref} t={it} /> : (
+        {o.items.map((it) => isBusItem(it) ? <BusTicket key={it.ref} t={it} canCancel={canPay} onChanged={() => q.refetch()} /> : (
           <div key={it.ref} className="mt-2 border-t border-slate-100 pt-2 text-slate-700">
             <p className="font-medium text-slate-900">{it.property.name} — {it.roomTypeName}</p>
             <p>{it.stay.checkIn} → {it.stay.checkOut} · {it.stay.nights} night{it.stay.nights > 1 ? "s" : ""} · {it.rooms.map((r) => r.leadGuest).join(", ")}</p>

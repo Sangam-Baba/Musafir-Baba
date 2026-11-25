@@ -3,7 +3,8 @@
  * Bus bookings (`bus_bookings`, plan Stage 18 B6): one per order — the PNR (`MBB-…`), the trip and journey (boarding /
  * getting-off stop with their moments), seats with one passenger each, the buyer's contact, the seat hold (claim) it
  * holds, the price breakdown as sold (never re-priced), copies of what the ticket shows, and the status:
- *   HELD → CONFIRMED (paid) | EXPIRED (hold ran out; paid late → held again) | FAILED · CONFIRMED → CANCELLED (B7)
+ *   HELD → CONFIRMED (paid) | EXPIRED (hold ran out; paid late → held again) | FAILED · CONFIRMED → CANCELLED (B7: when
+ *   every seat is cancelled — seats can be cancelled a few at a time, each as one `parts` entry)
  * Owned by the bus company (`operatorOrgId`) and the buyer (client company / website customer / guest).
  */
 import { b2bMongoose } from '../../../core/db/connection.js';
@@ -45,6 +46,30 @@ const schema = new b2bMongoose.Schema(
     status: { type: String, enum: BOOKING_STATUSES, required: true },
     statusChangedAt: { type: Date, required: true },
     confirmedAt: { type: Date, default: null },
+    // B7: the slabs it was sold with, the seats already cancelled, and each cancellation (some or all seats)
+    cancellationPolicy: { type: b2bMongoose.Schema.Types.Mixed, default: null },
+    cancelledSeats: { type: [String], default: [] },
+    parts: {
+      type: [
+        {
+          _id: false,
+          id: String,
+          seats: [String],
+          kind: { type: String, enum: ['BUYER', 'OPS'] },
+          percent: Number,
+          chargePaise: Number,
+          refundPaise: Number,
+          operatorSharePaise: Number,
+          totals: b2bMongoose.Schema.Types.Mixed,
+          status: { type: String, enum: ['PENDING', 'DONE'] },
+          by: String,
+          reason: String,
+          at: Date,
+          doneAt: Date,
+        },
+      ],
+      default: [],
+    },
     history: { type: [{ _id: false, at: Date, from: String, to: String, by: String, note: String }], default: [] },
     ...eventFields(b2bMongoose),
   },

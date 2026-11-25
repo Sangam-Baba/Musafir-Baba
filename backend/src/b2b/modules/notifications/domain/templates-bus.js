@@ -90,4 +90,20 @@ export const BUS_TEMPLATES = Object.freeze({
     subject: 'Your payment of {{total}} is being refunded ({{orderRef}})',
     text: 'Hello {{name}},\n\nWe are sorry: the seats for your booking {{orderRef}} were taken before your payment reached us, so the ticket could not be issued.\n\nYour payment of {{total}} is being refunded to the same card, UPI or bank account through PayU. Banks usually take a few working days to show it.\n\nSee the status: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
   },
+  'bus.booking-cancelled': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Bus seats cancelled',
+    body: 'Seats of a booking on a {{orgName}} trip were cancelled and are on sale again. Open Bookings for details.',
+    subject: 'Bus seats cancelled on MusafirBaba',
+    text: 'Hello,\n\nSeats of a booking on a {{orgName}} trip were cancelled and are on sale again.\n\nOpen Bookings: {{link}}\n\nMusafirBaba Business',
+  },
+  'bus.cancelled-customer': {
+    version: 1,
+    vars: ['name', 'pnr', 'orderRef', 'seats', 'refund', 'link'],
+    title: 'Bus seats cancelled',
+    body: 'Seats {{seats}} of your bus ticket {{pnr}} are cancelled. Refund: {{refund}}.',
+    subject: 'Bus seats cancelled — {{pnr}} (refund {{refund}})',
+    text: 'Hello {{name}},\n\nSeats {{seats}} of your bus ticket {{pnr}} (order {{orderRef}}) are cancelled.\n\nRefund: {{refund}} — to your wallet straight away, or to the same card, UPI or bank account through PayU (banks usually take a few working days).\n\nSee your booking: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
 });
