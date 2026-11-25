@@ -26,6 +26,8 @@ const MAIN: NavItem[] = [
   { href: "/business/payouts", label: "Payouts", icon: Banknote, permission: "wallet.statement.read" }, // Stage 15: hotels
   // B2B clients (Stage 12 part A) — shown only to roles that have these permissions, so hotels never see them
   { href: "/business/hotels", label: "Search Hotels", icon: Search, permission: "hotel-search.search.use" },
+  // Stage 18 B5: bus search for clients — only while the bus feature is switched on for the website
+  ...(process.env.NEXT_PUBLIC_FEATURE_BUS === "true" ? [{ href: "/business/bus-search", label: "Search Buses", icon: BusFront, permission: "bus-booking.search.use" }] : []),
   { href: "/business/my-bookings", label: "My Bookings", icon: CalendarCheck, permission: "orders.order.read" }, // Stage 12B: clients
   { href: "/business/booking-requests", label: "Booking Requests", icon: ClipboardList, permission: "hotel-booking.request.read" },
   { href: "/business/markup", label: "My Markup", icon: Percent, permission: "pricing.markup.read" },

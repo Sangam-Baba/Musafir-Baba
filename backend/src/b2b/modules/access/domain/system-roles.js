@@ -112,6 +112,7 @@ export const SYSTEM_ROLES = Object.freeze([
       'pricing.**.read',
       'hotel-search.**',
       'hotel-booking.**',
+      'bus-booking.**', // Stage 18: bus search (and booking from B6) — client-only permissions
       'orders.**',
       'metering.**.read', // Stage 12B: the company's usage
       'subscriptions.**.read', // Stage 13: the company's plan
@@ -130,6 +131,7 @@ export const SYSTEM_ROLES = Object.freeze([
       'pricing.**.read',
       'hotel-search.**',
       'hotel-booking.**',
+      'bus-booking.**', // Stage 18: bus search (and booking from B6) — client-only permissions
       'orders.**',
     ],
     defaultScope: 'BRANCH',

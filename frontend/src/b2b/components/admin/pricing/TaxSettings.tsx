@@ -47,6 +47,7 @@ function ProposeRate({ token, active, onDone }: { token: string; active: TaxRule
           <select className={fleetSelectClass} value={f.appliesTo} onChange={(e) => set({ appliesTo: e.target.value })}>
             <option value="ACCOMMODATION">Rooms</option>
             <option value="SAAS">Plan fees</option>
+            <option value="BUS_TRANSPORT">Bus tickets (rate and SAC from the CA)</option>
           </select>
         </label>
         {input("SAC", "sac")}
@@ -98,7 +99,7 @@ function Rates({ token }: { token: string }) {
             {all.map((r) => (
               <tr key={r.id} className="border-t border-slate-100 align-top">
                 <td className="py-1 pr-2"><FleetPill className={TONE[r.status]}>{r.status === "PENDING_APPROVAL" ? "Waiting" : r.status.toLowerCase()}</FleetPill></td>
-                <td className="py-1 pr-2">{r.appliesTo === "ACCOMMODATION" ? "Rooms" : "Plan fees"} · SAC {r.sac}</td>
+                <td className="py-1 pr-2">{r.appliesTo === "ACCOMMODATION" ? "Rooms" : r.appliesTo === "BUS_TRANSPORT" ? "Bus tickets" : "Plan fees"} · SAC {r.sac}</td>
                 <td className="py-1 pr-2">{slab(r)}</td>
                 <td className="py-1 pr-2 font-medium">{pct(r.rateBps)}</td>
                 <td className="py-1 pr-2">{r.itcAllowed ? "yes" : "no"}</td>

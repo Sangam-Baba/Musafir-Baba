@@ -21,3 +21,5 @@ channel → sell price → GST → totals, with a full breakdown and a signed pr
 - No matching margin rule for a channel → **not sellable** (never sold at zero margin by accident).
 - Hotel net rates and margins never appear in website or client responses.
 - Issued price tokens and existing bookings never change when rules change (breakdown snapshot).
+- Products (ADR-0017): a margin rule without `match.productType` is a hotel rule; bus rules say `BUS` and never price
+  hotels (nor hotel rules buses). Tax kind `BUS_TRANSPORT` has no seeded rate — added by staff after the CA confirms.

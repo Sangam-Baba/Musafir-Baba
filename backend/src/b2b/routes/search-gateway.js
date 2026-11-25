@@ -27,10 +27,10 @@ export const SEARCH_LIMITS = Object.freeze({
  * @typedef {{ before?: (caller: SearchCaller, kind: string) => Promise<void>, after?: (caller: SearchCaller, kind: string, info: AfterInfo) => Promise<void> }} SearchHooks
  */
 
-/** @param {import('../core/clock.js').Clock} clock */
-function limitsFor(clock) {
+/** @param {import('../core/clock.js').Clock} clock @param {string} prefix counter names (`search` for hotels — unchanged) */
+function limitsFor(clock, prefix) {
   const limiter = (/** @type {string} */ name, /** @type {number} */ points) =>
-    createRateLimiter({ name, points, windowMs: 60_000, clock });
+    createRateLimiter({ name: name.replace(/^search-/, `${prefix}-`), points, windowMs: 60_000, clock });
   return {
     light: {
       ip: limiter('search-ip-light', SEARCH_LIMITS.ip.light),
@@ -60,10 +60,12 @@ function enforce(res, r) {
 }
 
 /**
- * @param {{ clock: import('../core/clock.js').Clock, orgInfo: (orgId: string) => Promise<{ type: string, status: string, clientCategory?: string | null } | null>, hooks?: SearchHooks }} deps
+ * `permission` / `prefix` (Stage 18): bus search uses its own permission and its own rate-limit counters; both default
+ * to the hotel ones, so hotel search is unchanged.
+ * @param {{ clock: import('../core/clock.js').Clock, orgInfo: (orgId: string) => Promise<{ type: string, status: string, clientCategory?: string | null } | null>, hooks?: SearchHooks, permission?: string, prefix?: string }} deps
  */
 export function createSearchGate(deps) {
-  const limits = limitsFor(deps.clock);
+  const limits = limitsFor(deps.clock, deps.prefix ?? 'search');
   /** @type {ReturnType<typeof createCache<{ type: string, status: string, clientCategory?: string | null } | null>>} */
   const orgs = createCache({ max: 2000, ttlMs: 60_000, clock: deps.clock });
   const hooks = deps.hooks ?? {};
@@ -97,7 +99,7 @@ export function createSearchGate(deps) {
         customerId: actor.type === 'customer' ? actor.customerId : null,
       };
     }
-    if (!actor.permissions.includes(SEARCH.search)) throw new ForbiddenError();
+    if (!actor.permissions.includes(deps.permission ?? SEARCH.search)) throw new ForbiddenError();
     const org = await orgOf(actor.orgId);
     if (!org || org.type !== 'CLIENT') throw new ForbiddenError();
     if (org.status !== 'ACTIVE') throw new ForbiddenError('ORG_NOT_ACTIVE');

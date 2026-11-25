@@ -221,6 +221,9 @@ const MESSAGES: Record<string, string> = {
   NO_DROPPING_HERE: "Passengers can't get off at that stop.",
   FARES_INVALID: "The fares have problems — see the list.",
   HOLD_NOT_ACTIVE: "That seat hold has ended.",
+  BUS_SELLING_NOT_ENABLED: "Bus booking isn't switched on yet (B2B_BUS_SELLING_ENABLED).",
+  FROM_TO_SAME_CITY: "Pick two different cities.",
+  TRAVEL_DATE_INVALID: "Pick a travel date from today up to 120 days ahead.",
 };
 
 export function errorMessage(error: unknown): string {

@@ -5,7 +5,7 @@ export const CHANNEL_LABEL: Record<Channel, string> = { WEBSITE: "Website", B2B_
 export type RuleStatus = "DRAFT" | "PENDING_APPROVAL" | "ACTIVE" | "RETIRED";
 export const STATUS_LABEL: Record<RuleStatus, string> = { DRAFT: "Draft", PENDING_APPROVAL: "Waiting for approval", ACTIVE: "In force", RETIRED: "Retired" };
 export type Adjustment = { type: "FIXED_PER_NIGHT" | "PERCENT" | "FIXED_PER_BOOKING"; value: number; minPaise: number | null; maxPaise: number | null };
-export type RuleMatch = { channels?: Channel[]; clientCategory?: string; clientOrgId?: string; hotelOrgId?: string; propertyId?: string; cityId?: string; starRating?: number; stayFrom?: string; stayTo?: string };
+export type RuleMatch = { channels?: Channel[]; clientCategory?: string; clientOrgId?: string; hotelOrgId?: string; propertyId?: string; cityId?: string; starRating?: number; stayFrom?: string; stayTo?: string; productType?: "HOTEL" | "BUS"; operatorOrgId?: string; routeId?: string };
 export type HistoryLine = { at: string; action: string; by: string; note: string | null; status: string };
 export interface MarginRule {
   id: string;
@@ -30,7 +30,7 @@ export interface MarginRule {
 export interface TaxRule {
   id: string;
   key: string;
-  appliesTo: "ACCOMMODATION" | "SAAS";
+  appliesTo: "ACCOMMODATION" | "SAAS" | "BUS_TRANSPORT";
   sac: string;
   slabMinPaise: number;
   slabMaxPaise: number | null;
@@ -87,6 +87,7 @@ export function adjustmentText(a: Adjustment): string {
 /** "Website · Goa · 1 Dec – 5 Jan" — what a rule covers, in words. */
 export function matchText(m: RuleMatch, cityName: (id: string) => string): string {
   const parts = [
+    m.productType === "BUS" ? "Buses" : "",
     m.channels ? m.channels.map((c) => CHANNEL_LABEL[c]).join(" + ") : "All channels",
     m.cityId ? cityName(m.cityId) : "",
     m.starRating !== undefined ? `${m.starRating}★` : "",
@@ -94,6 +95,8 @@ export function matchText(m: RuleMatch, cityName: (id: string) => string): strin
     m.propertyId ? "one property" : "",
     m.clientCategory ? `clients "${m.clientCategory}"` : "",
     m.clientOrgId ? "one client" : "",
+    m.operatorOrgId ? "one bus company" : "",
+    m.routeId ? "one route" : "",
     m.stayFrom || m.stayTo ? `stays ${m.stayFrom ?? "…"} – ${m.stayTo ?? "…"}` : "",
   ];
   return parts.filter(Boolean).join(" · ");

@@ -165,3 +165,24 @@ export const FARE_PROBLEM: Record<string, string> = {
 };
 /** ₹ from paise, e.g. 90000 → "₹900". */
 export const rupees = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+
+// ── Stage 18 B5: buyer search and seat map ──
+export interface BusPoint { idx: number; stopId: string; name: string; at: string }
+export interface BusResult {
+  tripId: string;
+  operatorOrgId: string;
+  operatorName: string;
+  bus: { name: string | null; acType: "AC" | "NON_AC"; kind: BusKind; amenities: Amenity[] };
+  boardingPoints: BusPoint[];
+  droppingPoints: BusPoint[];
+  departAt: string;
+  arriveAt: string;
+  durationMinutes: number;
+  seatsLeft: number;
+  seatTypes: SeatType[];
+  fromPricePaise: number;
+}
+export interface BuyerSeat extends Seat { available: boolean; price: { totalPaise: number; gstPaise: number; sellPaise?: number } | null }
+export interface BuyerSeatMap { tripId: string; from: { stopId: string; name: string; at: string }; to: { stopId: string; name: string; at: string }; decks: (Omit<DeckGrid, "seats"> & { seats: BuyerSeat[] })[] }
+/** "6h 30m". */
+export const duration = (min: number) => `${Math.floor(min / 60)}h ${String(min % 60).padStart(2, "0")}m`;
