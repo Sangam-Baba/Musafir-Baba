@@ -287,5 +287,6 @@ function registrationDeps(env, clock, identity, kyc) {
     publicUrl: env.B2B_PUBLIC_URL || 'https://musafirbaba.com',
     secureCookies: identity.secureCookies,
     clock,
+    busEnabled: env.B2B_BUS_ENABLED === 'true', // Stage 18: operator registration
   };
 }

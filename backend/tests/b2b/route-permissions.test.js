@@ -80,6 +80,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'POST /password/reset',
         'POST /refresh',
         'GET /catalog/masters',
+        'POST /registrations/operator', // Stage 18: bus operators sign up (503 while B2B_BUS_ENABLED is off)
         'POST /registrations/hotel',
         'POST /registrations/client', // B2B client self-registration (S10-T03): same checks and IP limit as hotels
         'POST /orders', // website booking: guests too (browser session id), Idempotency-Key, per-IP limit, server re-prices the token

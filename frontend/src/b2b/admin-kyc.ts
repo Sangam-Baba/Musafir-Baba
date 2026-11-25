@@ -4,7 +4,7 @@ import type { DocumentRequirement, GstRegistration, KycStatus, StoredDetails } f
 export interface QueueItem {
   id: string;
   orgId: string;
-  orgType: "CLIENT" | "HOTEL";
+  orgType: "CLIENT" | "HOTEL" | "BUS_OPERATOR";
   legalName: string | null;
   status: KycStatus;
   round: number;
@@ -21,7 +21,7 @@ export type Verdict = "VERIFIED" | "MISMATCH" | "UNREADABLE";
 export interface ReviewDetail {
   id: string;
   orgId: string;
-  orgType: "CLIENT" | "HOTEL";
+  orgType: "CLIENT" | "HOTEL" | "BUS_OPERATOR";
   status: KycStatus;
   details: StoredDetails | null;
   documents: { key: string; fileId: string; attachedAt: string }[];

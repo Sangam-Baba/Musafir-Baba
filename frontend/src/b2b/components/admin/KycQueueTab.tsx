@@ -73,7 +73,7 @@ export function KycQueueTab({ token }: { token: string }) {
                   <TableCell className="py-2.5 pl-4">
                     <p className="text-[13px] font-medium text-slate-900">{a.legalName ?? "—"}</p>
                     <p className="text-[11px] text-slate-500">
-                      {a.orgType === "HOTEL" ? "Hotel" : "Client"}
+                      {a.orgType === "HOTEL" ? "Hotel" : a.orgType === "BUS_OPERATOR" ? "Bus operator" : "Client"}
                       {a.round > 1 ? ` · submitted ${a.round} times` : ""}
                     </p>
                   </TableCell>

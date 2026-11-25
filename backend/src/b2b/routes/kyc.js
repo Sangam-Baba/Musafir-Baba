@@ -18,8 +18,14 @@ import { z } from 'zod';
 import { contextOf } from '../core/http/context-middleware.js';
 import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { PERMISSIONS as KYC, validateBankDetails, validateClientDetails, validateHotelDetails } from '../modules/kyc/index.js';
-import { ClientDetailsBody, HotelDetailsBody } from './registrations.js';
+import {
+  PERMISSIONS as KYC,
+  validateBankDetails,
+  validateClientDetails,
+  validateHotelDetails,
+  validateOperatorDetails,
+} from '../modules/kyc/index.js';
+import { ClientDetailsBody, HotelDetailsBody, OperatorDetailsBody } from './registrations.js';
 
 const BankBody = z.strictObject({
   holderName: z.string().max(200),
@@ -49,8 +55,9 @@ async function mineOrStart(deps, ctx) {
     const a = ctx.actor;
     if (/** @type {{ code?: string }} */ (error).code !== 'KYC_APPLICATION_NOT_FOUND' || a.type !== 'member' || !deps.orgs) throw error;
     const org = await deps.orgs.basicInfo(a.orgId);
-    if ((org?.type !== 'HOTEL' && org?.type !== 'CLIENT') || org.status !== 'ONBOARDING') throw error;
-    await deps.kyc.ensureApplication({ orgId: a.orgId, orgType: org.type, createdBy: a.userId, details: null });
+    if (!['HOTEL', 'CLIENT', 'BUS_OPERATOR'].includes(String(org?.type)) || org?.status !== 'ONBOARDING') throw error;
+    const orgType = /** @type {'CLIENT' | 'HOTEL' | 'BUS_OPERATOR'} */ (org?.type);
+    await deps.kyc.ensureApplication({ orgId: a.orgId, orgType, createdBy: a.userId, details: null });
     return deps.kyc.mine(ctx);
   }
 }
@@ -61,17 +68,22 @@ async function mineOrStart(deps, ctx) {
  * @returns {import('express').RequestHandler[]}
  */
 function detailsHandlers(deps) {
-  const isClient = (/** @type {import('express').Response} */ res) => {
+  /** The details form and checks follow the organisation's type (Stage 18: bus operators give a fleet size). */
+  const kindOf = (/** @type {import('express').Response} */ res) => {
     const { actor } = contextOf(res);
-    return actor.type === 'member' && actor.orgType === 'CLIENT';
+    const t = actor.type === 'member' ? actor.orgType : undefined;
+    return t === 'CLIENT' || t === 'BUS_OPERATOR' ? t : 'HOTEL';
   };
-  const hotelBody = validate({ body: z.strictObject({ details: HotelDetailsBody }) });
-  const clientBody = validate({ body: z.strictObject({ details: ClientDetailsBody }) });
+  const bodies = {
+    HOTEL: validate({ body: z.strictObject({ details: HotelDetailsBody }) }),
+    CLIENT: validate({ body: z.strictObject({ details: ClientDetailsBody }) }),
+    BUS_OPERATOR: validate({ body: z.strictObject({ details: OperatorDetailsBody }) }),
+  };
+  const checks = { HOTEL: validateHotelDetails, CLIENT: validateClientDetails, BUS_OPERATOR: validateOperatorDetails };
   return [
-    (req, res, next) => (isClient(res) ? clientBody : hotelBody)(req, res, next),
+    (req, res, next) => bodies[kindOf(res)](req, res, next),
     (_req, res, next) => {
-      const raw = res.locals.input.body.details;
-      const details = isClient(res) ? validateClientDetails(raw) : validateHotelDetails(raw);
+      const details = checks[kindOf(res)](res.locals.input.body.details);
       deps.kyc.saveDetails(contextOf(res), details).then((a) => res.json(a), next);
     },
   ];

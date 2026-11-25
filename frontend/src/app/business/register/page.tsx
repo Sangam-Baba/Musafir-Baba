@@ -68,7 +68,7 @@ export default function RegisterWizard() {
     setErrors({});
     try {
       const body = { details: toRequest(details, TERMS_VERSION, kind), owner: signedInAtStart ? undefined : owner };
-      const r = await b2b<Tokens>(kind === "CLIENT" ? "/registrations/client" : "/registrations/hotel", { method: "POST", body });
+      const r = await b2b<Tokens>({ CLIENT: "/registrations/client", HOTEL: "/registrations/hotel", BUS_OPERATOR: "/registrations/operator" }[kind], { method: "POST", body });
       setToken(r.accessToken);
       recordConsent("business-registration", null); // Stage 16 (DPDP); the terms version is kept with the application
       setCreated(true);

@@ -164,7 +164,7 @@ function hotelEdits(deps, gstinUsedElsewhere) {
      * New details (already checked by `validateHotelDetails` / `validateClientDetails`): risk is assessed again, and documents that
      * no longer belong to the set (e.g. a GST certificate after switching to "not registered") are dropped.
      * @param {import('../../core/context.js').RequestContext} ctx
-     * @param {import('./domain/hotel-details.js').HotelDetails | import('./domain/client-details.js').ClientDetails} details
+     * @param {import('./domain/hotel-details.js').HotelDetails | import('./domain/client-details.js').ClientDetails | import('./domain/operator-details.js').OperatorDetails} details
      */
     async saveDetails(ctx, details) {
       const { orgId } = orgOf(ctx);

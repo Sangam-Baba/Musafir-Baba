@@ -17,14 +17,14 @@ import express from 'express';
 import { z } from 'zod';
 
 import { queueEmail } from '../core/email.js';
-import { ConflictError, ForbiddenError, NotFoundError, RateLimitError } from '../core/errors.js';
+import { ConflictError, ForbiddenError, NotFoundError, RateLimitError, ServiceUnavailableError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
 import { publicRoute, requireBusinessUser } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import { clientIp, createRateLimiter } from '../core/rate-limit.js';
 import { assertPasswordAllowed, signEmailVerification, verifyEmailVerification } from '../modules/identity/index.js';
 import { requireAuthHeader, sendTokens } from '../modules/identity/session-routes.js';
-import { validateClientDetails, validateHotelDetails } from '../modules/kyc/index.js';
+import { validateClientDetails, validateHotelDetails, validateOperatorDetails } from '../modules/kyc/index.js';
 
 const text = (max = 200) => z.string().trim().min(1).max(max);
 export const HotelDetailsBody = z.strictObject({
@@ -60,6 +60,12 @@ export const ClientRegistrationBody = z.strictObject({
   details: ClientDetailsBody,
   owner: z.strictObject({ name: text(120), password: z.string().min(1).max(200) }).optional(),
 });
+/** A bus operator's details: the client form plus the number of buses (Stage 18). */
+export const OperatorDetailsBody = ClientDetailsBody.extend({ fleetSize: z.number().int().min(1).max(1000) });
+export const OperatorRegistrationBody = z.strictObject({
+  details: OperatorDetailsBody,
+  owner: z.strictObject({ name: text(120), password: z.string().min(1).max(200) }).optional(),
+});
 export const HotelRegistrationBody = z.strictObject({
   details: HotelDetailsBody,
   owner: z.strictObject({ name: text(120), password: z.string().min(1).max(200) }).optional(),
@@ -72,6 +78,7 @@ export const HotelRegistrationBody = z.strictObject({
  *   orgs: ReturnType<typeof import('../modules/organizations/index.js').createOrganizationsService>,
  *   kyc: ReturnType<typeof import('../modules/kyc/index.js').createKycService>,
  *   secret: string | undefined, publicUrl: string, secureCookies: boolean, clock: import('../core/clock.js').Clock,
+ *   busEnabled?: boolean,
  * }} RegistrationDeps
  */
 
@@ -79,7 +86,7 @@ export const HotelRegistrationBody = z.strictObject({
  * One registration flow for both kinds of business; only the details form, the org type and the email wording differ.
  * @param {RegistrationDeps} deps
  * @param {ReturnType<typeof createRateLimiter>} limiter
- * @param {'HOTEL' | 'CLIENT'} type
+ * @param {'HOTEL' | 'CLIENT' | 'BUS_OPERATOR'} type
  * @returns {import('express').RequestHandler}
  */
 const register = (deps, limiter, type) => (req, res, next) => {
@@ -87,7 +94,9 @@ const register = (deps, limiter, type) => (req, res, next) => {
     const limit = await limiter.consume(clientIp(req));
     if (!limit.allowed) throw new RateLimitError(limit.retryAfterSeconds);
     const body = res.locals.input.body;
-    const details = type === 'CLIENT' ? validateClientDetails(body.details) : validateHotelDetails(body.details);
+    const details = { CLIENT: validateClientDetails, BUS_OPERATOR: validateOperatorDetails, HOTEL: validateHotelDetails }[type](
+      body.details,
+    );
     const owner = await ownerFor(deps, res, details, body.owner);
     const org = await deps.orgs.createOrganization({
       type,
@@ -128,6 +137,16 @@ export function registrationRoutes(deps) {
     requireAuthHeader,
     validate({ body: ClientRegistrationBody }),
     register(deps, limiter, 'CLIENT'),
+  );
+
+  // Stage 18: bus operators — only while `B2B_BUS_ENABLED=true`
+  router.post(
+    '/registrations/operator',
+    publicRoute(),
+    (_req, _res, next) => next(deps.busEnabled ? undefined : new ServiceUnavailableError('BUS_NOT_ENABLED')),
+    requireAuthHeader,
+    validate({ body: OperatorRegistrationBody }),
+    register(deps, limiter, 'BUS_OPERATOR'),
   );
 
   router.post(
@@ -185,7 +204,7 @@ async function ownerFor(deps, res, details, owner) {
  * @param {RegistrationDeps} deps
  * @param {string} userId
  * @param {string} email
- * @param {'HOTEL' | 'CLIENT'} [type] what is being verified afterwards (wording only)
+ * @param {'HOTEL' | 'CLIENT' | 'BUS_OPERATOR'} [type] what is being verified afterwards (wording only)
  */
 async function sendVerification(deps, userId, email, type = 'HOTEL') {
   if (!deps.secret) return;
@@ -195,7 +214,7 @@ async function sendVerification(deps, userId, email, type = 'HOTEL') {
     {
       to: email,
       subject: 'Confirm your email for MusafirBaba Business',
-      text: `Welcome to MusafirBaba Business.\n\nPlease confirm this is your email: ${link}\n\nThe link works for 48 hours. Next, upload your documents so we can verify your ${type === 'CLIENT' ? 'company' : 'hotel'}.`,
+      text: `Welcome to MusafirBaba Business.\n\nPlease confirm this is your email: ${link}\n\nThe link works for 48 hours. Next, upload your documents so we can verify your ${{ CLIENT: 'company', BUS_OPERATOR: 'bus company', HOTEL: 'hotel' }[type]}.`,
     },
     { secret: deps.secret, clock: deps.clock },
   );

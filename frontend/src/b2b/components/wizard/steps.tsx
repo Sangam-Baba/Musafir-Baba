@@ -1,6 +1,6 @@
 "use client";
 // The wizard's steps 1, 3 and 5 (step 2 is the business details form, step 4 reuses the bank and documents panels).
-import { BadgeCheck, Briefcase, Building2, FileSearch, Hotel, Layers, Mail } from "lucide-react";
+import { BadgeCheck, Briefcase, Building2, Bus, FileSearch, Hotel, Layers, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -9,7 +9,9 @@ import { ENTITY_TYPES, GST_STATES, type HotelDetailsInput, type KycApplication }
 import { errorMessage } from "../../messages";
 import { StepButtons, StepHeading } from "./WizardFrame";
 
-export type PartnerKind = "HOTEL" | "CLIENT";
+export type PartnerKind = "HOTEL" | "CLIENT" | "BUS_OPERATOR";
+/** Stage 18: bus operators can register only when the bus service is switched on for the website. */
+const BUS_ENABLED = process.env.NEXT_PUBLIC_FEATURE_BUS === "true";
 
 const KINDS: { kind: PartnerKind; title: string; text: string; points: string[]; icon: typeof Hotel }[] = [
   {
@@ -26,6 +28,17 @@ const KINDS: { kind: PartnerKind; title: string; text: string; points: string[];
     points: ["Search hotels with your own B2B prices", "Add your own markup for your customers", "Invite your agents and control their access"],
     icon: Briefcase,
   },
+  ...(BUS_ENABLED
+    ? [
+        {
+          kind: "BUS_OPERATOR" as const,
+          title: "Bus operator",
+          text: "Sell seats on your buses to website travellers and B2B travel agents — your routes, schedules, seat maps and fares.",
+          points: ["Add your buses, seat layouts and papers", "Set routes, stops, schedules and fares", "Block seats you sell at your counter"],
+          icon: Bus,
+        },
+      ]
+    : []),
 ];
 
 export function PartnerTypeStep({ kind = "HOTEL", onKind, onNext }: { kind?: PartnerKind; onKind?: (k: PartnerKind) => void; onNext: () => void }) {
@@ -66,6 +79,7 @@ export function PartnerTypeStep({ kind = "HOTEL", onKind, onNext }: { kind?: Par
 
 export function ServicesStep({ value, onChange, onBack, onNext, busy, kind = "HOTEL" }: { value: HotelDetailsInput; onChange: (v: HotelDetailsInput) => void; onBack: () => void; onNext: () => void; busy: boolean; kind?: PartnerKind }) {
   if (kind === "CLIENT") return <ClientServicesStep onBack={onBack} onNext={onNext} busy={busy} />;
+  if (kind === "BUS_OPERATOR") return <OperatorServicesStep value={value} onChange={onChange} onBack={onBack} onNext={onNext} busy={busy} />;
   return (
     <form onSubmit={(e) => (e.preventDefault(), onNext())}>
       <StepHeading icon={<Layers className="h-5 w-5" />} title="Select your services" text="Hotels & Resorts is available today; more services will be added to your dashboard later." />
@@ -206,5 +220,22 @@ export function ReviewStep({ app, emailVerified, email, onBack, onSubmitted }: {
       {blockers.length > 0 && <p className="mt-3 text-[13px] text-amber-800">Before you submit: {blockers.join("; ")}.</p>}
       <StepButtons type="button" onBack={onBack} continueLabel="Submit application" busy={busy} disabled={!confirmed || blockers.length > 0} onContinue={submit} />
     </div>
+  );
+}
+
+/** Bus operators: how many buses (their buses, seat maps and routes are added after registration). */
+function OperatorServicesStep({ value, onChange, onBack, onNext, busy }: { value: HotelDetailsInput; onChange: (v: HotelDetailsInput) => void; onBack: () => void; onNext: () => void; busy: boolean }) {
+  return (
+    <form onSubmit={(e) => (e.preventDefault(), onNext())}>
+      <StepHeading icon={<Layers className="h-5 w-5" />} title="Your bus service" text="Tell us the size of your fleet. You add each bus, its seat map and papers, and your routes after registering." />
+      <div className="rounded-lg bg-orange-50 p-4">
+        <p className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Bus className="h-4 w-4 text-[#FE5300]" /> Bus service — details</p>
+        <label className="mt-3 block max-w-xs">
+          <span className="text-xs font-medium text-slate-600">Number of buses <span className="text-red-500">*</span></span>
+          <input type="number" min={1} max={1000} required className="mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-[13px]" value={value.fleetSize ?? 1} onChange={(e) => onChange({ ...value, fleetSize: Number(e.target.value) })} />
+        </label>
+      </div>
+      <StepButtons onBack={onBack} continueLabel="Create account & continue to documents" busy={busy} />
+    </form>
   );
 }
