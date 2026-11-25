@@ -77,7 +77,9 @@ describe('bus catalogue over HTTP', () => {
 
     expect((await app.admin.get('/api/v1/admin/bus/vehicles', asStaff('s1:platform.kyc.read'))).status).toBe(403);
     const queue = (await app.admin.get('/api/v1/admin/bus/vehicles', asStaff('s1:platform.bus.review'))).body.data;
-    expect(queue).toEqual([expect.objectContaining({ regNo: 'UP32AB7788' })]);
+    expect(queue).toEqual([
+      expect.objectContaining({ regNo: 'UP32AB7788', operatorName: expect.any(String), operatorRef: expect.stringMatching(/^MBBO-/) }),
+    ]);
     const approved = await app.admin.post(
       `/api/v1/admin/bus/vehicles/${bus.id}/decide`,
       { move: 'approve' },

@@ -4,6 +4,17 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-25 — AI (Claude) — Stage 18 bus service B1 + B2 (S18-T01 to T05)
+
+- **Goal:** start the owner-approved bus plan: bus operators as a company type, then buses, seat layouts, papers and staff approval.
+- **Done:** S18-T01–T05 → DONE. Operator company type (`BUS_OPERATOR`, `MBBO-…`, Owner / Manager / Counter staff), operator registration + KYC; seat layouts with templates and an editor; buses with four papers and expiry; staff review (admin Partners → Buses); paper reminders; operator screens My Buses / bus page / Seat layouts. Also earlier the same day: admin regrouped into Partners / Services / Control, "How it works" guides, full local demo data.
+- **Not done / why:** bus photos → DEF-043 (with the website pages in B8). B3–B8 not started. Nothing pushed — owner wants everything tried locally first.
+- **Files / PR:** `backend/src/b2b/modules/bus-catalog/*`, `routes/bus-catalog.js`, `routes/files.js` (upload purpose `bus-paper`, labelled per-purpose guard), notifications `catalogue-bus.js` / `templates-bus.js`, migration 0083; frontend `app/business/buses/*`, `b2b/bus.ts`, `b2b/components/bus/*`, `admin/BusReviewTab.tsx`. No PR yet (local commits).
+- **Tests run:** `lint:b2b` ✅, `typecheck:b2b` ✅, `b2b:guards` ✅ (only the known .DS_Store / screenui-desgine items), bus tests ✅, full suite ✅ (174 files, 1139 tests), website tsc (b2b files) ✅, `next build` ✅.
+- **Decisions / deferrals:** ADR-0016 (bus product, `bus_` prefix); DEF-043.
+- **Next step:** S18-T06 — B3 routes, stops, schedules, trips.
+
+
 ## 2026-11-24 — AI (Claude) — Release: Stages 13–16 live (switched off)
 
 - **Goal:** put the merged Stages 13–16 on the server without changing anything people see.

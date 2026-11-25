@@ -1,7 +1,7 @@
 "use client";
 // The partner portal frame: dark sidebar (only pages that work today), top bar with the business switcher,
 // the bell and the account menu. Behaviour (switching business, log out, view-as) stays in BusinessShell.
-import { Activity, Building2, CalendarCheck, ClipboardList, FileSpreadsheet, Hotel, Headphones, Home, LogOut, Menu, Percent, Search, Settings, ShieldCheck, Users, Wallet, BarChart3, CreditCard, X, Banknote, PieChart, Palette, Code2, BookOpen, type LucideIcon } from "lucide-react";
+import { Activity, Building2, CalendarCheck, ClipboardList, FileSpreadsheet, Hotel, Headphones, Home, LogOut, Menu, Percent, Search, Settings, ShieldCheck, Users, Wallet, BarChart3, CreditCard, X, Banknote, PieChart, Palette, Code2, BookOpen, BusFront, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ const MAIN: NavItem[] = [
   { href: "/business/profile", label: "Business Profile", icon: Building2 },
   { href: "/business/verification", label: "Verification", icon: ShieldCheck, permission: "kyc.application.read" },
   { href: "/business/properties", label: "My Properties", icon: Hotel, permission: "hotel-catalog.property.read" },
+  { href: "/business/buses", label: "My Buses", icon: BusFront, permission: "bus-catalog.vehicle.read" }, // Stage 18: bus operators only
   // hotels (Stage 08): confirmed bookings to acknowledge — the acknowledge permission is hotel-only, so clients never see it
   { href: "/business/bookings", label: "Bookings", icon: CalendarCheck, permission: "hotel-booking.booking.acknowledge" },
   { href: "/business/statement", label: "Statement", icon: FileSpreadsheet, permission: "wallet.statement.read" },

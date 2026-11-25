@@ -172,6 +172,24 @@ const MESSAGES: Record<string, string> = {
   WEBHOOK_ENDPOINT_LIMIT: "You can have 5 webhook addresses at most.",
   WEBHOOK_ENDPOINT_NOT_FOUND: "That webhook address wasn't found.",
   WEBHOOK_DELIVERY_NOT_FOUND: "That delivery wasn't found.",
+  // buses (Stage 18 B2)
+  BUS_NOT_ENABLED: "Buses aren't switched on on this server yet (B2B_BUS_ENABLED).",
+  BUS_ALREADY_LISTED: "A bus with this registration number is already listed.",
+  REG_NO_INVALID: "That doesn't look like a registration number (e.g. RJ14 PA 1234).",
+  BUS_NOT_FOUND: "That bus wasn't found.",
+  BUS_NOT_EDITABLE: "This bus can't be sent right now — it is already waiting, approved or retired.",
+  BUS_STATUS_CHANGED: "Someone else changed this bus just now. Reload and try again.",
+  LAYOUT_REQUIRED: "Pick a seat layout for this bus first.",
+  LAYOUT_INVALID: "The seat layout has problems — see the list.",
+  LAYOUT_IN_USE: "This layout is used by a bus that is approved or waiting, so it is locked. Copy it to make changes.",
+  LAYOUT_NOT_FOUND: "That seat layout wasn't found.",
+  TEMPLATE_UNKNOWN: "Unknown starting layout.",
+  PAPERS_INCOMPLETE: "All four papers (RC, permit, insurance, fitness) must be added and valid first.",
+  PAPER_KIND_INVALID: "Unknown kind of paper.",
+  EXPIRY_INVALID: "Pick a valid expiry date.",
+  AMENITY_UNKNOWN: "Unknown amenity.",
+  MOVE_INVALID: "That action isn't possible for this bus now.",
+  NOTE_REQUIRED: "Write a note for the operator first.",
 };
 
 export function errorMessage(error: unknown): string {

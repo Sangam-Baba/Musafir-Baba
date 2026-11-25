@@ -6,13 +6,14 @@
 // Each area opens on an overview; `?area=…&tab=…` in the address opens a tab directly (shareable links). The screens
 // inside the tabs are the same components as before — only how they are arranged changed.
 import { useQuery } from "@tanstack/react-query";
-import { Activity, BarChart3, BookOpen, Briefcase, Building2, ClipboardList, FileCheck2, Handshake, Headset, Hotel, IndianRupee, Landmark, LayoutGrid, Layers, ListChecks, Settings2, ShieldCheck, ShoppingBag, Users, Wallet, type LucideIcon } from "lucide-react";
+import { Activity, BarChart3, BookOpen, Briefcase, Building2, BusFront, ClipboardList, FileCheck2, Handshake, Headset, Hotel, IndianRupee, Landmark, LayoutGrid, Layers, ListChecks, Settings2, ShieldCheck, ShoppingBag, Users, Wallet, type LucideIcon } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import type { QueueItem } from "@/b2b/admin-kyc";
 import { AdminBell } from "@/b2b/components/admin/AdminBell";
 import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
 import { BookingRequestsTab } from "@/b2b/components/admin/BookingRequestsTab";
+import { BusReviewTab } from "@/b2b/components/admin/BusReviewTab";
 import { FinanceTab } from "@/b2b/components/admin/finance/FinanceTab";
 import { KycQueueTab } from "@/b2b/components/admin/KycQueueTab";
 import { AdminPageHeader, AdminTabsList, FleetKpiStrip, FleetPage, SECTION, Tabs, TabsContent } from "@/b2b/components/admin/kit";
@@ -33,6 +34,8 @@ type AreaKey = "partners" | "services" | "control";
 type TabDef = { value: string; label: string; icon: LucideIcon; title: string; description: string; render: (token: string) => ReactNode };
 type AreaDef = { key: AreaKey; label: string; icon: LucideIcon; tagline: string; tabs: TabDef[] };
 
+// Stage 18: the bus review tab appears only when the website switch for buses is on.
+const BUS_ON = process.env.NEXT_PUBLIC_FEATURE_BUS === "true";
 const AREAS: AreaDef[] = [
   {
     key: "partners",
@@ -42,6 +45,7 @@ const AREAS: AreaDef[] = [
     tabs: [
       { value: "kyc", label: "Verification", icon: FileCheck2, title: "Verification", description: "Hotels and B2B clients waiting for KYC review.", render: (t) => <KycQueueTab token={t} /> },
       { value: "listings", label: "Hotel listings", icon: Hotel, title: "Listings", description: "Hotel listings waiting for approval, and every property.", render: (t) => <ListingsTab token={t} /> },
+      ...(BUS_ON ? [{ value: "buses", label: "Buses", icon: BusFront, title: "Buses", description: "Bus operators' buses waiting for approval: papers, seat map, approve or ask for changes.", render: (t) => <BusReviewTab token={t} /> } satisfies TabDef] : []),
       { value: "orgs", label: "Companies", icon: Building2, title: "Organisations", description: "Client and hotel companies: status, category, suspend / reactivate.", render: (t) => <OrgsTab token={t} /> },
       { value: "users", label: "People", icon: Users, title: "Business users", description: "People who sign in to the business area.", render: (t) => <UsersTab token={t} /> },
       { value: "activity", label: "Activity", icon: Activity, title: "Activity", description: "Sign-ins and changes in every company.", render: (t) => <ActivityTab token={t} /> },

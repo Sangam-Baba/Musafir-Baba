@@ -12,6 +12,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import { todayIn } from '../core/dates.js';
+import { systemScope } from '../core/db/tenant-plugin.js';
 import { ForbiddenError, ServiceUnavailableError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
 import { requirePermission } from '../core/http/permissions.js';
@@ -26,6 +27,7 @@ import {
   PERMISSIONS as BUS,
   SEAT_TYPES,
 } from '../modules/bus-catalog/index.js';
+import { OrganizationRecord } from '../modules/organizations/index.js';
 import { handle, staffOf } from './payout-finance-admin.js';
 
 const Id = z.string().regex(/^[a-f0-9]{24}$/);
@@ -178,6 +180,24 @@ function vehicleActions(router, vehicles, manage) {
     );
 }
 
+const NAMES_SCOPE = systemScope('bus review: operator company names', { routine: true });
+
+/** Adds each operator's company name and reference to the review queue. @param {{ operatorOrgId: string }[]} list */
+async function withOperatorNames(list) {
+  const orgs = await OrganizationRecord.find(
+    { _id: { $in: [...new Set(list.map((v) => v.operatorOrgId))] } },
+    { displayName: 1, reference: 1 },
+  )
+    .setOptions(NAMES_SCOPE)
+    .lean();
+  const byId = new Map(orgs.map((o) => [String(o._id), o]));
+  return list.map((v) => ({
+    ...v,
+    operatorName: byId.get(v.operatorOrgId)?.displayName ?? null,
+    operatorRef: byId.get(v.operatorOrgId)?.reference ?? null,
+  }));
+}
+
 /** @param {import('express').Router} router @param {ReturnType<typeof createBusReview>} review */
 function reviewRoutes(router, review) {
   const reviewer = requirePermission(BUS.platformReview);
@@ -187,7 +207,7 @@ function reviewRoutes(router, review) {
     validate({
       query: z.strictObject({ status: z.enum(['SUBMITTED', 'APPROVED', 'CHANGES_REQUESTED', 'SUSPENDED', 'DRAFT', 'RETIRED']).optional() }),
     }),
-    handle(async (_q, res) => ({ data: await review.queue(input(res).query) })),
+    handle(async (_q, res) => ({ data: await withOperatorNames(await review.queue(input(res).query)) })),
   );
   router.post(
     '/admin/bus/vehicles/:id/decide',
