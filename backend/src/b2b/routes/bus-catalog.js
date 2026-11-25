@@ -27,8 +27,9 @@ import {
 } from '../modules/bus-catalog/index.js';
 import { Id, input, operatorOf, Params, ReviewBody, ReviewStatus, Version, withOperatorNames } from './bus-http.js';
 import { addBusRouteRoutes } from './bus-routes.js';
-import { addBusBookingRoutes, addBusSeatRoutes } from './bus-seats.js';
+import { addBusBookingRoutes, addBusReviewRoutes, addBusSeatRoutes } from './bus-seats.js';
 import { addBusPayoutRoutes } from './bus-payouts.js';
+import { addBusPhotoRoutes } from './bus-photos.js';
 import { handle, staffOf } from './payout-finance-admin.js';
 
 const Seat = z.strictObject({
@@ -206,6 +207,8 @@ export function busCatalogRoutes(deps) {
   addBusRouteRoutes(router, { clock: deps.clock, today, cityExists: deps.cityExists });
   addBusSeatRoutes(router, { clock: deps.clock });
   addBusBookingRoutes(router);
+  addBusReviewRoutes(router, { clock: deps.clock });
   addBusPayoutRoutes(router, { env: deps.env, clock: deps.clock });
+  addBusPhotoRoutes(router, { env: deps.env, clock: deps.clock });
   return router;
 }

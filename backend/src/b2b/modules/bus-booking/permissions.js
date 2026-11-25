@@ -13,4 +13,9 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: "See the company's bus bookings and trip manifests (passenger lists)",
     orgTypes: ['BUS_OPERATOR'],
   },
+  reviewReply: {
+    code: 'bus-booking.review.reply',
+    description: "Reply to passengers' reviews of the company's trips",
+    orgTypes: ['BUS_OPERATOR'],
+  },
 });

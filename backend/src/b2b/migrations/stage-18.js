@@ -9,7 +9,7 @@ import {
   STOPS_COLLECTION,
   VEHICLES_COLLECTION,
 } from '../modules/bus-catalog/index.js';
-import { BOOKINGS_COLLECTION, OPS_CANCELLATIONS_COLLECTION } from '../modules/bus-booking/index.js';
+import { BOOKINGS_COLLECTION, OPS_CANCELLATIONS_COLLECTION, REVIEWS_COLLECTION } from '../modules/bus-booking/index.js';
 import { CLAIMS_COLLECTION, TRIP_PROBLEMS_COLLECTION, TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
 import { BUS_LINES_COLLECTION, BUS_PAYABLES_COLLECTION, BUS_RUNS_COLLECTION } from '../modules/bus-payouts/index.js';
 
@@ -140,6 +140,16 @@ export const STAGE_18 = [
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
       await ctx.createIndex(BOOKINGS_COLLECTION, { status: 1, 'to.at': 1 }, { name: 'completion' });
+    },
+  },
+  {
+    id: '0089-bus-reviews',
+    description: 'Bus reviews: one per booking, by company (ratings, moderation)',
+    up: async (ctx) => {
+      await ctx.createCollection(REVIEWS_COLLECTION);
+      await ctx.createIndex(REVIEWS_COLLECTION, { bookingId: 1 }, { name: 'booking_unique', unique: true });
+      await ctx.createIndex(REVIEWS_COLLECTION, { operatorOrgId: 1, status: 1, createdAt: -1 }, { name: 'operator' });
+      await ctx.createIndex(REVIEWS_COLLECTION, { status: 1, createdAt: -1 }, { name: 'moderation' });
     },
   },
 ];

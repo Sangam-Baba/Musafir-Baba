@@ -25,14 +25,14 @@ const PhotoFields = z.strictObject({
   roomTypeId: Id.optional(),
 });
 const MAX_UPLOAD_BYTES = 6 * 1024 * 1024;
-const rawForm = express.raw({ type: 'multipart/form-data', limit: MAX_UPLOAD_BYTES });
+export const rawForm = express.raw({ type: 'multipart/form-data', limit: MAX_UPLOAD_BYTES });
 
 /**
  * Reads the multipart form with Node's built-in web `Response.formData()` (no extra package): the sizes as
  * files, everything else as text fields.
  * @param {import('express').Request} req
  */
-async function readForm(req) {
+export async function readForm(req) {
   if (!Buffer.isBuffer(req.body)) throw new AppError('PHOTO_UPLOAD_INVALID', 400, 'Send the photo as a multipart form');
   let form;
   try {

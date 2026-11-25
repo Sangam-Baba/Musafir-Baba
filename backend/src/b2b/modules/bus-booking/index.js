@@ -14,3 +14,5 @@ export { OPS_CANCELLATIONS_COLLECTION, OpsCancellationRecord } from './models/op
 export { createBusCancellations } from './cancel.service.js';
 export { ENGINE as BUS_ENGINE_SCOPE } from './engine-scope.js';
 export { completeTrips } from './completion.js';
+export { REVIEWS_COLLECTION, BusReviewRecord } from './models/review.model.js';
+export { createBusReviews, reviewDto, ratingsOf } from './reviews.service.js';

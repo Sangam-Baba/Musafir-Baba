@@ -12,8 +12,11 @@ import path from 'node:path';
 import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 export const PUBLIC_PREFIX = 'b2b-public/';
-/** e.g. b2b-public/hotels/MBHT-7K3Q9X/64b0…aa-gallery.webp */
-const PUBLIC_KEY = /^b2b-public\/hotels\/MBHT-[0-9A-Z]{6}\/[a-f0-9]{24}-(thumb|card|gallery|hero)\.(webp|jpg)$/;
+/**
+ * e.g. b2b-public/hotels/MBHT-7K3Q9X/64b0…aa-gallery.webp — and (Stage 18 B8) bus photos under the bus company's
+ * reference: b2b-public/buses/MBBO-4H8K2M/64b0…aa-card.webp. Nothing else can be written or served.
+ */
+const PUBLIC_KEY = /^b2b-public\/(hotels\/MBHT-[0-9A-Z]{6}|buses\/MBBO-[0-9A-Z]{6})\/[a-f0-9]{24}-(thumb|card|gallery|hero)\.(webp|jpg)$/;
 
 /** @typedef {{ put: (key: string, bytes: Buffer, contentType: string) => Promise<void>, remove: (key: string) => Promise<void>, read?: (key: string) => Promise<Buffer>, url: (key: string) => string, kind: string }} PublicStore */
 

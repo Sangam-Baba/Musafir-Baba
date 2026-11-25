@@ -28,6 +28,13 @@ export const vehicleDto = (v, today) => ({
   kind: v.kind,
   layoutId: v.layoutId,
   amenities: v.amenities,
+  photos: (v.photos ?? []).map((/** @type {any} */ p) => ({
+    id: String(p._id),
+    category: p.category,
+    caption: p.caption,
+    placeholder: p.placeholder,
+    urls: Object.fromEntries(Object.entries(p.variants ?? {}).map(([k, x]) => [k, /** @type {any} */ (x).url])),
+  })),
   papers: v.papers.map((/** @type {any} */ p) => ({ kind: p.kind, fileId: p.fileId, number: p.number, expiresOn: p.expiresOn })),
   status: v.status,
   review: v.review,

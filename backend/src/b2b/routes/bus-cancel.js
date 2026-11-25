@@ -5,6 +5,7 @@
  *   POST /bookings/buses/:ref/cancel?[key]  {seats, expectedRefundPaise}   Idempotency-Key — the buyer cancels them
  *        Buyers: the website customer, the guest (browser session or the order link key), or a client member who may
  *        see the order (cancelling needs `orders.order.create`). Anyone else → 404. A changed refund → REFUND_CHANGED.
+ *   GET  /bookings/buses/:ref/review?[key] · POST /bookings/buses/:ref/review {rating, text}   the buyer, once, after the trip
  *   GET  /admin/bus/cancellations?status · POST /admin/bus/cancellations {scope, bookingRef | tripId, reason}
  *   POST /admin/bus/cancellations/:id/decide {approve}   ops full-refund cancellation — a second person approves
  *        (`orders.admin.read` to see, `orders.admin.act` to propose / decide)
@@ -17,7 +18,7 @@ import { ConflictError, ForbiddenError, NotFoundError, ServiceUnavailableError, 
 import { contextOf } from '../core/http/context-middleware.js';
 import { publicRoute, requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { createBusCancellations } from '../modules/bus-booking/index.js';
+import { createBusCancellations, createBusReviews } from '../modules/bus-booking/index.js';
 import { createPartCancellations, ORDERS, OrderRecord, PERMISSIONS as ORD } from '../modules/orders/index.js';
 import { Id, input } from './bus-http.js';
 import { memberSees } from './client-orders.js';
@@ -120,6 +121,37 @@ function buyerRoutes(router, deps, cancels) {
   );
 }
 
+/** The buyer's review (B8). @param {express.Router} router @param {BusCancelDeps} deps @param {ReturnType<typeof createBusCancellations>} cancels */
+function reviewRoutes(router, deps, cancels) {
+  const reviews = createBusReviews({ clock: deps.clock });
+  router.get(
+    '/bookings/buses/:ref/review',
+    publicRoute(),
+    validate({ params: Ref, query: z.strictObject({ key: Key }) }),
+    (req, res, next) => {
+      ownBusBooking(req, res, { deps, cancels }, false).then(
+        async ({ b }) => res.set('Cache-Control', 'private, no-store').json({ review: await reviews.mine(b) }),
+        next,
+      );
+    },
+  );
+  router.post(
+    '/bookings/buses/:ref/review',
+    publicRoute(),
+    validate({
+      params: Ref,
+      query: z.strictObject({ key: Key }),
+      body: z.strictObject({ rating: z.number().int().min(1).max(5), text: z.string().trim().max(1000).nullish() }),
+    }),
+    (req, res, next) => {
+      ownBusBooking(req, res, { deps, cancels }, true).then(
+        async ({ b }) => res.status(201).json(await reviews.submit(b, actorId(res), input(res).body)),
+        next,
+      );
+    },
+  );
+}
+
 /** @param {express.Router} router @param {ReturnType<typeof createBusCancellations>} cancels */
 function opsRoutes(router, cancels) {
   router.get(
@@ -171,6 +203,7 @@ export function busCancelRoutes(deps) {
     },
   });
   buyerRoutes(router, deps, cancels);
+  reviewRoutes(router, deps, cancels);
   opsRoutes(router, cancels);
   return router;
 }

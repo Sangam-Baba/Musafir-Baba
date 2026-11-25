@@ -14,6 +14,7 @@ import { addDays, fareFor, FareRecord, legMask, RouteRecord, sellable, VehicleRe
 import { journeyLegs, TripRecord, TripSeatRecord } from '../bus-inventory/index.js';
 import { createQuoteService } from '../pricing/index.js';
 import { busBreakdown, busPriceView } from './domain/price.js';
+import { ratingsOf } from './reviews.service.js';
 import { istDate, journeyOn, passes, sorter } from './domain/search.js';
 
 const SCOPE = systemScope('bus-booking: search (published trips only)', { routine: true });
@@ -47,6 +48,7 @@ async function sellableContext(deps, trips, today) {
     buses: new Map(buses.filter((b) => sellable(/** @type {any} */ (b), today)).map((b) => [String(b._id), b])),
     fares: new Map(fares.map((f) => [f.routeId, f])),
     operators,
+    ratings: await ratingsOf(ids((t) => t.operatorOrgId)),
   };
 }
 
@@ -116,7 +118,14 @@ async function resultFor({ deps, c, data }, t, q) {
     tripId: String(t._id),
     operatorOrgId: t.operatorOrgId,
     operatorName: c.operators.get(t.operatorOrgId)?.name ?? '',
-    bus: { name: bus.name, acType: bus.acType, kind: bus.kind, amenities: bus.amenities },
+    bus: {
+      name: bus.name,
+      acType: bus.acType,
+      kind: bus.kind,
+      amenities: bus.amenities,
+      photo: bus.photos?.[0]?.variants?.card?.url ?? null,
+    },
+    rating: c.ratings.get(t.operatorOrgId) ?? null,
     acType: bus.acType,
     boardingPoints: j.boarding,
     droppingPoints: j.dropping,

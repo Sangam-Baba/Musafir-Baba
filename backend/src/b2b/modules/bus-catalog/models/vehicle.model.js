@@ -19,6 +19,21 @@ const schema = new b2bMongoose.Schema(
     kind: { type: String, enum: ['SEATER', 'SLEEPER', 'SEMI_SLEEPER', 'MIXED'], required: true },
     layoutId: { type: String, default: null },
     amenities: { type: [String], default: [] },
+    // B8: photos (sizes made by the browser, checked, stored in the public folder; `url` kept with each size)
+    photos: {
+      type: [
+        {
+          category: { type: String, enum: ['OUTSIDE', 'INSIDE', 'SEATS', 'OTHER'] },
+          caption: { type: String, default: null, maxlength: 140 },
+          order: Number,
+          variants: b2bMongoose.Schema.Types.Mixed,
+          placeholder: String,
+          uploadedBy: String,
+          uploadedAt: Date,
+        },
+      ],
+      default: [],
+    },
     papers: { type: [{ _id: false, kind: String, fileId: String, number: String, expiresOn: String, addedAt: Date }], default: [] },
     status: { type: String, default: 'DRAFT' },
     review: { type: { _id: false, by: String, at: Date, note: String }, default: null },

@@ -31,3 +31,8 @@ export const busCancelQuote = (pnr: string, seats: string[], key?: string | null
 
 export const cancelBusSeats = (pnr: string, seats: string[], expectedRefundPaise: number, key?: string | null) =>
   hotelsApi<{ refundPaise: number }>(withKey(`/bookings/buses/${encodeURIComponent(pnr)}/cancel`, key), { seats, expectedRefundPaise }, { headers: { "Content-Type": "application/json", ...orderHeaders({ "Idempotency-Key": randomId() }) } });
+
+export const busReview = (pnr: string, key?: string | null) =>
+  hotelsApi<{ review: import("../../bus").BusReview | null }>(withKey(`/bookings/buses/${encodeURIComponent(pnr)}/review`, key), undefined, { headers: orderHeaders(), cache: "no-store" });
+export const sendBusReview = (pnr: string, body: { rating: number; text: string | null }, key?: string | null) =>
+  hotelsApi(withKey(`/bookings/buses/${encodeURIComponent(pnr)}/review`, key), body, { headers: { "Content-Type": "application/json", ...orderHeaders() } });

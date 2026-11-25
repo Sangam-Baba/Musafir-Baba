@@ -13,6 +13,7 @@ import { errorMessage } from "../../messages";
 import { SeatMap } from "../bus/SeatMap";
 import { adminCall } from "./AdminPassGate";
 import { BusProblems } from "./BusProblems";
+import { BusReviewsAdmin } from "./BusReviewsAdmin";
 import { BusRouteReview } from "./BusRouteReview";
 import { FleetEmptyState, FleetPanel, FleetPill, fleetSelectClass, fleetTone, Notice, PrimaryBtn, SecondaryBtn } from "./kit";
 
@@ -122,14 +123,21 @@ function BusCard({ bus, token, onDone }: { bus: BusInQueue; token: string; onDon
 
 /** Buses and routes waiting for MusafirBaba, one switch apart. */
 export function BusReviewTab({ token }: { token: string }) {
-  const [view, setView] = useState<"buses" | "routes" | "problems">("buses");
+  const [view, setView] = useState<"buses" | "routes" | "problems" | "reviews">("buses");
   const pick = (
-    <select aria-label="Buses or routes" className={fleetSelectClass} value={view} onChange={(e) => setView(e.target.value as "buses" | "routes" | "problems")}>
+    <select aria-label="Buses or routes" className={fleetSelectClass} value={view} onChange={(e) => setView(e.target.value as "buses" | "routes" | "problems" | "reviews")}>
       <option value="buses">Buses</option>
       <option value="routes">Routes</option>
       <option value="problems">Trip problems</option>
+      <option value="reviews">Reviews</option>
     </select>
   );
+  if (view === "reviews")
+    return (
+      <FleetPanel title="Bus reviews" description="Newest first · hide or show" actions={pick}>
+        <BusReviewsAdmin token={token} />
+      </FleetPanel>
+    );
   if (view === "problems")
     return (
       <FleetPanel title="Trip problems" description="Reported by bus companies · oldest first" actions={pick}>

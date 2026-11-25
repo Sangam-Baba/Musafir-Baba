@@ -32,3 +32,4 @@ export { createFares } from './fares.service.js';
 export { DEFAULT_BUS_SLABS, MAX_SLABS, slabProblems, chargePercent, slabText } from './domain/cancellation.js';
 export { CANCELLATION_POLICIES_COLLECTION, CancellationPolicyRecord } from './models/cancellation-policy.model.js';
 export { createCancellationPolicies } from './cancellation-policies.service.js';
+export { createBusPhotos, MAX_BUS_PHOTOS, BUS_PHOTO_CATEGORIES } from './photos.service.js';

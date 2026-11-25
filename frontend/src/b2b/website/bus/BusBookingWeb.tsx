@@ -11,9 +11,10 @@ import { toast } from "sonner";
 
 import { rupees, type BusTicketView, type CancelQuote } from "../../bus";
 import { BusTicket } from "../../components/bus/BusTicket";
+import { RateTrip } from "../../components/bus/RateTrip";
 import { errorMessage } from "../../messages";
 import { randomId, startPayment, submitToPayu } from "../checkout";
-import { busCancelQuote, cancelBusSeats, getBusOrder, type BusOrder } from "./busWeb";
+import { busCancelQuote, busReview, cancelBusSeats, getBusOrder, sendBusReview, type BusOrder } from "./busWeb";
 
 const PROCESSING = ["HOLDING", "PAYMENT_PENDING", "CONFIRMING"];
 
@@ -108,6 +109,7 @@ export function BusBookingWeb() {
       {o.status === "CANCELLED" && <p className="rounded-xl bg-slate-50 p-4 text-slate-700">This booking is cancelled. Refunds go back to the same card, UPI or bank account.</p>}
       {t && <BusTicket t={t} />}
       {t && <CancelSeats t={t} linkKey={linkKey} onDone={() => q.refetch()} />}
+      {t?.status === "COMPLETED" && <RateTrip pnr={t.ref} load={() => busReview(t.ref, linkKey)} send={(body) => sendBusReview(t.ref, body, linkKey)} />}
     </div>
   );
 }

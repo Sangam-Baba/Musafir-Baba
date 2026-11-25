@@ -38,6 +38,7 @@ export interface Bus {
   kind: BusKind;
   layoutId: string | null;
   amenities: Amenity[];
+  photos?: { id: string; category: string; caption: string | null; placeholder: string; urls: Record<string, string> }[];
   papers: Paper[];
   status: BusStatus;
   review: { note: string | null; at: string; by?: string } | null;
@@ -172,7 +173,8 @@ export interface BusResult {
   tripId: string;
   operatorOrgId: string;
   operatorName: string;
-  bus: { name: string | null; acType: "AC" | "NON_AC"; kind: BusKind; amenities: Amenity[] };
+  bus: { name: string | null; acType: "AC" | "NON_AC"; kind: BusKind; amenities: Amenity[]; photo?: string | null };
+  rating?: { average: number; count: number } | null;
   boardingPoints: BusPoint[];
   droppingPoints: BusPoint[];
   departAt: string;
@@ -223,3 +225,7 @@ export interface BusPayoutLine { _id: string; runId: string; operatorOrgId: stri
 export interface BusPayoutRun { _id: string; ref: string; status: "DRAFT" | "APPROVED" | "FILE_READY" | "PAID" | "CANCELLED"; cycleEnd: string; totals: { lines?: number; held?: number; grossPaise?: number; netPaise?: number }; preparedBy: string; approvedBy: string | null; bankReference: string | null; createdAt: string }
 export interface TripProblem { id: string; operatorOrgId: string; tripId: string; tripDate: string; kind: "BREAKDOWN" | "DELAY" | "CANCELLED_BY_OPERATOR" | "OTHER"; note: string; delayMinutes: number | null; status: "OPEN" | "RESOLVED"; reportedBy: string; resolvedBy: string | null; resolution: string | null; createdAt: string }
 export const PROBLEM_LABEL: Record<TripProblem["kind"], string> = { BREAKDOWN: "Breakdown", DELAY: "Delay", CANCELLED_BY_OPERATOR: "Trip cancelled by us", OTHER: "Other" };
+
+// ── Stage 18 B8b: reviews ──
+export interface BusReview { id: string; bookingRef: string; routeName: string; tripDate: string; rating: number; text: string | null; authorName: string; status: "PUBLISHED" | "HIDDEN"; reply: { text: string; at: string } | null; createdAt: string; operatorOrgId?: string; moderation?: { note: string | null } | null }
+export const stars = (n: number) => "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));

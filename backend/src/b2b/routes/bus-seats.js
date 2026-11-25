@@ -7,14 +7,18 @@
  *   PUT  /bus/trips/:id/sale {stopped}                  stop / restart online sale      (`bus-inventory.trip.manage`)
  *   GET  /bus/bookings?date&tripId                      confirmed bookings (B6)         (`bus-booking.booking.read`)
  *   GET  /bus/trips/:id/manifest[?format=csv]           passenger list for the conductor (`bus-booking.booking.read`)
+ *   GET  /bus/reviews · POST /bus/reviews/:id/reply {text}   reviews of the company's trips (read · `bus-booking.review.reply`)
+ *   GET  /admin/bus/reviews?status · POST /admin/bus/reviews/:id/moderate {visible, note}   (`platform.bus.review`)
  */
 import { z } from 'zod';
 
 import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { createOperatorBookings, PERMISSIONS as BOOKINGS } from '../modules/bus-booking/index.js';
+import { createBusReviews, createOperatorBookings, PERMISSIONS as BOOKINGS } from '../modules/bus-booking/index.js';
+import { PERMISSIONS as BUS } from '../modules/bus-catalog/index.js';
 import { createClaims, PERMISSIONS as SEATS } from '../modules/bus-inventory/index.js';
 import { DateStr, Id, input, operatorOf, Params } from './bus-http.js';
+import { staffOf } from './payout-finance-admin.js';
 import { handle } from './payout-finance-admin.js';
 
 const SeatNo = z.string().trim().min(1).max(6);
@@ -81,5 +85,34 @@ export function addBusBookingRoutes(router) {
           .send(bookings.manifestCsv(m));
       }, next);
     },
+  );
+}
+
+/** Reviews: the company reads and replies; staff hide / show (B8). @param {import('express').Router} router @param {{ clock: import('../core/clock.js').Clock }} deps */
+export function addBusReviewRoutes(router, deps) {
+  const reviews = createBusReviews({ clock: deps.clock });
+  router.get(
+    '/bus/reviews',
+    requirePermission(BOOKINGS.bookingRead),
+    handle(async (_q, res) => ({ data: await reviews.forOperator(operatorOf(res).orgId) })),
+  );
+  router.post(
+    '/bus/reviews/:id/reply',
+    requirePermission(BOOKINGS.reviewReply),
+    validate({ params: Params, body: z.strictObject({ text: z.string().trim().min(2).max(1000) }) }),
+    handle(async (_q, res) => reviews.reply(operatorOf(res), input(res).params.id, input(res).body.text)),
+  );
+  const review = requirePermission(BUS.platformReview);
+  router.get(
+    '/admin/bus/reviews',
+    review,
+    validate({ query: z.strictObject({ status: z.enum(['PUBLISHED', 'HIDDEN']).optional() }) }),
+    handle(async (_q, res) => ({ data: await reviews.queue(input(res).query) })),
+  );
+  router.post(
+    '/admin/bus/reviews/:id/moderate',
+    review,
+    validate({ params: Params, body: z.strictObject({ visible: z.boolean(), note: z.string().trim().max(500).nullish() }) }),
+    handle(async (_q, res) => reviews.moderate(staffOf(res), input(res).params.id, input(res).body)),
   );
 }

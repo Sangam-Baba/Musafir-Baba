@@ -11,6 +11,7 @@ import { b2b } from "@/b2b/api";
 import { GENDER_LABEL, istTime, rupees, type Manifest, type OperatorBusBooking } from "@/b2b/bus";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
 import { inputCls } from "@/b2b/components/listing/ui";
+import { OperatorReviews } from "@/b2b/components/bus/OperatorReviews";
 import { PageHeader, Panel, StatCard } from "@/b2b/components/portal/ui";
 import { errorMessage } from "@/b2b/messages";
 import { businessDownload } from "@/b2b/payouts";
@@ -105,6 +106,7 @@ function BusBookings({ me }: { me: Me }) {
           );
         })
       )}
+      <OperatorReviews canReply={me.permissions.includes("bus-booking.review.reply") && !me.viewAs} />
     </div>
   );
 }

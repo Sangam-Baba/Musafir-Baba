@@ -4,7 +4,9 @@
 import { BusFront, Printer } from "lucide-react";
 
 import { GENDER_LABEL, istTime, KIND_LABEL, rupees, type BusTicketView } from "../../bus";
+import { b2b } from "../../api";
 import { BusCancelSeats } from "./BusCancelSeats";
+import { RateTrip } from "./RateTrip";
 
 export function BusTicket({ t, canCancel = false, onChanged = () => {} }: { t: BusTicketView; canCancel?: boolean; onChanged?: () => void }) {
   const confirmed = t.status === "CONFIRMED" || t.status === "COMPLETED";
@@ -27,6 +29,7 @@ export function BusTicket({ t, canCancel = false, onChanged = () => {} }: { t: B
       <p className="mt-2 text-slate-600">Paid {rupees(t.price.totalPaise)} incl. GST {rupees(t.price.gstPaise)}. Reach the boarding point 15 minutes early and carry a photo ID.</p>
       {t.parts.filter((p) => p.status === "DONE").map((p) => <p key={p.id} className="mt-1 text-[12px] text-slate-500">Cancelled {p.seats.join(", ")} — refunded {rupees(p.refundPaise)}</p>)}
       {t.status === "CONFIRMED" && canCancel && <BusCancelSeats t={t} onDone={onChanged} />}
+      {t.status === "COMPLETED" && canCancel && <RateTrip pnr={t.ref} load={() => b2b(`/bookings/buses/${t.ref}/review`)} send={(body) => b2b(`/bookings/buses/${t.ref}/review`, { method: "POST", body })} />}
       {confirmed && <button type="button" onClick={() => window.print()} className="mt-2 inline-flex items-center gap-1 rounded-md border border-slate-300 px-2.5 py-1 text-[12px] print:hidden"><Printer className="h-3.5 w-3.5" /> Print e-ticket</button>}
     </div>
   );

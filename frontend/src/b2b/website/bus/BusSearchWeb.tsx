@@ -49,9 +49,9 @@ export function BusSearchWeb() {
           {results.data?.data.map((r) => (
             <li key={r.tripId} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
               <div className="flex flex-wrap items-center gap-4">
-                <BusFront className="h-7 w-7 text-[#FE5300]" />
+                {r.bus.photo ? <img src={r.bus.photo} alt="" className="h-14 w-20 rounded-lg object-cover" /> : <BusFront className="h-7 w-7 text-[#FE5300]" />}
                 <div className="min-w-[160px] flex-1">
-                  <p className="font-semibold text-slate-900">{r.operatorName}</p>
+                  <p className="font-semibold text-slate-900">{r.operatorName}{r.rating && <span className="ml-2 text-sm font-normal text-amber-600">★ {r.rating.average} ({r.rating.count})</span>}</p>
                   <p className="text-sm text-slate-500">{r.bus.acType === "AC" ? "AC" : "Non-AC"} {KIND_LABEL[r.bus.kind]}</p>
                 </div>
                 <p className="text-center"><b className="text-lg">{istTime(r.departAt)}</b><span className="block text-xs text-slate-500">{r.boardingPoints[0]?.name}</span></p>

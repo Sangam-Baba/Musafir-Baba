@@ -12,6 +12,7 @@ import { b2b } from "@/b2b/api";
 import { AMENITIES, AMENITY_LABEL, BUS_KINDS, BUS_STATUS, KIND_LABEL, PAPER_LABEL, type Amenity, type Bus, type BusKind, type Layout } from "@/b2b/bus";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
 import { BusPapers } from "@/b2b/components/bus/BusPapers";
+import { BusPhotos } from "@/b2b/components/bus/BusPhotos";
 import { SeatMap } from "@/b2b/components/bus/SeatMap";
 import { Check, inputCls } from "@/b2b/components/listing/ui";
 import { PageHeader, Panel, Pill } from "@/b2b/components/portal/ui";
@@ -138,6 +139,9 @@ function BusDetail({ me }: { me: Me }) {
       </Panel>
       <Panel icon={FileText} title="Papers" subtitle="All four must be valid to send the bus for approval and to keep selling it. We remind you 30 and 7 days before one expires.">
         <BusPapers bus={b} canManage={canManage && b.status !== "RETIRED"} canView={me.permissions.includes("kyc.application.read")} onSaved={saved} />
+      </Panel>
+      <Panel title="Photos" subtitle="Outside, inside and seats — the first one shows in search.">
+        <BusPhotos bus={b} canManage={canManage && b.status !== "RETIRED"} onChanged={() => qc.invalidateQueries({ queryKey: key })} />
       </Panel>
       {layout && (
         <Panel icon={LayoutGrid} title={`Seats — ${layout.name}`} subtitle={`${layout.seatCount} seats${layout.ladiesSeats ? ` · ${layout.ladiesSeats} ladies` : ""}`} action={<Link href="/business/buses/layouts" className="text-[12px] text-[#FE5300]">Edit layouts</Link>}>
