@@ -54,6 +54,7 @@ Version 1 = hotels only. Flights, packages, transfers, activities and visa plug 
 | C | 15 | [Hotel payouts, finance & reports](stages/stage-15-payouts-finance-reports.md) | 2.5 | Payout runs, GST registers, reports (parallel with 14) |
 | C | 16 | [Hardening & public launch](stages/stage-16-hardening-launch.md) | 2 | Load/pen tests, DR drill, launch |
 | — | 17 | [Roadmap](stages/stage-17-roadmap.md) | — | After launch |
+| D | 18 | [Bus service (draft — waiting for owner approval)](stages/stage-18-bus-service.md) | 10–12 | Bus operators onboard buses with seat maps, routes and schedules; website + B2B seat booking; payouts |
 
 **Order (decided 12 Nov 2026):** foundations → **hotel side first** (onboarding, listings, rooms & rates, pricing, website search, payments, booking, after-booking) so there is a **working system** — hotels list, website customers book — → then **B2B clients** (onboarding, wallet, dashboard booking, plans) → then **API access**, finance and launch.
 
