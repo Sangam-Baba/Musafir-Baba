@@ -206,6 +206,21 @@ const MESSAGES: Record<string, string> = {
   SCHEDULE_ENDED: "This schedule has already ended.",
   TRIP_NOT_FOUND: "That trip wasn't found.",
   DATE_RANGE_INVALID: "Pick up to 31 days.",
+  SEAT_UNAVAILABLE: "That seat was just taken for part or all of this journey. Pick another.",
+  LADIES_SEAT: "That seat is for women only.",
+  SEAT_NOT_FOUND: "That seat isn't on this bus.",
+  TRIP_CANCELLED: "This trip is cancelled.",
+  TRIP_NOT_READY: "This trip's seats are still being set up. Try again in a minute.",
+  TRIP_DEPARTED: "The bus has already left that stop.",
+  SALE_STOPPED: "Online sale is stopped for this trip.",
+  CLAIM_EXPIRED: "That took too long and the seats were let go. Try again.",
+  BLOCK_NOT_FOUND: "That block wasn't found (maybe already released).",
+  STOP_NOT_ON_ROUTE: "That stop isn't on this trip.",
+  STOPS_WRONG_WAY: "The getting-off stop must come after the boarding stop.",
+  NO_BOARDING_HERE: "Passengers can't board at that stop.",
+  NO_DROPPING_HERE: "Passengers can't get off at that stop.",
+  FARES_INVALID: "The fares have problems — see the list.",
+  HOLD_NOT_ACTIVE: "That seat hold has ended.",
 };
 
 export function errorMessage(error: unknown): string {

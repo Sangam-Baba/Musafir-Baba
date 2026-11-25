@@ -26,3 +26,6 @@ export { createStops, stopDto } from './stops.service.js';
 export { createRoutes, routeDto } from './routes.service.js';
 export { createRouteReview } from './route-review.service.js';
 export { createSchedules, scheduleDto } from './schedules.service.js';
+export { MIN_FARE_PAISE, MAX_FARE_PAISE, checkFares, fareFor, fareKey, fareChangeSummary } from './domain/fares.js';
+export { FARES_COLLECTION, FareRecord } from './models/fare.model.js';
+export { createFares } from './fares.service.js';

@@ -8,15 +8,35 @@
 import { describe, expect, it } from 'vitest';
 
 import { ApplicationRecord, gstinCheckChar } from '../../src/b2b/modules/kyc/index.js';
-import { LayoutRecord, RouteRecord, ScheduleRecord, StopRecord, VehicleRecord } from '../../src/b2b/modules/bus-catalog/index.js';
-import { TripRecord, TripSeatRecord } from '../../src/b2b/modules/bus-inventory/index.js';
+import {
+  createSchedules,
+  FareRecord,
+  LayoutRecord,
+  RouteRecord,
+  ScheduleRecord,
+  StopRecord,
+  VehicleRecord,
+} from '../../src/b2b/modules/bus-catalog/index.js';
+import { ClaimRecord, createTrips, TripRecord, TripSeatRecord } from '../../src/b2b/modules/bus-inventory/index.js';
 import { CityRecord } from '../../src/b2b/modules/hotel-catalog/index.js';
 import { asStaff, auth, useInventoryApp } from './helpers/inventory-app.js';
 
 const clock = { now: () => new Date('2026-11-25T10:00:00Z') };
 const app = useInventoryApp({
   clock,
-  models: [ApplicationRecord, LayoutRecord, VehicleRecord, StopRecord, RouteRecord, ScheduleRecord, TripRecord, TripSeatRecord, CityRecord],
+  models: [
+    ApplicationRecord,
+    LayoutRecord,
+    VehicleRecord,
+    StopRecord,
+    RouteRecord,
+    ScheduleRecord,
+    TripRecord,
+    TripSeatRecord,
+    CityRecord,
+    ClaimRecord,
+    FareRecord,
+  ],
   env: { B2B_BUS_ENABLED: 'true' },
 });
 const PDF = Buffer.from('%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n(RC RJ14PA1234)\n%%EOF', 'latin1');
@@ -92,6 +112,31 @@ async function routesOverHttp(t, busId) {
   const tr = await app.srv.get('/api/v1/bus/trips?from=2026-11-25&to=2026-12-20', auth(t));
   expect(tr.body.data).toEqual([]); // the trip job makes them (bus-routes.test.js)
   expect((await app.srv.get('/api/v1/bus/trips?from=2026-11-25&to=2027-01-31', auth(t))).body.code).toBe('DATE_RANGE_INVALID');
+  await seatsAndFaresOverHttp(t, route.id);
+}
+
+/** Fares saved; trips made; a counter block, its release and stop sale (S18-T07). @param {string} t @param {string} routeId */
+async function seatsAndFaresOverHttp(t, routeId) {
+  const row = { fromIdx: 0, toIdx: 1, seatType: 'SLEEPER', deck: null, netPaise: 45_000 };
+  const saved = await app.srv.put(`/api/v1/bus/routes/${routeId}/fares`, { rows: [row], rules: [], expectedVersion: 0 }, auth(t));
+  expect(saved.body).toMatchObject({ version: 1, rows: [row] });
+  expect((await app.srv.put(`/api/v1/bus/routes/${routeId}/fares`, { rows: [], rules: [], expectedVersion: 0 }, auth(t))).body.code).toBe(
+    'VERSION_CONFLICT',
+  );
+  const today = () => '2026-11-25';
+  await createTrips({ today, catalog: createSchedules({ today }) }).generate();
+  const [trip] = (await app.srv.get('/api/v1/bus/trips?from=2026-12-02&to=2026-12-02', auth(t))).body.data;
+  const blk = await app.srv.post(`/api/v1/bus/trips/${trip.id}/blocks`, { seats: ['L1', 'L2'], note: 'counter' }, auth(t));
+  expect(blk.status).toBe(201);
+  expect((await app.srv.post(`/api/v1/bus/trips/${trip.id}/blocks`, { seats: ['L2'] }, auth(t))).body.code).toBe('SEAT_UNAVAILABLE');
+  const seats = (await app.srv.get(`/api/v1/bus/trips/${trip.id}`, auth(t))).body.decks.flatMap((/** @type {any} */ d) => d.seats);
+  expect(seats.filter((/** @type {any} */ s) => s.taken).map((/** @type {any} */ s) => s.no)).toEqual(['L1', 'L2']);
+  expect((await app.srv.get(`/api/v1/bus/trips/${trip.id}/blocks`, auth(t))).body.data).toHaveLength(1);
+  expect((await app.srv.post(`/api/v1/bus/blocks/${blk.body.id}/release`, {}, auth(t))).body.status).toBe('RELEASED');
+  expect((await app.srv.put(`/api/v1/bus/trips/${trip.id}/sale`, { stopped: true }, auth(t))).body).toEqual({
+    tripId: trip.id,
+    saleStopped: true,
+  });
 }
 
 describe('bus catalogue over HTTP', () => {

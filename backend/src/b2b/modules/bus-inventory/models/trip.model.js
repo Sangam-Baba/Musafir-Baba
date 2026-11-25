@@ -40,6 +40,7 @@ const schema = new b2bMongoose.Schema(
     seatCount: { type: Number, required: true },
     seatsReady: { type: Boolean, default: false },
     status: { type: String, enum: ['SCHEDULED', 'CANCELLED'], default: 'SCHEDULED' },
+    saleStopped: { type: Boolean, default: false }, // operator stopped online sale (counter blocks still work)
     cancelReason: { type: String, default: null },
   },
   { timestamps: true, versionKey: false, strict: 'throw' },

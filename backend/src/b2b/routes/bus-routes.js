@@ -6,6 +6,7 @@
  *             GET / POST /bus/schedules · POST /bus/schedules/:id/end {from}
  *             (`bus-catalog.route.read` to read, `.manage` to change)
  *             GET /bus/trips?from&to&routeId · GET /bus/trips/:id   (`bus-inventory.trip.read`)
+ *             GET / PUT /bus/routes/:id/fares {rows, rules, expectedVersion}   (read: route.read · save: `bus-catalog.fare.manage`)
  *   admin     GET /admin/bus/routes?status · POST /admin/bus/routes/:id/decide {move, note}   (`platform.bus.review`)
  */
 import { z } from 'zod';
@@ -15,6 +16,7 @@ import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import {
   addDays,
+  createFares,
   createRouteReview,
   createRoutes,
   createSchedules,
@@ -180,6 +182,54 @@ function tripRoutes(router, trips, today) {
   );
 }
 
+const FareRows = z
+  .array(
+    z.strictObject({
+      fromIdx: z
+        .number()
+        .int()
+        .min(0)
+        .max(MAX_STOPS - 1),
+      toIdx: z
+        .number()
+        .int()
+        .min(1)
+        .max(MAX_STOPS - 1),
+      seatType: z.enum(['SEATER', 'SEMI_SLEEPER', 'SLEEPER']),
+      deck: z.enum(['LOWER', 'UPPER']).nullable(),
+      netPaise: z.number().int(),
+    }),
+  )
+  .max(2000);
+const DateRules = z
+  .array(
+    z.strictObject({
+      id: z.string().max(20).nullish(),
+      label: z.string().trim().min(1).max(60),
+      from: DateStr,
+      to: DateStr,
+      weekdays: z.array(z.number().int().min(0).max(6)).max(7),
+      addPaise: z.number().int(),
+    }),
+  )
+  .max(50);
+
+/** @param {import('express').Router} router @param {ReturnType<typeof createFares>} fares */
+function fareRoutes(router, fares) {
+  router.get(
+    '/bus/routes/:id/fares',
+    requirePermission(BUS.routeRead),
+    validate({ params: Params }),
+    handle(async (_q, res) => fares.get(operatorOf(res).orgId, input(res).params.id)),
+  );
+  router.put(
+    '/bus/routes/:id/fares',
+    requirePermission(BUS.fareManage),
+    validate({ params: Params, body: z.strictObject({ rows: FareRows, rules: DateRules, expectedVersion: z.number().int().min(0) }) }),
+    handle(async (_q, res) => fares.save(operatorOf(res), input(res).params.id, input(res).body)),
+  );
+}
+
 /** @param {import('express').Router} router @param {ReturnType<typeof createRouteReview>} review */
 function routeReviewRoutes(router, review) {
   const reviewer = requirePermission(BUS.platformReview);
@@ -204,6 +254,7 @@ export function addBusRouteRoutes(router, deps) {
   const trips = createTrips({ today: deps.today, catalog: schedules });
   stopRoutes(router, stops);
   routeRoutes(router, createRoutes({ clock: deps.clock, stops }));
+  fareRoutes(router, createFares({ clock: deps.clock }));
   scheduleRoutes(router, schedules, trips);
   tripRoutes(router, trips, deps.today);
   routeReviewRoutes(router, createRouteReview({ clock: deps.clock }));

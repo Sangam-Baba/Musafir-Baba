@@ -33,7 +33,7 @@ import { usageRecorder, usageSchedules } from './metering-wiring.js';
 import { subscriptionParts } from './subscriptions-wiring.js';
 import { webhookParts } from './webhooks-wiring.js';
 import { createBusReview, createSchedules } from '../modules/bus-catalog/index.js';
-import { createTrips } from '../modules/bus-inventory/index.js';
+import { createClaims, createTrips } from '../modules/bus-inventory/index.js';
 import { todayIn } from '../core/dates.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
@@ -82,7 +82,7 @@ export function startDatabase(env, log, hub, identity) {
   const wallet = walletParts(systemClock);
   const subscriptions = subscriptionParts(systemClock, env);
   const webhooks = webhookParts(systemClock, env); // Stage 14: nothing unless B2B_API_ENABLED=true
-  const busSchedules = env.B2B_BUS_ENABLED === 'true' ? [busPaperReminders(), busTrips()] : []; // Stage 18
+  const busSchedules = env.B2B_BUS_ENABLED === 'true' ? [busPaperReminders(), busTrips(), busSeatSweeper()] : []; // Stage 18
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -251,4 +251,10 @@ function busTrips() {
   const today = () => todayIn(systemClock, 'Asia/Kolkata');
   const trips = createTrips({ today, catalog: createSchedules({ today }) });
   return { name: 'bus-trips', everyMs: 6 * 60 * 60_000, run: () => trips.generate() };
+}
+
+/** Expired seat holds and claims stuck mid-way given back (S18-T07, repeat-safe). */
+function busSeatSweeper() {
+  const claims = createClaims({ clock: systemClock });
+  return { name: 'bus-seat-sweeper', everyMs: 60_000, run: () => claims.sweep() };
 }

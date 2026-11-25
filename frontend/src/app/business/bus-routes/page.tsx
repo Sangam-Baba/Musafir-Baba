@@ -39,7 +39,7 @@ function BusRoutes({ me }: { me: Me }) {
   const points = stops.data?.data ?? [];
   return (
     <div className="space-y-4">
-      <PageHeader crumb="Routes & schedules" title="Routes &" highlight="schedules" subtitle="Add your boarding points, build each route stop by stop, send it to MusafirBaba, then schedule a bus on it." />
+      <PageHeader crumb="Routes & schedules" title="Routes &" highlight="schedules" subtitle="Add your boarding points, build each route stop by stop, set its fares, send it to MusafirBaba, then schedule a bus on it." />
       <Tabs<Tab>
         tabs={[
           { value: "routes", label: "Routes", icon: RouteIcon },
@@ -50,7 +50,7 @@ function BusRoutes({ me }: { me: Me }) {
         onChange={setTab}
       />
       {tab === "points" && <StopsPanel stops={points} cities={masters.data?.cities ?? []} canManage={canManage} onChanged={refresh} />}
-      {tab === "routes" && <RoutesPanel routes={routes.data?.data ?? []} points={points} canManage={canManage} onChanged={refresh} />}
+      {tab === "routes" && <RoutesPanel routes={routes.data?.data ?? []} points={points} canManage={canManage} canFares={me.permissions.includes("bus-catalog.fare.manage") && !me.viewAs} onChanged={refresh} />}
       {tab === "schedules" && <SchedulesPanel schedules={schedules.data?.data ?? []} routes={routes.data?.data ?? []} buses={buses.data?.data ?? []} canManage={canManage} onChanged={refresh} />}
     </div>
   );

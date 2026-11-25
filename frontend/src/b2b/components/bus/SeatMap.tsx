@@ -15,7 +15,7 @@ export const TOOLS: { value: Tool; label: string; hint: string }[] = [
 const NEXT_TYPE: Record<SeatType, SeatType> = { SEATER: "SEMI_SLEEPER", SEMI_SLEEPER: "SLEEPER", SLEEPER: "SEATER" };
 
 /** The seat covering a cell (sleepers may cover two cells along the row). */
-function seatAt(d: DeckGrid, row: number, col: number): Seat | undefined {
+export function seatAt(d: DeckGrid, row: number, col: number): Seat | undefined {
   return d.seats.find((s) => s.row === row && col >= s.col && col < s.col + (s.span ?? 1));
 }
 
@@ -41,7 +41,7 @@ export function applyTool(decks: DeckGrid[], deckIndex: number, row: number, col
   });
 }
 
-function SeatBox({ seat, onClick }: { seat: Seat; onClick?: () => void }) {
+function SeatBox({ seat, onClick, selected }: { seat: Seat; onClick?: () => void; selected?: boolean }) {
   const Icon = seat.type === "SEATER" ? Armchair : BedSingle;
   const colour = seat.taken
     ? "border-slate-400 bg-slate-200 text-slate-500"
@@ -57,7 +57,7 @@ function SeatBox({ seat, onClick }: { seat: Seat; onClick?: () => void }) {
       disabled={!onClick}
       title={`${seat.no} · ${SEAT_LABEL[seat.type]}${seat.ladies ? " · ladies" : ""}${seat.taken ? " · taken for part or all of the route" : ""}`}
       style={{ gridColumn: `span ${seat.span ?? 1}` }}
-      className={`flex h-10 flex-col items-center justify-center rounded-md border text-[10px] font-semibold leading-none ${colour} ${onClick ? "hover:ring-2 hover:ring-[#FE5300]/40" : "cursor-default"}`}
+      className={`flex h-10 flex-col items-center justify-center rounded-md border text-[10px] font-semibold leading-none ${colour} ${selected ? "ring-2 ring-[#FE5300]" : ""} ${onClick ? "hover:ring-2 hover:ring-[#FE5300]/40" : "cursor-default"}`}
     >
       <Icon className="mb-0.5 h-3.5 w-3.5" />
       {seat.no}
@@ -65,7 +65,7 @@ function SeatBox({ seat, onClick }: { seat: Seat; onClick?: () => void }) {
   );
 }
 
-function DeckPanel({ deck, onCell }: { deck: DeckGrid; onCell?: (row: number, col: number) => void }) {
+function DeckPanel({ deck, onCell, selected }: { deck: DeckGrid; onCell?: (row: number, col: number) => void; selected?: string[] }) {
   const cells = [];
   for (let r = 0; r < deck.rows; r += 1)
     for (let c = 0; c < deck.cols; c += 1) {
@@ -73,7 +73,7 @@ function DeckPanel({ deck, onCell }: { deck: DeckGrid; onCell?: (row: number, co
       if (seat && seat.col !== c) continue; // covered by a sleeper that started in the cell before
       cells.push(
         seat ? (
-          <SeatBox key={`${r}-${c}`} seat={seat} onClick={onCell && (() => onCell(r, c))} />
+          <SeatBox key={`${r}-${c}`} seat={seat} selected={selected?.includes(seat.no)} onClick={onCell && (() => onCell(r, c))} />
         ) : (
           <button
             key={`${r}-${c}`}
@@ -103,13 +103,13 @@ function DeckPanel({ deck, onCell }: { deck: DeckGrid; onCell?: (row: number, co
   );
 }
 
-export function SeatMap({ decks, onCell }: { decks: DeckGrid[]; onCell?: (deckIndex: number, row: number, col: number) => void }) {
+export function SeatMap({ decks, onCell, selected }: { decks: DeckGrid[]; onCell?: (deckIndex: number, row: number, col: number) => void; selected?: string[] }) {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-4 overflow-x-auto">
         {decks.map((d, i) => (
           <div key={d.deck} className="min-w-0 max-w-full">
-            <DeckPanel deck={d} onCell={onCell && ((r, c) => onCell(i, r, c))} />
+            <DeckPanel deck={d} selected={selected} onCell={onCell && ((r, c) => onCell(i, r, c))} />
           </div>
         ))}
       </div>

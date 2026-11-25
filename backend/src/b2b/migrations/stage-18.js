@@ -1,13 +1,14 @@
 // @ts-check
 /** Stage 18 — bus service (new collections with the `bus_` prefix only, ADR-0016). */
 import {
+  FARES_COLLECTION,
   LAYOUTS_COLLECTION,
   ROUTES_COLLECTION,
   SCHEDULES_COLLECTION,
   STOPS_COLLECTION,
   VEHICLES_COLLECTION,
 } from '../modules/bus-catalog/index.js';
-import { TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
+import { CLAIMS_COLLECTION, TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_18 = [
@@ -64,6 +65,18 @@ export const STAGE_18 = [
       );
       await ctx.createCollection(TRIP_SEATS_COLLECTION);
       await ctx.createIndex(TRIP_SEATS_COLLECTION, { tripId: 1, no: 1 }, { name: 'trip_seat_unique', unique: true });
+    },
+  },
+  {
+    id: '0085-bus-seat-claims-fares',
+    description: 'Seat claims (holds and counter blocks): by trip, and the sweeper queue; fares (one per route)',
+    up: async (ctx) => {
+      await ctx.createCollection(CLAIMS_COLLECTION);
+      await ctx.createIndex(CLAIMS_COLLECTION, { tripId: 1, kind: 1, status: 1 }, { name: 'trip_kind_status' });
+      await ctx.createIndex(CLAIMS_COLLECTION, { status: 1, expiresAt: 1 }, { name: 'sweeper' });
+      await ctx.createIndex(CLAIMS_COLLECTION, { status: 1, createdAt: 1 }, { name: 'stuck' });
+      await ctx.createCollection(FARES_COLLECTION);
+      await ctx.createIndex(FARES_COLLECTION, { routeId: 1 }, { name: 'route_unique', unique: true });
     },
   },
 ];

@@ -11,6 +11,7 @@ import { BUS_STATUS, MAX_STOPS, ROUTE_PROBLEM, stopTime, type BusRoute, type Bus
 import { errorMessage } from "../../messages";
 import { inputCls } from "../listing/ui";
 import { Panel, Pill } from "../portal/ui";
+import { FaresPanel } from "./FaresPanel";
 
 const blank = (): RouteStop => ({ stopId: "", dayOffset: 0, time: "", boarding: true, dropping: true });
 const EDITABLE = ["DRAFT", "CHANGES_REQUESTED"];
@@ -96,7 +97,7 @@ export function RouteEditor({ route, points, onSaved, onCancel }: { route: BusRo
   );
 }
 
-function RouteCard({ route, pointName, canManage, onEdit, onChanged }: { route: BusRoute; pointName: (id: string) => string; canManage: boolean; onEdit: () => void; onChanged: () => void }) {
+function RouteCard({ route, pointName, canManage, onEdit, onFares, onChanged }: { route: BusRoute; pointName: (id: string) => string; canManage: boolean; onEdit: () => void; onFares: () => void; onChanged: () => void }) {
   const s = BUS_STATUS[route.status];
   const [busy, setBusy] = useState(false);
   async function run(path: string, body: Record<string, unknown>, done: string) {
@@ -127,8 +128,13 @@ function RouteCard({ route, pointName, canManage, onEdit, onChanged }: { route: 
         ))}
       </ol>
       {route.review?.note && <p className="mt-2 rounded bg-amber-50 px-2 py-1 text-[12px] text-amber-800"><b>Note from MusafirBaba:</b> {route.review.note}</p>}
-      {canManage && route.status !== "RETIRED" && (
+      {route.status !== "RETIRED" && (
         <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={onFares} className="rounded-md border border-slate-300 px-2.5 py-1 text-[12px]">Fares</button>
+        </div>
+      )}
+      {canManage && route.status !== "RETIRED" && (
+        <div className="mt-2 flex flex-wrap gap-2">
           {editable && <button type="button" onClick={onEdit} className="rounded-md border border-slate-300 px-2.5 py-1 text-[12px]">Edit</button>}
           {editable && <button type="button" disabled={busy} onClick={() => run("submit", { expectedVersion: route.version }, "Sent to MusafirBaba")} className="inline-flex items-center gap-1 rounded-md bg-[#FE5300] px-2.5 py-1 text-[12px] font-medium text-white disabled:opacity-50"><Send className="h-3.5 w-3.5" /> Send for approval</button>}
           <button type="button" disabled={busy} onClick={() => run("copy", { name: `${route.name} (copy)`.slice(0, 120) }, "Copy made")} className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-2.5 py-1 text-[12px]"><Copy className="h-3.5 w-3.5" /> Copy</button>
@@ -139,7 +145,8 @@ function RouteCard({ route, pointName, canManage, onEdit, onChanged }: { route: 
   );
 }
 
-export function RoutesPanel({ routes, points, canManage, onChanged }: { routes: BusRoute[]; points: BusStop[]; canManage: boolean; onChanged: () => void }) {
+export function RoutesPanel({ routes, points, canManage, canFares, onChanged }: { routes: BusRoute[]; points: BusStop[]; canManage: boolean; canFares: boolean; onChanged: () => void }) {
+  const [fares, setFares] = useState<BusRoute | null>(null);
   const [editing, setEditing] = useState<BusRoute | "new" | null>(null);
   useEffect(() => {
     if (editing && editing !== "new" && !routes.some((r) => r.id === editing.id)) setEditing(null);
@@ -151,11 +158,12 @@ export function RoutesPanel({ routes, points, canManage, onChanged }: { routes: 
         <button type="button" disabled={points.length < 2} onClick={() => setEditing("new")} className="inline-flex items-center gap-1.5 rounded-md bg-[#FE5300] px-3 py-2 text-[13px] font-medium text-white disabled:opacity-50"><Plus className="h-4 w-4" /> New route</button>
       )}
       {canManage && points.length < 2 && <p className="text-[12px] text-slate-500">Add at least two points first.</p>}
+      {fares && <FaresPanel route={fares} names={fares.stops.map((s) => pointName(s.stopId))} canManage={canFares} onClose={() => setFares(null)} />}
       {editing && <RouteEditor route={editing === "new" ? null : editing} points={points} onCancel={() => setEditing(null)} onSaved={() => (setEditing(null), onChanged())} />}
       {routes.length === 0 ? (
         <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-[13px] text-slate-500">No routes yet.</p>
       ) : (
-        <ul className="space-y-2">{routes.map((r) => <RouteCard key={r.id} route={r} pointName={pointName} canManage={canManage} onEdit={() => setEditing(r)} onChanged={onChanged} />)}</ul>
+        <ul className="space-y-2">{routes.map((r) => <RouteCard key={r.id} route={r} pointName={pointName} canManage={canManage} onEdit={() => setEditing(r)} onFares={() => setFares(r)} onChanged={onChanged} />)}</ul>
       )}
     </div>
   );

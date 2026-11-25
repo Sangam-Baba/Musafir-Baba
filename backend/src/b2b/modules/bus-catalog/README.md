@@ -4,7 +4,7 @@ An operator's buses (seat layouts, details, papers), boarding points, routes and
 
 | | |
 | --- | --- |
-| **Collections** | `bus_layouts`, `bus_vehicles` (migration 0083); `bus_stops`, `bus_routes`, `bus_schedules` (0084) |
+| **Collections** | `bus_layouts`, `bus_vehicles` (migration 0083); `bus_stops`, `bus_routes`, `bus_schedules` (0084); `bus_fares` (0085) |
 | **Tenant** | `operatorOrgId` |
 | **Public interface** | `index.js` only |
 
@@ -20,3 +20,6 @@ An operator's buses (seat layouts, details, papers), boarding points, routes and
   CHANGES_REQUESTED; staff approve like buses. A route with an active schedule can't be retired.
 - Schedule: approved route + approved bus with a layout + weekdays + first / last day (first day today … +365). Never
   edited: ended from a day (bus-inventory cancels unsold trips from then). `forTrips()` / `ended()` feed the trip job.
+- Fares (B4): one document per route — net fare (paise) per stop pair × seat type, optionally per deck (deck row beats
+  any-deck row); date rules add / take off an amount between two dates, optionally on some weekdays; the last matching
+  rule wins; never below ₹1. Saved whole with a version check; change log of the last 100 saves. `quote()` for B5–B6.

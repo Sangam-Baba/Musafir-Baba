@@ -120,7 +120,7 @@ export interface BusRoute {
 export interface RouteInQueue extends BusRoute { operatorOrgId: string; operatorName: string | null; operatorRef: string | null; stopNames: Record<string, string | null> }
 export interface BusSchedule { id: string; routeId: string; vehicleId: string; weekdays: number[]; validFrom: string; validTo: string | null; status: "ACTIVE" | "ENDED"; endedFrom: string | null; version: number }
 export interface TripStop { stopId: string; cityId: string; name: string; at: string; boarding: boolean; dropping: boolean }
-export interface Trip { id: string; scheduleId: string; routeId: string; vehicleId: string; layoutId: string; date: string; stops: TripStop[]; departAt: string; arriveAt: string; seatCount: number; status: "SCHEDULED" | "CANCELLED"; cancelReason: string | null }
+export interface Trip { id: string; scheduleId: string; routeId: string; vehicleId: string; layoutId: string; date: string; stops: TripStop[]; departAt: string; arriveAt: string; seatCount: number; status: "SCHEDULED" | "CANCELLED"; saleStopped: boolean; cancelReason: string | null }
 /** A trip with its own seat map (copied when the trip was made) and each seat's taken legs. */
 export interface TripDetail extends Trip { decks: DeckGrid[] }
 
@@ -145,3 +145,23 @@ export const istTime = (iso: string) =>
   new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false });
 /** How many legs of the route a seat has sold / held / blocked (bits set in `taken`). */
 export const legsTaken = (taken: number) => taken.toString(2).split("").filter((b) => b === "1").length;
+
+// ── Stage 18 B4: counter blocks, stop sale, fares ──
+export interface SeatClaim { id: string; tripId: string; kind: "HOLD" | "BLOCK"; seats: string[]; fromIdx: number; toIdx: number; status: string; by: string; note: string | null; createdAt: string }
+export interface FareRow { fromIdx: number; toIdx: number; seatType: SeatType; deck: Deck | null; netPaise: number }
+export interface DateRule { id?: string | null; label: string; from: string; to: string; weekdays: number[]; addPaise: number }
+export interface RouteFares { routeId: string; rows: FareRow[]; rules: DateRule[]; version: number; history: { at: string; by: string; summary: string }[] }
+
+export const FARE_PROBLEM: Record<string, string> = {
+  FARE_STOPS_INVALID: "A fare's stops are wrong (board at the first, get off at a later stop).",
+  FARE_AMOUNT_INVALID: "Fares must be between ₹1 and ₹10,000.",
+  FARE_REPEATED: "The same fare (stops, seat type and deck) is there twice.",
+  SEAT_TYPE_INVALID: "Unknown seat type.",
+  RULE_DATES_INVALID: "A date rule's dates are wrong (last day on or after the first, within a year).",
+  WEEKDAYS_INVALID: "A date rule has a wrong weekday.",
+  RULE_AMOUNT_INVALID: "A date rule must add or take off between ₹1 and ₹5,000.",
+  TOO_MANY_FARES: "At most 2,000 fares per route.",
+  TOO_MANY_RULES: "At most 50 date rules per route.",
+};
+/** ₹ from paise, e.g. 90000 → "₹900". */
+export const rupees = (paise: number) => `₹${(paise / 100).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;

@@ -1,17 +1,16 @@
 "use client";
 // Trips & seats (bus operators, Stage 18 B3): the trips of the coming days, made from schedules 90 days ahead. Open a
 // trip to see its stops and its seat map (the layout as it was when the trip was made); taken seats are shaded.
-// Blocking seats for counter sales comes with B4.
+// Counter staff block seats sold at the counter; managers can stop online sale of a trip (B4).
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 import { b2b } from "@/b2b/api";
-import { istTime, legsTaken, type Trip, type TripDetail as TripWithSeats } from "@/b2b/bus";
+import { istTime, type Trip } from "@/b2b/bus";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
-import { SeatMap } from "@/b2b/components/bus/SeatMap";
-import { PageHeader, Panel, Pill } from "@/b2b/components/portal/ui";
-import { errorMessage } from "@/b2b/messages";
+import { TripSeatsPanel } from "@/b2b/components/bus/TripSeatsPanel";
+import { PageHeader, Pill } from "@/b2b/components/portal/ui";
 import { useBusinessSession } from "@/b2b/session-store";
 import type { Me } from "@/b2b/types";
 
@@ -26,29 +25,6 @@ export default function BusTripsPage() {
   return <BusinessShell>{(me) => <Trips me={me} />}</BusinessShell>;
 }
 
-function TripDetail({ id, token, orgId }: { id: string; token: string | null; orgId: string | null }) {
-  const trip = useQuery({ queryKey: ["b2b", "bus-trip", id, token, orgId], queryFn: () => b2b<TripWithSeats>(`/bus/trips/${id}`) });
-  if (trip.isError) return <p className="text-[13px] text-red-600">{errorMessage(trip.error)}</p>;
-  if (!trip.data) return <Loader2 className="h-5 w-5 animate-spin text-slate-400" />;
-  const t = trip.data;
-  const taken = t.decks.flatMap((d) => d.seats).filter((s) => s.taken);
-  return (
-    <Panel title={`${t.stops[0]?.name ?? ""} → ${t.stops[t.stops.length - 1]?.name ?? ""}`} subtitle={`${istTime(t.departAt)} · ${t.seatCount} seats · ${taken.length} with legs taken`}>
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
-        <ol className="space-y-1.5 text-[13px]">
-          {t.stops.map((s) => (
-            <li key={s.stopId} className="flex gap-2"><span className="w-28 shrink-0 text-slate-500">{istTime(s.at)}</span><span className="font-medium text-slate-800">{s.name}</span><span className="text-[11px] text-slate-400">{[s.boarding && "board", s.dropping && "get off"].filter(Boolean).join(" · ")}</span></li>
-          ))}
-        </ol>
-        <div className="space-y-2">
-          <SeatMap decks={t.decks} />
-          {taken.length > 0 && <p className="text-[12px] text-slate-600">Taken: {taken.map((s) => `${s.no} (${legsTaken(s.taken ?? 0)}/${t.stops.length - 1} legs)`).join(", ")}</p>}
-        </div>
-      </div>
-    </Panel>
-  );
-}
-
 function Trips({ me }: { me: Me }) {
   const token = useBusinessSession((s) => s.accessToken);
   const canRead = me.permissions.includes("bus-inventory.trip.read");
@@ -60,7 +36,7 @@ function Trips({ me }: { me: Me }) {
   const items = list.data?.data ?? [];
   return (
     <div className="space-y-4">
-      <PageHeader crumb="Trips & seats" title="Trips &" highlight="seats" subtitle="Trips are made from your schedules for the next 90 days. Open one to see its stops and seats." />
+      <PageHeader crumb="Trips & seats" title="Trips &" highlight="seats" subtitle="Trips are made from your schedules for the next 90 days. Open one to see its seats, block seats sold at the counter, or stop online sale." />
       <div className="flex items-center gap-2 text-[13px]">
         <button type="button" aria-label="Previous week" onClick={() => setFrom(plusDays(from, -7))} disabled={from <= todayIst()} className="rounded border border-slate-300 p-1 disabled:opacity-30"><ChevronLeft className="h-4 w-4" /></button>
         <span className="font-medium text-slate-800">{from} – {to}</span>
@@ -78,9 +54,10 @@ function Trips({ me }: { me: Me }) {
                 <span className="w-36 shrink-0 font-medium text-slate-900">{istTime(t.departAt)}</span>
                 <span className="min-w-0 flex-1 text-slate-700">{t.stops[0]?.name} → {t.stops[t.stops.length - 1]?.name}</span>
                 <span className="text-[12px] text-slate-500">{t.seatCount} seats</span>
+                {t.saleStopped && t.status === "SCHEDULED" && <Pill tone="amber">Sale stopped</Pill>}
                 <Pill tone={t.status === "SCHEDULED" ? "green" : "red"}>{t.status === "SCHEDULED" ? "Scheduled" : "Cancelled"}</Pill>
               </button>
-              {open === t.id && <TripDetail id={t.id} token={token} orgId={me.currentOrgId} />}
+              {open === t.id && <TripSeatsPanel id={t.id} me={me} token={token} />}
             </li>
           ))}
         </ul>

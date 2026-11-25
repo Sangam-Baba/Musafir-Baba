@@ -23,6 +23,11 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: 'Add and change boarding points, routes and schedules; send a route for approval',
     orgTypes: ['BUS_OPERATOR'],
   },
+  fareManage: {
+    code: 'bus-catalog.fare.manage',
+    description: 'Set net fares per stop pair and seat type, and date rules (weekend / festival)',
+    orgTypes: ['BUS_OPERATOR'],
+  },
   platformReview: {
     code: 'platform.bus.review',
     description: "MusafirBaba admin: approve operators' buses (and routes), ask for changes, suspend",

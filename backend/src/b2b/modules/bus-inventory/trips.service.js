@@ -47,6 +47,7 @@ export const tripDto = (t) => ({
   arriveAt: t.arriveAt,
   seatCount: t.seatCount,
   status: t.status,
+  saleStopped: Boolean(t.saleStopped),
   cancelReason: t.cancelReason,
 });
 
