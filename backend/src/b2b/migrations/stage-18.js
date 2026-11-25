@@ -10,7 +10,8 @@ import {
   VEHICLES_COLLECTION,
 } from '../modules/bus-catalog/index.js';
 import { BOOKINGS_COLLECTION, OPS_CANCELLATIONS_COLLECTION } from '../modules/bus-booking/index.js';
-import { CLAIMS_COLLECTION, TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
+import { CLAIMS_COLLECTION, TRIP_PROBLEMS_COLLECTION, TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
+import { BUS_LINES_COLLECTION, BUS_PAYABLES_COLLECTION, BUS_RUNS_COLLECTION } from '../modules/bus-payouts/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_18 = [
@@ -115,6 +116,30 @@ export const STAGE_18 = [
         { 'parts.status': 1 },
         { name: 'parts_pending', partialFilterExpression: { 'parts.status': 'PENDING' } },
       );
+    },
+  },
+  {
+    id: '0088-bus-payouts-problems',
+    description: 'Bus payables (one per booking), bus payout runs and lines, trip problems (ops queue), trips ended (completion)',
+    up: async (ctx) => {
+      await ctx.createCollection(BUS_PAYABLES_COLLECTION);
+      await ctx.createIndex(BUS_PAYABLES_COLLECTION, { bookingId: 1 }, { name: 'booking_unique', unique: true });
+      await ctx.createIndex(BUS_PAYABLES_COLLECTION, { status: 1, runId: 1, tripDate: 1 }, { name: 'due' });
+      await ctx.createIndex(BUS_PAYABLES_COLLECTION, { operatorOrgId: 1, tripDate: -1 }, { name: 'operator' });
+      await ctx.createCollection(BUS_RUNS_COLLECTION);
+      await ctx.createIndex(BUS_RUNS_COLLECTION, { status: 1, createdAt: -1 }, { name: 'status' });
+      await ctx.createCollection(BUS_LINES_COLLECTION);
+      await ctx.createIndex(BUS_LINES_COLLECTION, { runId: 1 }, { name: 'run' });
+      await ctx.createIndex(BUS_LINES_COLLECTION, { operatorOrgId: 1, paid: 1 }, { name: 'operator_paid' });
+      await ctx.createCollection(TRIP_PROBLEMS_COLLECTION);
+      await ctx.createIndex(TRIP_PROBLEMS_COLLECTION, { status: 1, createdAt: 1 }, { name: 'queue' });
+      await ctx.createIndex(TRIP_PROBLEMS_COLLECTION, { operatorOrgId: 1, createdAt: -1 }, { name: 'operator' });
+      await ctx.createIndex(
+        TRIP_PROBLEMS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+      await ctx.createIndex(BOOKINGS_COLLECTION, { status: 1, 'to.at': 1 }, { name: 'completion' });
     },
   },
 ];

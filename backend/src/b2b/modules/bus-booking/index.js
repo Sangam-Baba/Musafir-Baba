@@ -13,3 +13,4 @@ export { seatTotals, partCharge, partReversal } from './domain/cancel.js';
 export { OPS_CANCELLATIONS_COLLECTION, OpsCancellationRecord } from './models/ops-cancellation.model.js';
 export { createBusCancellations } from './cancel.service.js';
 export { ENGINE as BUS_ENGINE_SCOPE } from './engine-scope.js';
+export { completeTrips } from './completion.js';

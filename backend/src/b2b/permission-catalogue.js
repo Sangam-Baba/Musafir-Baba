@@ -29,6 +29,7 @@ import { PERMISSION_CATALOGUE as webhooks } from './modules/webhooks/index.js';
 import { PERMISSION_CATALOGUE as busCatalog } from './modules/bus-catalog/index.js';
 import { PERMISSION_CATALOGUE as busInventory } from './modules/bus-inventory/index.js';
 import { PERMISSION_CATALOGUE as busBooking } from './modules/bus-booking/index.js';
+import { PERMISSION_CATALOGUE as busPayouts } from './modules/bus-payouts/index.js';
 
 export const PERMISSION_CATALOGUE = mergeCatalogues([
   identity,
@@ -55,4 +56,5 @@ export const PERMISSION_CATALOGUE = mergeCatalogues([
   busCatalog,
   busInventory,
   busBooking,
+  busPayouts,
 ]);

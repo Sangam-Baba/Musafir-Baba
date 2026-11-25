@@ -12,6 +12,7 @@ import { AMENITY_LABEL, BUS_STATUS, daysUntil, KIND_LABEL, PAPER_KINDS, PAPER_LA
 import { errorMessage } from "../../messages";
 import { SeatMap } from "../bus/SeatMap";
 import { adminCall } from "./AdminPassGate";
+import { BusProblems } from "./BusProblems";
 import { BusRouteReview } from "./BusRouteReview";
 import { FleetEmptyState, FleetPanel, FleetPill, fleetSelectClass, fleetTone, Notice, PrimaryBtn, SecondaryBtn } from "./kit";
 
@@ -121,13 +122,20 @@ function BusCard({ bus, token, onDone }: { bus: BusInQueue; token: string; onDon
 
 /** Buses and routes waiting for MusafirBaba, one switch apart. */
 export function BusReviewTab({ token }: { token: string }) {
-  const [view, setView] = useState<"buses" | "routes">("buses");
+  const [view, setView] = useState<"buses" | "routes" | "problems">("buses");
   const pick = (
-    <select aria-label="Buses or routes" className={fleetSelectClass} value={view} onChange={(e) => setView(e.target.value as "buses" | "routes")}>
+    <select aria-label="Buses or routes" className={fleetSelectClass} value={view} onChange={(e) => setView(e.target.value as "buses" | "routes" | "problems")}>
       <option value="buses">Buses</option>
       <option value="routes">Routes</option>
+      <option value="problems">Trip problems</option>
     </select>
   );
+  if (view === "problems")
+    return (
+      <FleetPanel title="Trip problems" description="Reported by bus companies · oldest first" actions={pick}>
+        <BusProblems token={token} />
+      </FleetPanel>
+    );
   if (view === "routes")
     return (
       <FleetPanel title="Bus routes" description="Stops and times operators sent for approval · oldest first" actions={pick}>

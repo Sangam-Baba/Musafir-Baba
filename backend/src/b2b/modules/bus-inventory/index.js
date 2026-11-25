@@ -7,3 +7,5 @@ export { createTrips, cancelUnsold, tripDto, HORIZON_DAYS } from './trips.servic
 export { CLAIMS_COLLECTION, CLAIM_STATUSES, ClaimRecord } from './models/claim.model.js';
 export { createClaims, claimDto, HOLD_MINUTES } from './claims.service.js';
 export { journeyLegs, maskOf, entriesOverlap, freeFor } from './domain/seats.js';
+export { TRIP_PROBLEMS_COLLECTION, TRIP_PROBLEM_KINDS, TripProblemRecord } from './models/trip-problem.model.js';
+export { createTripProblems, problemDto, TRIP_PROBLEM_REPORTED } from './problems.service.js';

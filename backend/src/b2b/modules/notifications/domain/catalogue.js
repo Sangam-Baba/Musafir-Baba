@@ -269,6 +269,7 @@ export const ADMIN_QUEUES = Object.freeze({
   'kyc.application.submitted': 'kyc',
   'bus-catalog.vehicle.submitted': 'buses', // Stage 18: buses waiting for review
   'bus-catalog.route.submitted': 'buses', // Stage 18: routes waiting for review (same admin tab)
+  'bus-inventory.trip-problem.reported': 'buses', // Stage 18 B7: a bus company reported a trip problem
   'kyc.application.resubmitted': 'kyc',
   'kyc.application.assigned': 'kyc',
   'kyc.application.approved': 'kyc',

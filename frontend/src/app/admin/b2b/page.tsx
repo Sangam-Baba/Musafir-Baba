@@ -15,6 +15,7 @@ import { AdminPassGate, adminCall } from "@/b2b/components/admin/AdminPassGate";
 import { BookingRequestsTab } from "@/b2b/components/admin/BookingRequestsTab";
 import { BusReviewTab } from "@/b2b/components/admin/BusReviewTab";
 import { BusOpsCancellations } from "@/b2b/components/admin/BusOpsCancellations";
+import { BusPayoutsTab } from "@/b2b/components/admin/BusPayoutsTab";
 import { FinanceTab } from "@/b2b/components/admin/finance/FinanceTab";
 import { KycQueueTab } from "@/b2b/components/admin/KycQueueTab";
 import { AdminPageHeader, AdminTabsList, FleetKpiStrip, FleetPage, SECTION, Tabs, TabsContent } from "@/b2b/components/admin/kit";
@@ -75,6 +76,7 @@ const AREAS: AreaDef[] = [
     icon: Settings2,
     tagline: "MusafirBaba's own back office — money, payouts, GST, reports and system health; data requests; who on our staff can do what.",
     tabs: [
+      ...(BUS_ON ? [{ value: "bus-payouts", label: "Bus payouts", icon: BusFront, title: "Bus payouts", description: "Weekly payout runs for bus companies — separate from hotel payouts.", render: (t: string) => <BusPayoutsTab token={t} /> } satisfies TabDef] : []),
       { value: "finance", label: "Finance", icon: Landmark, title: "Finance", description: "Ledger, payments, refunds, reconciliation, hotel payouts, GST register, reports, system health.", render: (t) => <FinanceTab token={t} /> },
       { value: "privacy", label: "Privacy", icon: ShieldCheck, title: "Data requests", description: "DPDP requests: copies, corrections and deletions of personal data (30 days).", render: (t) => <PrivacyTab token={t} /> },
       { value: "staff", label: "Staff access", icon: ShieldCheck, title: "Staff access", description: "Which MusafirBaba staff can use B2B admin.", render: (t) => <StaffTab token={t} /> },

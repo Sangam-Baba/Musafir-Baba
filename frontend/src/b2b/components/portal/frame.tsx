@@ -21,6 +21,7 @@ const MAIN: NavItem[] = [
   { href: "/business/bus-routes", label: "Routes & schedules", icon: Route, permission: "bus-catalog.route.read" }, // Stage 18 B3
   { href: "/business/bus-trips", label: "Trips & seats", icon: CalendarRange, permission: "bus-inventory.trip.read" }, // Stage 18 B3
   { href: "/business/bus-bookings", label: "Bus Bookings", icon: ClipboardList, permission: "bus-booking.booking.read" }, // Stage 18 B6
+  { href: "/business/bus-payouts", label: "Bus Payouts", icon: Banknote, permission: "bus-payouts.payable.read" }, // Stage 18 B7 (Owner)
   // hotels (Stage 08): confirmed bookings to acknowledge — the acknowledge permission is hotel-only, so clients never see it
   { href: "/business/bookings", label: "Bookings", icon: CalendarCheck, permission: "hotel-booking.booking.acknowledge" },
   { href: "/business/statement", label: "Statement", icon: FileSpreadsheet, permission: "wallet.statement.read" },

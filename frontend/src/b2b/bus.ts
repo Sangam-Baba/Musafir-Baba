@@ -216,3 +216,10 @@ export interface Manifest { trip: { id: string; date: string; departAt: string; 
 export interface CancelQuote { seats: string[]; percent: number; chargePaise: number; refundPaise: number; policy: string | null }
 export interface CancellationPolicy { slabs: { hoursBefore: number; percent: number }[]; summary: string; isDefault: boolean; version: number }
 export interface OpsCancellation { _id: string; scope: "BOOKING" | "TRIP"; bookingRef: string | null; tripId: string | null; operatorOrgId: string; reason: string; status: "PROPOSED" | "DONE" | "REJECTED"; proposedBy: string; decidedBy: string | null; createdAt: string; results: { bookingRef: string; refundPaise: number; error: string | null }[] }
+
+// ── Stage 18 B7b: payouts and trip problems ──
+export interface BusPayable { id: string; bookingRef: string; orderRef: string; tripDate: string; amountPaise: number; status: "PENDING" | "ELIGIBLE" | "PAID" | "VOID"; eligibleAt: string | null; runId: string | null; paidAt: string | null }
+export interface BusPayoutLine { _id: string; runId: string; operatorOrgId: string; payableIds: string[]; grossPaise: number; netPaise: number; status: "INCLUDED" | "HELD"; holdReasons: string[]; paid: boolean; createdAt: string }
+export interface BusPayoutRun { _id: string; ref: string; status: "DRAFT" | "APPROVED" | "FILE_READY" | "PAID" | "CANCELLED"; cycleEnd: string; totals: { lines?: number; held?: number; grossPaise?: number; netPaise?: number }; preparedBy: string; approvedBy: string | null; bankReference: string | null; createdAt: string }
+export interface TripProblem { id: string; operatorOrgId: string; tripId: string; tripDate: string; kind: "BREAKDOWN" | "DELAY" | "CANCELLED_BY_OPERATOR" | "OTHER"; note: string; delayMinutes: number | null; status: "OPEN" | "RESOLVED"; reportedBy: string; resolvedBy: string | null; resolution: string | null; createdAt: string }
+export const PROBLEM_LABEL: Record<TripProblem["kind"], string> = { BREAKDOWN: "Breakdown", DELAY: "Delay", CANCELLED_BY_OPERATOR: "Trip cancelled by us", OTHER: "Other" };

@@ -230,6 +230,9 @@ const MESSAGES: Record<string, string> = {
   SLABS_INVALID: "The cancellation slabs have problems — charges must rise as departure gets closer.",
   CANCELLATION_ALREADY_DECIDED: "Someone already decided this.",
   USE_BUS_CANCELLATION: "Cancel bus seats from the ticket.",
+  PAYOUT_RUN_OPEN: "A bus payout run is already open — finish or cancel it first.",
+  PROBLEM_ALREADY_RESOLVED: "Someone already resolved this.",
+  BANK_DETAILS_MISSING: "A company has no bank details — hold its line or ask it to add them.",
 };
 
 export function errorMessage(error: unknown): string {

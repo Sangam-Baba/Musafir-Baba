@@ -35,7 +35,7 @@ import { subscriptionParts } from './subscriptions-wiring.js';
 import { webhookParts } from './webhooks-wiring.js';
 import { createBusReview, createSchedules } from '../modules/bus-catalog/index.js';
 import { createClaims, createTrips } from '../modules/bus-inventory/index.js';
-import { BUS_ENGINE_SCOPE, BusBookingRecord } from '../modules/bus-booking/index.js';
+import { BUS_ENGINE_SCOPE, BusBookingRecord, completeTrips } from '../modules/bus-booking/index.js';
 import { createPartCancellations } from '../modules/orders/index.js';
 import { todayIn } from '../core/dates.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
@@ -85,7 +85,8 @@ export function startDatabase(env, log, hub, identity) {
   const wallet = walletParts(systemClock);
   const subscriptions = subscriptionParts(systemClock, env);
   const webhooks = webhookParts(systemClock, env); // Stage 14: nothing unless B2B_API_ENABLED=true
-  const busSchedules = env.B2B_BUS_ENABLED === 'true' ? [busPaperReminders(), busTrips(), busSeatSweeper(), busPartReconcile(engine)] : []; // Stage 18
+  const busSchedules =
+    env.B2B_BUS_ENABLED === 'true' ? [busPaperReminders(), busTrips(), busSeatSweeper(), busPartReconcile(engine), busCompletion()] : []; // Stage 18
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -288,4 +289,9 @@ function busPartReconcile(engine) {
     return { finished };
   }
   return { name: 'bus-part-cancel-reconcile', everyMs: 60_000, run };
+}
+
+/** Bus trips that ended → bookings COMPLETED (payables ready to pay, orders complete) — hourly, repeat-safe (S18-T10). */
+function busCompletion() {
+  return { name: 'bus-trip-completion', everyMs: 60 * 60_000, run: () => completeTrips({ clock: systemClock }) };
 }

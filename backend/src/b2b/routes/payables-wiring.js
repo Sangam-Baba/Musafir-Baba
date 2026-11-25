@@ -6,6 +6,7 @@
 import { completeStays, payableState } from '../modules/hotel-booking/index.js';
 import { ORDERS, OrderRecord, pushHistory } from '../modules/orders/index.js';
 import { createPayables } from '../modules/wallet/index.js';
+import { createBusPayables } from '../modules/bus-payouts/index.js';
 
 export const COMPLETION_EVERY_MS = 60 * 60_000;
 const BOOKING_EVENTS = [
@@ -54,8 +55,15 @@ export function payableJobs(ordersDeps) {
       },
       {
         consumer: 'orders-completed',
-        types: ['hotel-booking.booking.completed'],
+        types: ['hotel-booking.booking.completed', 'bus-booking.booking.completed'], // Stage 18 B7: bus trips too
         handler: async (/** @type {{ payload: any }} */ e) => completeOrderIfDone(ordersDeps, String(e.payload.orderId)),
+      },
+      {
+        consumer: 'bus-payables', // Stage 18 B7: bus company payables follow their bookings (separate from hotel payables)
+        types: ['bus-booking.booking.confirmed', 'bus-booking.booking.cancelled', 'bus-booking.booking.completed'],
+        handler: async (/** @type {{ payload: any }} */ e) => {
+          if (typeof e.payload?.bookingId === 'string') await createBusPayables(ordersDeps).sync(e.payload.bookingId);
+        },
       },
     ],
     completion: {

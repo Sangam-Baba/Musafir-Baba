@@ -13,6 +13,7 @@ import { errorMessage } from "../../messages";
 import type { Me } from "../../types";
 import { inputCls } from "../listing/ui";
 import { Panel, Pill } from "../portal/ui";
+import { ReportProblem } from "./ReportProblem";
 import { SeatMap, seatAt } from "./SeatMap";
 
 function BlockForm({ trip, seats, onDone }: { trip: TripDetail; seats: string[]; onDone: () => void }) {
@@ -114,6 +115,7 @@ export function TripSeatsPanel({ id, me, token }: { id: string; me: Me; token: s
       action={canSale && live && <button type="button" onClick={toggleSale} className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[12px] ${t.saleStopped ? "bg-emerald-600 text-white" : "border border-red-200 text-red-600"}`}><Ban className="h-3.5 w-3.5" /> {t.saleStopped ? "Restart online sale" : "Stop online sale"}</button>}
     >
       {t.saleStopped && <p className="mb-3"><Pill tone="red">Online sale stopped</Pill></p>}
+      {canSale && live && <div className="mb-3"><ReportProblem tripId={t.id} /></div>}
       <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
         <div className="space-y-4">
           <ol className="space-y-1.5 text-[13px]">
