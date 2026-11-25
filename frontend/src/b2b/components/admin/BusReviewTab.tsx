@@ -1,5 +1,5 @@
 "use client";
-// Buses (MusafirBaba staff, Stage 18 B2): buses waiting for approval (oldest first) or by status. Open one to see its
+// Buses and routes (MusafirBaba staff, Stage 18 B2–B3): buses waiting for approval (oldest first) or by status. Open one to see its
 // papers (view each file), seat map and amenities, then approve, ask for changes (with a note), suspend or reinstate.
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BusFront, Eye, Loader2 } from "lucide-react";
@@ -12,6 +12,7 @@ import { AMENITY_LABEL, BUS_STATUS, daysUntil, KIND_LABEL, PAPER_KINDS, PAPER_LA
 import { errorMessage } from "../../messages";
 import { SeatMap } from "../bus/SeatMap";
 import { adminCall } from "./AdminPassGate";
+import { BusRouteReview } from "./BusRouteReview";
 import { FleetEmptyState, FleetPanel, FleetPill, fleetSelectClass, fleetTone, Notice, PrimaryBtn, SecondaryBtn } from "./kit";
 
 const TONE: Record<BusStatus, string> = { DRAFT: fleetTone.slate, SUBMITTED: fleetTone.sky, APPROVED: fleetTone.emerald, CHANGES_REQUESTED: fleetTone.amber, SUSPENDED: fleetTone.red, RETIRED: fleetTone.slate };
@@ -118,7 +119,25 @@ function BusCard({ bus, token, onDone }: { bus: BusInQueue; token: string; onDon
   );
 }
 
+/** Buses and routes waiting for MusafirBaba, one switch apart. */
 export function BusReviewTab({ token }: { token: string }) {
+  const [view, setView] = useState<"buses" | "routes">("buses");
+  const pick = (
+    <select aria-label="Buses or routes" className={fleetSelectClass} value={view} onChange={(e) => setView(e.target.value as "buses" | "routes")}>
+      <option value="buses">Buses</option>
+      <option value="routes">Routes</option>
+    </select>
+  );
+  if (view === "routes")
+    return (
+      <FleetPanel title="Bus routes" description="Stops and times operators sent for approval · oldest first" actions={pick}>
+        <BusRouteReview token={token} />
+      </FleetPanel>
+    );
+  return <BusQueue token={token} pick={pick} />;
+}
+
+function BusQueue({ token, pick }: { token: string; pick: React.ReactNode }) {
   const qc = useQueryClient();
   const [status, setStatus] = useState<BusStatus>("SUBMITTED");
   const key = ["b2b-admin", "buses", status];
@@ -129,9 +148,12 @@ export function BusReviewTab({ token }: { token: string }) {
       title={status === "SUBMITTED" ? "Buses waiting for MusafirBaba" : `Buses — ${BUS_STATUS[status].label}`}
       description={list.data ? `${items.length} shown${status === "SUBMITTED" ? " · oldest first" : ""}` : undefined}
       actions={
-        <select aria-label="Status" className={fleetSelectClass} value={status} onChange={(e) => setStatus(e.target.value as BusStatus)}>
-          {(Object.keys(BUS_STATUS) as BusStatus[]).map((s) => <option key={s} value={s}>{BUS_STATUS[s].label}</option>)}
-        </select>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          {pick}
+          <select aria-label="Status" className={fleetSelectClass} value={status} onChange={(e) => setStatus(e.target.value as BusStatus)}>
+            {(Object.keys(BUS_STATUS) as BusStatus[]).map((s) => <option key={s} value={s}>{BUS_STATUS[s].label}</option>)}
+          </select>
+        </div>
       }
     >
       {list.isLoading ? (

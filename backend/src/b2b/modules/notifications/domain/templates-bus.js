@@ -41,4 +41,28 @@ export const BUS_TEMPLATES = Object.freeze({
     subject: 'Your bus papers have expired — the bus stopped selling',
     text: 'Hello,\n\nPapers of a {{orgName}} bus have expired, so the bus has stopped selling. Upload the renewed paper to start again.\n\nOpen My Buses: {{link}}\n\nMusafirBaba Business',
   },
+  'bus.route-approved': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Route approved',
+    body: 'A {{orgName}} route has been approved by MusafirBaba. Add a schedule (bus and days) and trips appear for the next 90 days.',
+    subject: 'Your bus route is approved on MusafirBaba',
+    text: 'Hello,\n\nA {{orgName}} route has been approved by MusafirBaba. Add a schedule (bus and days) and trips appear for the next 90 days.\n\nOpen Routes: {{link}}\n\nMusafirBaba Business',
+  },
+  'bus.route-changes': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Route needs changes',
+    body: 'MusafirBaba asked for changes to a {{orgName}} route. Open Routes to see the note and send it again.',
+    subject: 'Changes needed for your bus route on MusafirBaba',
+    text: 'Hello,\n\nMusafirBaba asked for changes to a {{orgName}} route. Open Routes to see the note and send it again.\n\nOpen Routes: {{link}}\n\nMusafirBaba Business',
+  },
+  'bus.route-suspended': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'Route suspended',
+    body: 'A {{orgName}} route was suspended by MusafirBaba; no new trips are made for it. Open Routes for the reason.',
+    subject: 'Your bus route was suspended on MusafirBaba',
+    text: 'Hello,\n\nA {{orgName}} route was suspended by MusafirBaba; no new trips are made for it. Open Routes for the reason.\n\nOpen Routes: {{link}}\n\nMusafirBaba Business',
+  },
 });

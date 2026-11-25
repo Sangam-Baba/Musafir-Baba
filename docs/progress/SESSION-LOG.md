@@ -4,15 +4,15 @@
 
 <!-- Copy this block for each session -->
 
-## 2026-11-25 — AI (Claude) — Stage 18 bus service B1 + B2 (S18-T01 to T05)
+## 2026-11-25 — AI (Claude) — Stage 18 bus service B1–B3 (S18-T01 to T06)
 
 - **Goal:** start the owner-approved bus plan: bus operators as a company type, then buses, seat layouts, papers and staff approval.
-- **Done:** S18-T01–T05 → DONE. Operator company type (`BUS_OPERATOR`, `MBBO-…`, Owner / Manager / Counter staff), operator registration + KYC; seat layouts with templates and an editor; buses with four papers and expiry; staff review (admin Partners → Buses); paper reminders; operator screens My Buses / bus page / Seat layouts. Also earlier the same day: admin regrouped into Partners / Services / Control, "How it works" guides, full local demo data.
-- **Not done / why:** bus photos → DEF-043 (with the website pages in B8). B3–B8 not started. Nothing pushed — owner wants everything tried locally first.
+- **Done:** S18-T01–T06 → DONE. B3: boarding points, routes (stops + times, staff approval), schedules, new module `bus-inventory` with trips and trip seats made 90 days ahead by a repeat-safe job; Routes & schedules and Trips & seats screens; migration 0084. Operator company type (`BUS_OPERATOR`, `MBBO-…`, Owner / Manager / Counter staff), operator registration + KYC; seat layouts with templates and an editor; buses with four papers and expiry; staff review (admin Partners → Buses); paper reminders; operator screens My Buses / bus page / Seat layouts. Also earlier the same day: admin regrouped into Partners / Services / Control, "How it works" guides, full local demo data.
+- **Not done / why:** bus photos → DEF-043 (with the website pages in B8). B4–B8 not started. Nothing pushed — owner wants everything tried locally first.
 - **Files / PR:** `backend/src/b2b/modules/bus-catalog/*`, `routes/bus-catalog.js`, `routes/files.js` (upload purpose `bus-paper`, labelled per-purpose guard), notifications `catalogue-bus.js` / `templates-bus.js`, migration 0083; frontend `app/business/buses/*`, `b2b/bus.ts`, `b2b/components/bus/*`, `admin/BusReviewTab.tsx`. No PR yet (local commits).
-- **Tests run:** `lint:b2b` ✅, `typecheck:b2b` ✅, `b2b:guards` ✅ (only the known .DS_Store / screenui-desgine items), bus tests ✅, full suite ✅ (174 files, 1139 tests), website tsc (b2b files) ✅, `next build` ✅.
-- **Decisions / deferrals:** ADR-0016 (bus product, `bus_` prefix); DEF-043.
-- **Next step:** S18-T06 — B3 routes, stops, schedules, trips.
+- **Tests run:** `lint:b2b` ✅, `typecheck:b2b` ✅, `b2b:guards` ✅ (only the known .DS_Store / screenui-desgine items), bus tests ✅, full suite ✅ (175 files, 1142 tests), website tsc (b2b files) ✅, `next build` ✅.
+- **Decisions / deferrals:** ADR-0016 (bus product, `bus_` prefix); DEF-043; routes capped at 31 stops (plan said 32) so leg masks stay int32 for MongoDB `$bit`; trips copy their seat map so later layout edits never move sold seats.
+- **Next step:** S18-T07 — B4 seat inventory (holds / block / release with leg masks), fares per stop pair and seat type with date overrides.
 
 
 ## 2026-11-24 — AI (Claude) — Release: Stages 13–16 live (switched off)

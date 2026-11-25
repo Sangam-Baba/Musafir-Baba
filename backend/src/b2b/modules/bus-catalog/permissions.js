@@ -13,6 +13,16 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
     description: 'Add and change buses, seat layouts and papers; send a bus for approval',
     orgTypes: ['BUS_OPERATOR'],
   },
+  routeRead: {
+    code: 'bus-catalog.route.read',
+    description: "See the company's boarding points, routes and schedules",
+    orgTypes: ['BUS_OPERATOR'],
+  },
+  routeManage: {
+    code: 'bus-catalog.route.manage',
+    description: 'Add and change boarding points, routes and schedules; send a route for approval',
+    orgTypes: ['BUS_OPERATOR'],
+  },
   platformReview: {
     code: 'platform.bus.review',
     description: "MusafirBaba admin: approve operators' buses (and routes), ask for changes, suspend",

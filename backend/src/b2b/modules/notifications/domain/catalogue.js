@@ -257,12 +257,16 @@ export const EVENT_CATEGORIES = Object.freeze({
   'bus-catalog.vehicle.suspended': 'bus.vehicle-suspended',
   'bus-catalog.paper.expiring': 'bus.paper-expiring',
   'bus-catalog.paper.expired': 'bus.paper-expired',
+  'bus-catalog.route.approved': 'bus.route-approved',
+  'bus-catalog.route.changes-requested': 'bus.route-changes',
+  'bus-catalog.route.suspended': 'bus.route-suspended',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */
 export const ADMIN_QUEUES = Object.freeze({
   'kyc.application.submitted': 'kyc',
   'bus-catalog.vehicle.submitted': 'buses', // Stage 18: buses waiting for review
+  'bus-catalog.route.submitted': 'buses', // Stage 18: routes waiting for review (same admin tab)
   'kyc.application.resubmitted': 'kyc',
   'kyc.application.assigned': 'kyc',
   'kyc.application.approved': 'kyc',

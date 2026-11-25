@@ -63,7 +63,7 @@ separate product inside the B2B system, behind its own switch.
 The same guarantee as hotel rooms (`05-inventory-and-no-double-booking.md`), adapted to seats and route legs:
 
 - A route with stops `S0 … Sn` has **legs** `0 … n-1` (S0→S1, S1→S2 …). A booking from stop *a* to stop *b* needs legs
-  `a … b-1` — written as a **leg mask** (a number with those bits set; up to 31 legs per route).
+  `a … b-1` — written as a **leg mask** (a number with those bits set; up to 30 legs — 31 stops — per route, so masks stay int32, which MongoDB's `$bit` needs).
 - One document per **trip seat** (`bus_trip_seats`: trip, seat, `taken` mask, entries per hold / booking / block).
 - Taking a seat is **one conditional update**: only if none of the wanted legs is taken
   (`taken: { $bitsAllClear: mask }`) → set them (`$bit: { taken: { or: mask } }`) and record the hold id in the same

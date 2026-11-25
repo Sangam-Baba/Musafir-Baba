@@ -183,8 +183,8 @@ export const SYSTEM_ROLES = Object.freeze([
     key: 'bus.counterStaff',
     orgType: 'BUS_OPERATOR',
     name: 'Counter staff',
-    description: 'Block and release seats sold at the counter; read bookings and manifests',
-    patterns: [SEE_ORG, 'bus-inventory.seat.block', 'bus-booking.**.read'],
+    description: 'See trips; block and release seats sold at the counter; read bookings and manifests',
+    patterns: [SEE_ORG, 'bus-inventory.trip.read', 'bus-inventory.seat.block', 'bus-booking.**.read'],
     defaultScope: 'ORG',
   },
   // Hotels

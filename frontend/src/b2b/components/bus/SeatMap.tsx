@@ -43,13 +43,19 @@ export function applyTool(decks: DeckGrid[], deckIndex: number, row: number, col
 
 function SeatBox({ seat, onClick }: { seat: Seat; onClick?: () => void }) {
   const Icon = seat.type === "SEATER" ? Armchair : BedSingle;
-  const colour = seat.ladies ? "border-pink-300 bg-pink-50 text-pink-700" : seat.type === "SEATER" ? "border-slate-300 bg-white text-slate-700" : "border-sky-300 bg-sky-50 text-sky-700";
+  const colour = seat.taken
+    ? "border-slate-400 bg-slate-200 text-slate-500"
+    : seat.ladies
+      ? "border-pink-300 bg-pink-50 text-pink-700"
+      : seat.type === "SEATER"
+        ? "border-slate-300 bg-white text-slate-700"
+        : "border-sky-300 bg-sky-50 text-sky-700";
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      title={`${seat.no} · ${SEAT_LABEL[seat.type]}${seat.ladies ? " · ladies" : ""}`}
+      title={`${seat.no} · ${SEAT_LABEL[seat.type]}${seat.ladies ? " · ladies" : ""}${seat.taken ? " · taken for part or all of the route" : ""}`}
       style={{ gridColumn: `span ${seat.span ?? 1}` }}
       className={`flex h-10 flex-col items-center justify-center rounded-md border text-[10px] font-semibold leading-none ${colour} ${onClick ? "hover:ring-2 hover:ring-[#FE5300]/40" : "cursor-default"}`}
     >
@@ -111,6 +117,7 @@ export function SeatMap({ decks, onCell }: { decks: DeckGrid[]; onCell?: (deckIn
         <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded border border-slate-300 bg-white" /> Seat</span>
         <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded border border-sky-300 bg-sky-50" /> Sleeper / semi-sleeper</span>
         <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded border border-pink-300 bg-pink-50" /> Ladies</span>
+        {decks.some((d) => d.seats.some((s) => s.taken)) && <span className="inline-flex items-center gap-1"><span className="h-3 w-3 rounded border border-slate-400 bg-slate-200" /> Taken (some or all legs)</span>}
       </div>
     </div>
   );

@@ -41,4 +41,28 @@ export const BUS_CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/buses',
   },
+  'bus.route-approved': {
+    audience: 'ORG',
+    permission: 'bus-catalog.route.read',
+    critical: false,
+    label: 'Route approved',
+    emailTo: 'OWNERS',
+    link: '/business/bus-routes',
+  },
+  'bus.route-changes': {
+    audience: 'ORG',
+    permission: 'bus-catalog.route.read',
+    critical: true,
+    label: 'Route needs changes',
+    emailTo: 'OWNERS',
+    link: '/business/bus-routes',
+  },
+  'bus.route-suspended': {
+    audience: 'ORG',
+    permission: 'bus-catalog.route.read',
+    critical: true,
+    label: 'Route suspended',
+    emailTo: 'OWNERS',
+    link: '/business/bus-routes',
+  },
 });

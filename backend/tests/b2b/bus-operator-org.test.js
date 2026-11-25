@@ -49,7 +49,7 @@ describe('BUS_OPERATOR', () => {
     for (const p of owner)
       expect(p).not.toMatch(/^(hotel-|orders\.|wallet\.|platform\.|api-access\.|webhooks\.|subscriptions\.|metering\.)/);
     const staff = resolveSystemRole(/** @type {any} */ (systemRole('bus.counterStaff')), PERMISSION_CATALOGUE);
-    expect(staff).toEqual(['organizations.org.read']); // seat permissions arrive with the bus modules (B2+)
+    expect(staff).toEqual(['bus-inventory.trip.read', 'organizations.org.read']); // trips readable (S18-T06); seat blocking arrives with B4
     const hotelOwner = resolveSystemRole(/** @type {any} */ (systemRole('hotel.owner')), PERMISSION_CATALOGUE);
     expect(hotelOwner).toEqual(expect.arrayContaining(['hotel-catalog.property.read', 'wallet.statement.read']));
     expect(hotelOwner.some((p) => p.startsWith('bus-'))).toBe(false);

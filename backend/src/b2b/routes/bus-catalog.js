@@ -12,9 +12,7 @@ import express from 'express';
 import { z } from 'zod';
 
 import { todayIn } from '../core/dates.js';
-import { systemScope } from '../core/db/tenant-plugin.js';
-import { ForbiddenError, ServiceUnavailableError } from '../core/errors.js';
-import { contextOf } from '../core/http/context-middleware.js';
+import { ServiceUnavailableError } from '../core/errors.js';
 import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import {
@@ -27,12 +25,10 @@ import {
   PERMISSIONS as BUS,
   SEAT_TYPES,
 } from '../modules/bus-catalog/index.js';
-import { OrganizationRecord } from '../modules/organizations/index.js';
+import { Id, input, operatorOf, Params, ReviewBody, ReviewStatus, Version, withOperatorNames } from './bus-http.js';
+import { addBusRouteRoutes } from './bus-routes.js';
 import { handle, staffOf } from './payout-finance-admin.js';
 
-const Id = z.string().regex(/^[a-f0-9]{24}$/);
-const Params = z.strictObject({ id: Id });
-const Version = z.number().int().min(1);
 const Seat = z.strictObject({
   no: z.string().trim().min(1).max(6),
   row: z.number().int().min(0).max(19),
@@ -54,18 +50,10 @@ const Decks = z
   .max(2);
 const Kind = z.enum(['SEATER', 'SLEEPER', 'SEMI_SLEEPER', 'MIXED']);
 
-/** The signed-in bus operator. @param {import('express').Response} res */
-function operatorOf(res) {
-  const { actor } = contextOf(res);
-  if (actor.type !== 'member' || actor.orgType !== 'BUS_OPERATOR') throw new ForbiddenError();
-  return { orgId: actor.orgId, userId: actor.userId };
-}
-/** @param {import('express').Response} res */
-const input = (res) => /** @type {{ params: any, query: any, body: any }} */ (res.locals.input);
-
 /**
  * @typedef {{ clock: import('../core/clock.js').Clock, env: NodeJS.ProcessEnv,
- *   files: { describe: (orgId: string, fileId: string) => Promise<{ purpose: string } | null> } }} BusCatalogDeps
+ *   files: { describe: (orgId: string, fileId: string) => Promise<{ purpose: string } | null> },
+ *   cityExists: (cityId: string) => Promise<boolean> }} BusCatalogDeps
  */
 
 /** @param {import('express').Router} router @param {ReturnType<typeof createLayouts>} layouts */
@@ -180,24 +168,6 @@ function vehicleActions(router, vehicles, manage) {
     );
 }
 
-const NAMES_SCOPE = systemScope('bus review: operator company names', { routine: true });
-
-/** Adds each operator's company name and reference to the review queue. @param {{ operatorOrgId: string }[]} list */
-async function withOperatorNames(list) {
-  const orgs = await OrganizationRecord.find(
-    { _id: { $in: [...new Set(list.map((v) => v.operatorOrgId))] } },
-    { displayName: 1, reference: 1 },
-  )
-    .setOptions(NAMES_SCOPE)
-    .lean();
-  const byId = new Map(orgs.map((o) => [String(o._id), o]));
-  return list.map((v) => ({
-    ...v,
-    operatorName: byId.get(v.operatorOrgId)?.displayName ?? null,
-    operatorRef: byId.get(v.operatorOrgId)?.reference ?? null,
-  }));
-}
-
 /** @param {import('express').Router} router @param {ReturnType<typeof createBusReview>} review */
 function reviewRoutes(router, review) {
   const reviewer = requirePermission(BUS.platformReview);
@@ -205,7 +175,7 @@ function reviewRoutes(router, review) {
     '/admin/bus/vehicles',
     reviewer,
     validate({
-      query: z.strictObject({ status: z.enum(['SUBMITTED', 'APPROVED', 'CHANGES_REQUESTED', 'SUSPENDED', 'DRAFT', 'RETIRED']).optional() }),
+      query: z.strictObject({ status: ReviewStatus.optional() }),
     }),
     handle(async (_q, res) => ({ data: await withOperatorNames(await review.queue(input(res).query)) })),
   );
@@ -214,10 +184,7 @@ function reviewRoutes(router, review) {
     reviewer,
     validate({
       params: Params,
-      body: z.strictObject({
-        move: z.enum(['approve', 'requestChanges', 'suspend', 'reinstate', 'retire']),
-        note: z.string().trim().max(500).nullish(),
-      }),
+      body: ReviewBody,
     }),
     handle(async (_q, res) => review.decide(staffOf(res), input(res).params.id, input(res).body.move, input(res).body.note ?? null)),
   );
@@ -234,5 +201,6 @@ export function busCatalogRoutes(deps) {
   layoutRoutes(router, createLayouts());
   vehicleRoutes(router, createVehicles({ clock: deps.clock, today, files: deps.files }));
   reviewRoutes(router, createBusReview({ clock: deps.clock, today }));
+  addBusRouteRoutes(router, { clock: deps.clock, today, cityExists: deps.cityExists });
   return router;
 }

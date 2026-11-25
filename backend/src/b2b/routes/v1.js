@@ -56,6 +56,7 @@ import {
   createPropertyService,
   createRevisionService,
   createRoomTypeService,
+  CityRecord,
 } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
@@ -167,7 +168,10 @@ function stage02Routes(env, clock, identity) {
   const files = createFiles(env, clock);
   const kyc = createKycService({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(fileRoutes(files));
-  router.use(busCatalogRoutes({ clock, env, files })); // Stage 18 (503 unless B2B_BUS_ENABLED)
+  // Stage 18 (503 unless B2B_BUS_ENABLED); bus points use the shared city list (read only)
+  const cityExists = async (/** @type {string} */ id) =>
+    /^[a-f0-9]{24}$/.test(id) && Boolean(await CityRecord.exists({ _id: id, active: true }));
+  router.use(busCatalogRoutes({ clock, env, files, cityExists }));
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
   const isOwnOrg = ownOrgCheck(identity);
   const gst = createGstRegistrations({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET, isOwnOrg });

@@ -1,6 +1,13 @@
 // @ts-check
 /** Stage 18 — bus service (new collections with the `bus_` prefix only, ADR-0016). */
-import { LAYOUTS_COLLECTION, VEHICLES_COLLECTION } from '../modules/bus-catalog/index.js';
+import {
+  LAYOUTS_COLLECTION,
+  ROUTES_COLLECTION,
+  SCHEDULES_COLLECTION,
+  STOPS_COLLECTION,
+  VEHICLES_COLLECTION,
+} from '../modules/bus-catalog/index.js';
+import { TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
 export const STAGE_18 = [
@@ -27,6 +34,36 @@ export const STAGE_18 = [
         { hasPendingEvents: 1 },
         { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
       );
+    },
+  },
+  {
+    id: '0084-bus-stops-routes-schedules-trips',
+    description: 'Bus points, routes (review queue), schedules, trips (one per schedule and date) and trip seats (one per seat)',
+    up: async (ctx) => {
+      await ctx.createCollection(STOPS_COLLECTION);
+      await ctx.createIndex(STOPS_COLLECTION, { operatorOrgId: 1, cityId: 1 }, { name: 'operator_city' });
+      await ctx.createCollection(ROUTES_COLLECTION);
+      await ctx.createIndex(ROUTES_COLLECTION, { operatorOrgId: 1, createdAt: -1 }, { name: 'operator' });
+      await ctx.createIndex(ROUTES_COLLECTION, { status: 1, updatedAt: 1 }, { name: 'review_queue' });
+      await ctx.createIndex(
+        ROUTES_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
+      await ctx.createCollection(SCHEDULES_COLLECTION);
+      await ctx.createIndex(SCHEDULES_COLLECTION, { operatorOrgId: 1, createdAt: -1 }, { name: 'operator' });
+      await ctx.createIndex(SCHEDULES_COLLECTION, { status: 1 }, { name: 'status' });
+      await ctx.createCollection(TRIPS_COLLECTION);
+      await ctx.createIndex(TRIPS_COLLECTION, { scheduleId: 1, date: 1 }, { name: 'schedule_date_unique', unique: true });
+      await ctx.createIndex(TRIPS_COLLECTION, { operatorOrgId: 1, date: 1 }, { name: 'operator_date' });
+      await ctx.createIndex(TRIPS_COLLECTION, { 'stops.cityId': 1, date: 1 }, { name: 'search_stop_city' }); // part-route search (B5)
+      await ctx.createIndex(
+        TRIPS_COLLECTION,
+        { scheduleId: 1, seatsReady: 1 },
+        { name: 'seats_not_ready', partialFilterExpression: { seatsReady: false } },
+      );
+      await ctx.createCollection(TRIP_SEATS_COLLECTION);
+      await ctx.createIndex(TRIP_SEATS_COLLECTION, { tripId: 1, no: 1 }, { name: 'trip_seat_unique', unique: true });
     },
   },
 ];

@@ -3,15 +3,22 @@
  * Bus catalogue over HTTP (S18-T05): an operator uploads papers (`purpose=bus-paper`), builds a bus from a layout
  * template, attaches the papers, sends it; staff with `platform.bus.review` see it and approve; a hotel can't use the
  * bus pages; a KYC upload still needs the KYC permission; the switch-off answer is in bus-operator-switch.test.js.
+ * Then (S18-T06): points in known cities → route → sent → staff approve (with company name) → schedule → trips listed.
  */
 import { describe, expect, it } from 'vitest';
 
 import { ApplicationRecord, gstinCheckChar } from '../../src/b2b/modules/kyc/index.js';
-import { LayoutRecord, VehicleRecord } from '../../src/b2b/modules/bus-catalog/index.js';
+import { LayoutRecord, RouteRecord, ScheduleRecord, StopRecord, VehicleRecord } from '../../src/b2b/modules/bus-catalog/index.js';
+import { TripRecord, TripSeatRecord } from '../../src/b2b/modules/bus-inventory/index.js';
+import { CityRecord } from '../../src/b2b/modules/hotel-catalog/index.js';
 import { asStaff, auth, useInventoryApp } from './helpers/inventory-app.js';
 
 const clock = { now: () => new Date('2026-11-25T10:00:00Z') };
-const app = useInventoryApp({ clock, models: [ApplicationRecord, LayoutRecord, VehicleRecord], env: { B2B_BUS_ENABLED: 'true' } });
+const app = useInventoryApp({
+  clock,
+  models: [ApplicationRecord, LayoutRecord, VehicleRecord, StopRecord, RouteRecord, ScheduleRecord, TripRecord, TripSeatRecord, CityRecord],
+  env: { B2B_BUS_ENABLED: 'true' },
+});
 const PDF = Buffer.from('%PDF-1.7\n1 0 obj << /Type /Catalog >> endobj\n(RC RJ14PA1234)\n%%EOF', 'latin1');
 const gstin = (/** @type {string} */ b) => b + gstinCheckChar(b);
 const details = {
@@ -36,6 +43,55 @@ async function upload(token, purpose) {
     body: PDF,
   });
   return { status: res.status, body: /** @type {any} */ (await res.json()) };
+}
+
+/** Points → route → staff approval → schedule → trips. @param {string} t @param {string} busId */
+async function routesOverHttp(t, busId) {
+  const city = (/** @type {string} */ name, /** @type {number} */ lng) =>
+    CityRecord.create({
+      name,
+      slug: name.toLowerCase(),
+      stateCode: '09',
+      location: { type: 'Point', coordinates: [lng, 26] },
+      radiusKm: 30,
+    });
+  const [lko, knp] = [await city('Lucknow', 80.9), await city('Kanpur', 80.3)];
+  const stop = async (/** @type {any} */ c, /** @type {string} */ name) =>
+    (await app.srv.post('/api/v1/bus/stops', { cityId: String(c._id), name }, auth(t))).body;
+  const [a, b] = [await stop(lko, 'Charbagh'), await stop(knp, 'Jhakarkati')];
+  expect((await app.srv.post('/api/v1/bus/stops', { cityId: '65f0000000000000000d0999', name: 'Nowhere' }, auth(t))).body.code).toBe(
+    'CITY_NOT_FOUND',
+  );
+  const route = (
+    await app.srv.post(
+      '/api/v1/bus/routes',
+      {
+        name: 'Lucknow → Kanpur',
+        stops: [
+          { stopId: a.id, dayOffset: 0, time: '06:00', boarding: true, dropping: false },
+          { stopId: b.id, dayOffset: 0, time: '08:30', boarding: false, dropping: true },
+        ],
+      },
+      auth(t),
+    )
+  ).body;
+  expect(route.status).toBe('DRAFT');
+  await app.srv.post(`/api/v1/bus/routes/${route.id}/submit`, { expectedVersion: route.version }, auth(t));
+  const queue = (await app.admin.get('/api/v1/admin/bus/routes', asStaff('s1:platform.bus.review'))).body.data;
+  expect(queue).toEqual([
+    expect.objectContaining({ id: route.id, operatorName: expect.any(String), stopNames: { [a.id]: 'Charbagh', [b.id]: 'Jhakarkati' } }),
+  ]);
+  const ok = await app.admin.post(`/api/v1/admin/bus/routes/${route.id}/decide`, { move: 'approve' }, asStaff('s1:platform.bus.review'));
+  expect(ok.body.status).toBe('APPROVED');
+  const s = await app.srv.post(
+    '/api/v1/bus/schedules',
+    { routeId: route.id, vehicleId: busId, weekdays: [3], validFrom: '2026-11-25', validTo: null },
+    auth(t),
+  );
+  expect(s.status).toBe(201);
+  const tr = await app.srv.get('/api/v1/bus/trips?from=2026-11-25&to=2026-12-20', auth(t));
+  expect(tr.body.data).toEqual([]); // the trip job makes them (bus-routes.test.js)
+  expect((await app.srv.get('/api/v1/bus/trips?from=2026-11-25&to=2027-01-31', auth(t))).body.code).toBe('DATE_RANGE_INVALID');
 }
 
 describe('bus catalogue over HTTP', () => {
@@ -86,6 +142,7 @@ describe('bus catalogue over HTTP', () => {
       asStaff('s1:platform.bus.review'),
     );
     expect(approved.body).toMatchObject({ status: 'APPROVED', sellable: true });
+    await routesOverHttp(t, bus.id);
 
     const hotel = await app.hotelWithProperty('owner@notabus.in');
     expect((await app.srv.get('/api/v1/bus/vehicles', auth(hotel.token))).status).toBe(403);

@@ -14,7 +14,8 @@ export type Amenity = (typeof AMENITIES)[number];
 export type BusKind = (typeof BUS_KINDS)[number];
 export type BusStatus = "DRAFT" | "SUBMITTED" | "APPROVED" | "CHANGES_REQUESTED" | "SUSPENDED" | "RETIRED";
 
-export interface Seat { no: string; row: number; col: number; type: SeatType; ladies?: boolean; span?: 1 | 2 }
+/** A seat on a layout; `taken` (trips only) = bit mask of route legs sold, held or blocked. */
+export interface Seat { no: string; row: number; col: number; type: SeatType; ladies?: boolean; span?: 1 | 2; taken?: number }
 export interface DeckGrid { deck: Deck; rows: number; cols: number; seats: Seat[] }
 export interface Layout {
   id: string;
@@ -98,3 +99,49 @@ export function nextSeatNo(decks: DeckGrid[]): string {
   while (used.has(String(n))) n += 1;
   return String(n);
 }
+
+// ── Stage 18 B3: points, routes, schedules, trips ──
+export const MAX_STOPS = 31;
+export const WEEKDAY_LABEL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
+export interface BusStop { id: string; cityId: string; name: string; address: string | null; landmark: string | null; lat: number | null; lng: number | null; active: boolean; version: number }
+export interface RouteStop { stopId: string; cityId?: string; dayOffset: number; time: string; boarding: boolean; dropping: boolean }
+export interface BusRoute {
+  id: string;
+  name: string;
+  stops: RouteStop[];
+  fromCityId: string;
+  toCityId: string;
+  status: BusStatus;
+  review: { note: string | null; at: string } | null;
+  version: number;
+  updatedAt: string;
+}
+export interface RouteInQueue extends BusRoute { operatorOrgId: string; operatorName: string | null; operatorRef: string | null; stopNames: Record<string, string | null> }
+export interface BusSchedule { id: string; routeId: string; vehicleId: string; weekdays: number[]; validFrom: string; validTo: string | null; status: "ACTIVE" | "ENDED"; endedFrom: string | null; version: number }
+export interface TripStop { stopId: string; cityId: string; name: string; at: string; boarding: boolean; dropping: boolean }
+export interface Trip { id: string; scheduleId: string; routeId: string; vehicleId: string; layoutId: string; date: string; stops: TripStop[]; departAt: string; arriveAt: string; seatCount: number; status: "SCHEDULED" | "CANCELLED"; cancelReason: string | null }
+/** A trip with its own seat map (copied when the trip was made) and each seat's taken legs. */
+export interface TripDetail extends Trip { decks: DeckGrid[] }
+
+/** Route problems in plain words (codes from the backend `checkRoute`). */
+export const ROUTE_PROBLEM: Record<string, string> = {
+  STOPS_TWO_TO_31: "A route needs between 2 and 31 stops.",
+  STOP_REPEATED: "The same point is on the route twice.",
+  STOP_UNUSED: "Each stop must allow boarding, dropping or both.",
+  TIME_INVALID: "A time isn't valid (use HH:MM, 24-hour).",
+  DAY_OFFSET_INVALID: "The day must be the departure day or up to 3 days later.",
+  TIMES_NOT_IN_ORDER: "Each stop must be later than the one before (use “next day” after midnight).",
+  FIRST_STOP_MUST_BOARD: "Passengers must be able to board at the first stop.",
+  LAST_STOP_MUST_DROP: "Passengers must be able to get off at the last stop.",
+  STOP_NOT_FOUND: "A point isn't yours or is switched off.",
+  FROM_TO_SAME_CITY: "The first and last stops are in the same city.",
+};
+
+/** "22:45" or "04:30 (+1 day)". */
+export const stopTime = (s: { dayOffset: number; time: string }) => (s.dayOffset ? `${s.time} (+${s.dayOffset} day${s.dayOffset > 1 ? "s" : ""})` : s.time);
+/** A moment in Indian time, e.g. "Sat 12 Dec, 22:00". */
+export const istTime = (iso: string) =>
+  new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", hour12: false });
+/** How many legs of the route a seat has sold / held / blocked (bits set in `taken`). */
+export const legsTaken = (taken: number) => taken.toString(2).split("").filter((b) => b === "1").length;

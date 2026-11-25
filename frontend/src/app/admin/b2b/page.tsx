@@ -45,7 +45,7 @@ const AREAS: AreaDef[] = [
     tabs: [
       { value: "kyc", label: "Verification", icon: FileCheck2, title: "Verification", description: "Hotels and B2B clients waiting for KYC review.", render: (t) => <KycQueueTab token={t} /> },
       { value: "listings", label: "Hotel listings", icon: Hotel, title: "Listings", description: "Hotel listings waiting for approval, and every property.", render: (t) => <ListingsTab token={t} /> },
-      ...(BUS_ON ? [{ value: "buses", label: "Buses", icon: BusFront, title: "Buses", description: "Bus operators' buses waiting for approval: papers, seat map, approve or ask for changes.", render: (t) => <BusReviewTab token={t} /> } satisfies TabDef] : []),
+      ...(BUS_ON ? [{ value: "buses", label: "Buses", icon: BusFront, title: "Buses", description: "Bus operators' buses and routes waiting for approval: papers, seat maps, stops and times.", render: (t) => <BusReviewTab token={t} /> } satisfies TabDef] : []),
       { value: "orgs", label: "Companies", icon: Building2, title: "Organisations", description: "Client and hotel companies: status, category, suspend / reactivate.", render: (t) => <OrgsTab token={t} /> },
       { value: "users", label: "People", icon: Users, title: "Business users", description: "People who sign in to the business area.", render: (t) => <UsersTab token={t} /> },
       { value: "activity", label: "Activity", icon: Activity, title: "Activity", description: "Sign-ins and changes in every company.", render: (t) => <ActivityTab token={t} /> },

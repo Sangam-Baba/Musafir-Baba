@@ -190,6 +190,22 @@ const MESSAGES: Record<string, string> = {
   AMENITY_UNKNOWN: "Unknown amenity.",
   MOVE_INVALID: "That action isn't possible for this bus now.",
   NOTE_REQUIRED: "Write a note for the operator first.",
+  CITY_NOT_FOUND: "Pick a city from the list.",
+  STOP_NOT_FOUND: "That point wasn't found.",
+  ROUTE_NOT_FOUND: "That route wasn't found.",
+  ROUTE_INVALID: "The route has problems — see the list.",
+  ROUTE_NOT_EDITABLE: "The stops of a route that is waiting or approved can't change. Copy it to make a new one.",
+  ROUTE_IN_USE: "This route has an active schedule. End the schedule first.",
+  ROUTE_STATUS_CHANGED: "Someone else changed this route just now. Reload and try again.",
+  ROUTE_NOT_APPROVED: "The route must be approved by MusafirBaba first.",
+  BUS_NOT_APPROVED: "The bus must be approved (with a seat layout) first.",
+  WEEKDAYS_INVALID: "Pick at least one day of the week.",
+  START_DATE_INVALID: "The first day must be today or later (within a year).",
+  END_DATE_INVALID: "The last day must be on or after the first day (and not in the past).",
+  SCHEDULE_NOT_FOUND: "That schedule wasn't found.",
+  SCHEDULE_ENDED: "This schedule has already ended.",
+  TRIP_NOT_FOUND: "That trip wasn't found.",
+  DATE_RANGE_INVALID: "Pick up to 31 days.",
 };
 
 export function errorMessage(error: unknown): string {
