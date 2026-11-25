@@ -18,7 +18,14 @@ const item = new b2bMongoose.Schema(
     type: { type: String, enum: ITEM_TYPES, required: true },
     bookingId: { type: String, required: true },
     bookingRef: { type: String, required: true },
-    hotelOrgId: { type: String, required: true },
+    hotelOrgId: {
+      type: String,
+      default: null,
+      required: function () {
+        return /** @type {any} */ (this).type === 'HOTEL'; // every hotel item names its hotel, as before
+      },
+    },
+    supplierOrgId: { type: String, default: null }, // Stage 18: the bus company of a BUS item (never put in hotelOrgIds)
     holdId: { type: String, default: null },
     totalPaise: { type: Number, required: true, min: 0 },
     gstPaise: { type: Number, required: true, min: 0 },

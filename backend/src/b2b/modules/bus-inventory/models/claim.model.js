@@ -27,6 +27,7 @@ const schema = new b2bMongoose.Schema(
     status: { type: String, enum: CLAIM_STATUSES, default: 'TAKING' },
     seatsConfirmed: { type: Boolean, default: false },
     expiresAt: { type: Date, default: null },
+    extended: { type: Boolean, default: false }, // a hold may be extended once (while paying)
     by: { type: String, required: true },
     note: { type: String, default: null, maxlength: 200 },
     failure: { type: String, default: null },

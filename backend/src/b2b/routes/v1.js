@@ -77,6 +77,7 @@ import { realtimeRoutes } from './realtime.js';
 import { apiKeysFor, createApiKeyAuthenticator } from './api-keys-wiring.js';
 import { busCatalogRoutes } from './bus-catalog.js';
 import { busSearchRoutes } from './bus-search.js';
+import { cityStateOf } from './bus-http.js';
 
 const BODY_LIMIT = '1mb';
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -173,9 +174,7 @@ function stage02Routes(env, clock, identity) {
   const cityExists = async (/** @type {string} */ id) =>
     /^[a-f0-9]{24}$/.test(id) && Boolean(await CityRecord.exists({ _id: id, active: true }));
   router.use(busCatalogRoutes({ clock, env, files, cityExists }));
-  const stateOf = async (/** @type {string} */ id) =>
-    /^[a-f0-9]{24}$/.test(id) ? ((await CityRecord.findById(id, { stateCode: 1 }).lean())?.stateCode ?? null) : null;
-  router.use(busSearchRoutes({ clock, env, stateOf })); // B5: 503 unless B2B_BUS_SELLING_ENABLED too
+  router.use(busSearchRoutes({ clock, env, stateOf: cityStateOf })); // B5: 503 unless B2B_BUS_SELLING_ENABLED too
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
   const isOwnOrg = ownOrgCheck(identity);
   const gst = createGstRegistrations({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET, isOwnOrg });

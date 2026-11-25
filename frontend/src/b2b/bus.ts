@@ -186,3 +186,25 @@ export interface BuyerSeat extends Seat { available: boolean; price: { totalPais
 export interface BuyerSeatMap { tripId: string; from: { stopId: string; name: string; at: string }; to: { stopId: string; name: string; at: string }; decks: (Omit<DeckGrid, "seats"> & { seats: BuyerSeat[] })[] }
 /** "6h 30m". */
 export const duration = (min: number) => `${Math.floor(min / 60)}h ${String(min % 60).padStart(2, "0")}m`;
+
+// ── Stage 18 B6: the bus item of an order (the e-ticket) ──
+export interface BusTicketView {
+  product: "BUS";
+  bookingId: string;
+  ref: string;
+  status: "HELD" | "CONFIRMED" | "EXPIRED" | "FAILED" | "CANCELLED" | "COMPLETED";
+  operatorName: string;
+  bus: { regNo: string; name: string | null; acType: "AC" | "NON_AC"; kind: BusKind; amenities: Amenity[] };
+  date: string;
+  from: { name: string; at: string };
+  to: { name: string; at: string };
+  seats: { no: string; seatType: SeatType; deck: Deck; passenger: { name: string; age: number; gender: "F" | "M" | "O" } }[];
+  price: { totalPaise: number; gstPaise: number };
+  confirmedAt: string | null;
+}
+export const isBusItem = (it: unknown): it is BusTicketView => (it as { product?: string })?.product === "BUS";
+export const GENDER_LABEL = { F: "Female", M: "Male", O: "Other" } as const;
+
+// ── Stage 18 B6: operator bookings and manifests ──
+export interface OperatorBusBooking { bookingId: string; ref: string; status: string; tripId: string; date: string; from: { name: string; at: string }; to: { name: string; at: string }; seats: BusTicketView["seats"]; contact: { name: string; phone: string }; channel: string; netPaise: number; confirmedAt: string | null }
+export interface Manifest { trip: { id: string; date: string; departAt: string; stops: { name: string; at: string }[]; seatCount: number }; rows: { seat: string; deck: Deck; name: string; age: number; gender: "F" | "M" | "O"; boarding: string; boardingAt: string; dropping: string; pnr: string; phone: string }[] }

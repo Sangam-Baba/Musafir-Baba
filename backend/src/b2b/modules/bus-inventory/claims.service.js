@@ -14,6 +14,7 @@ import { TripRecord } from './models/trip.model.js';
 import { confirmSeats, giveBackSeats, takeSeats } from './seat-steps.js';
 
 export const HOLD_MINUTES = 15;
+export const EXTEND_MINUTES = 10;
 const STUCK_MS = 2 * 60_000;
 const MAX_HOLD_SEATS = 10;
 const SCOPE = systemScope('bus-inventory: seat claims', { routine: true });
@@ -147,6 +148,34 @@ async function ownTrip(orgId, tripId) {
   return /** @type {Record<string, any>} */ (t);
 }
 
+/** Once, while paying: the hold lasts `EXTEND_MINUTES` longer. @param {string} id */
+async function extendHold(id) {
+  const c = await ClaimRecord.findOneAndUpdate(
+    { _id: id, kind: 'HOLD', status: 'ACTIVE', extended: false },
+    [{ $set: { extended: true, expiresAt: { $add: ['$expiresAt', EXTEND_MINUTES * 60_000] } } }],
+    { new: true },
+  )
+    .setOptions(SCOPE)
+    .lean();
+  if (!c) throw new ConflictError('HOLD_NOT_EXTENDABLE');
+  return /** @type {Date} */ (c.expiresAt);
+}
+
+/** Paid → the hold becomes a booking (seats stay). @param {string} id */
+async function confirmHold(id) {
+  const c = await ClaimRecord.findOneAndUpdate(
+    { _id: id, kind: 'HOLD', status: 'ACTIVE' },
+    { $set: { status: 'CONFIRMED' } },
+    { new: true },
+  )
+    .setOptions(SCOPE)
+    .lean();
+  if (!c) throw new ConflictError('HOLD_NOT_ACTIVE');
+  await confirmSeats(c.tripId, id);
+  await ClaimRecord.updateOne({ _id: id }, { $set: { seatsConfirmed: true } }).setOptions(SCOPE);
+  return claimDto(c);
+}
+
 /** @param {ClaimDeps} deps */
 export function createClaims(deps) {
   return {
@@ -180,22 +209,12 @@ export function createClaims(deps) {
       if (!trip) throw new NotFoundError('TRIP_NOT_FOUND');
       return claim(deps, { trip, kind: 'HOLD', ...a });
     },
-    /** Paid → the hold becomes a booking (seats stay). @param {string} id */
-    async confirm(id) {
-      const c = await ClaimRecord.findOneAndUpdate(
-        { _id: id, kind: 'HOLD', status: 'ACTIVE' },
-        { $set: { status: 'CONFIRMED' } },
-        { new: true },
-      )
-        .setOptions(SCOPE)
-        .lean();
-      if (!c) throw new ConflictError('HOLD_NOT_ACTIVE');
-      await confirmSeats(c.tripId, id);
-      await ClaimRecord.updateOne({ _id: id }, { $set: { seatsConfirmed: true } }).setOptions(SCOPE);
-      return claimDto(c);
-    },
+    /** The active hold an order took (for giving back an unfinished checkout). @param {string} by */
+    activeHoldBy: async (by) => ClaimRecord.findOne({ kind: 'HOLD', status: 'ACTIVE', by }).setOptions(SCOPE).lean(),
     /** Give back a hold (not paid) or a booking's seats (cancelled). @param {string} id */
     releaseHold: (id) => release({ _id: id, kind: 'HOLD' }),
+    extend: extendHold,
+    confirm: confirmHold,
     sweep: () => sweep(deps),
     /** Active counter blocks on a trip. @param {string} orgId @param {string} tripId */
     async blocksOf(orgId, tripId) {

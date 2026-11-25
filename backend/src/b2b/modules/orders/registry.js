@@ -8,12 +8,12 @@ import { DomainError } from '../../core/errors.js';
 
 /**
  * @typedef {import('../../core/context.js').RequestContext} Ctx
- * @typedef {{ type: string, bookingId: string, bookingRef: string, hotelOrgId: string, holdId: string | null,
- *   totalPaise: number, gstPaise: number }} OrderItem
+ * @typedef {{ type: string, bookingId: string, bookingRef: string, hotelOrgId: string | null, supplierOrgId?: string | null,
+ *   holdId: string | null, totalPaise: number, gstPaise: number }} OrderItem   hotelOrgId: HOTEL items; supplierOrgId: BUS items
  * @typedef {{ id: string, ref: string, channel: string,
  *   buyer: { clientOrgId: string | null, customerId: string | null, guestKey: string | null },
  *   contact: { name: string, email: string, phone: string } }} OrderInfo
- * @typedef {{ totalPaise: number, gstPaise: number, hotelOrgId: string, tokenHash: string, data: unknown }} Priced
+ * @typedef {{ totalPaise: number, gstPaise: number, hotelOrgId?: string, supplierOrgId?: string, tokenHash: string, data: unknown }} Priced
  * @typedef {{ item: OrderItem, holdExpiresAt: Date }} Prepared
  * @typedef {{ accountId: string, debitPaise?: number, creditPaise?: number }} LedgerLine
  * @typedef {{

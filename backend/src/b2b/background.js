@@ -68,6 +68,7 @@ import { ApiKeyRecord } from './modules/api-access/index.js';
 import { recordInvariantRun } from './modules/reporting/index.js';
 import { EndpointRecord } from './modules/webhooks/index.js';
 import { RouteRecord, VehicleRecord } from './modules/bus-catalog/index.js';
+import { BusBookingRecord } from './modules/bus-booking/index.js';
 import { seedPlans, SubscriptionRecord } from './modules/subscriptions/index.js';
 import { DunningRecord } from './modules/billing/index.js';
 import { IntentRecord, RefundRecord } from './modules/payments/index.js';
@@ -231,6 +232,7 @@ export const eventSources = [
   EndpointRecord, // Stage 14: webhook endpoint switched off after 24 h of failures
   VehicleRecord, // Stage 18: bus submitted / approved / papers expiring
   RouteRecord, // Stage 18: route submitted / approved / changes requested / suspended
+  BusBookingRecord, // Stage 18 B6: bus booking confirmed (operator bell + email)
 ];
 
 /**

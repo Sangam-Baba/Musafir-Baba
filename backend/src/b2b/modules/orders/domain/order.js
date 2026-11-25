@@ -46,7 +46,7 @@ export const OPEN_ORDER_STATUSES = /** @type {const} */ (['HOLDING', 'AWAITING_P
 
 export const ORDER_CHANNELS = /** @type {const} */ (['WEBSITE', 'B2B_PORTAL', 'B2B_API', 'ADMIN']);
 export const PAYMENT_MODES = /** @type {const} */ (['GATEWAY', 'WALLET', 'CREDIT']);
-export const ITEM_TYPES = /** @type {const} */ (['HOTEL']);
+export const ITEM_TYPES = /** @type {const} */ (['HOTEL', 'BUS']); // BUS: Stage 18 B6 (bus-booking handler, ADR-0016)
 
 /** Timers (`05-…` §6). */
 export const PAYMENT_WINDOW_MAX_MINUTES = 12;
@@ -103,7 +103,7 @@ const PHONE = /^\+?[0-9]{10,14}$/;
 /**
  * Buyer input checks (plan §3.3, §7): lead guest names (letters, spaces, `.'-`), contact, special requests.
  * Returns the problems (empty = fine).
- * @param {{ contact: { name: string, email: string, phone: string }, rooms: { leadGuest: string, guests?: string[] }[], specialRequests?: string | null }} a
+ * @param {{ contact: { name: string, email: string, phone: string }, rooms?: { leadGuest: string, guests?: string[] }[], specialRequests?: string | null }} a
  */
 export function checkBuyerInput(a) {
   /** @type {{ field: string, code: string }[]} */
@@ -111,7 +111,8 @@ export function checkBuyerInput(a) {
   if (!NAME.test(a.contact.name.trim())) problems.push({ field: 'contact.name', code: 'NAME_INVALID' });
   if (!EMAIL.test(a.contact.email.trim())) problems.push({ field: 'contact.email', code: 'EMAIL_INVALID' });
   if (!PHONE.test(a.contact.phone.replace(/[\s-]/g, ''))) problems.push({ field: 'contact.phone', code: 'PHONE_INVALID' });
-  a.rooms.forEach((r, i) => {
+  (a.rooms ?? []).forEach((r, i) => {
+    // hotels only — a bus item checks its passengers in its own handler
     if (!NAME.test(r.leadGuest.trim())) problems.push({ field: `rooms.${i}.leadGuest`, code: 'NAME_INVALID' });
     (r.guests ?? []).forEach((g, j) => {
       if (!NAME.test(g.trim())) problems.push({ field: `rooms.${i}.guests.${j}`, code: 'NAME_INVALID' });

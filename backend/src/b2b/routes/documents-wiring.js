@@ -138,6 +138,13 @@ export function documentsFor(ordersDeps) {
   });
 }
 
+/** An order of bus tickets only (no hotel documents for it yet). @param {string} orderId */
+async function busOnly(orderId) {
+  const o = /^[a-f0-9]{24}$/.test(orderId) ? await OrderRecord.findOne({ _id: orderId }, { items: 1 }).setOptions(ORDERS).lean() : null;
+  const items = o?.items ?? [];
+  return items.length > 0 && items.every((/** @type {any} */ it) => it.type === 'BUS');
+}
+
 /**
  * Consumer: an order confirmed → its documents. Retry job: confirmed in the last 7 days and missing a voucher or
  * receipt (or the invoice, once the GSTIN is set) → issued; still missing 5 minutes after confirmation → alert.
@@ -151,6 +158,7 @@ export function documentJobs(ordersDeps, orderConfirmed, bookingCancelled = 'hot
     consumer: 'documents-order-confirmed',
     types: [orderConfirmed],
     handler: async (/** @type {{ payload: any }} */ event) => {
+      if (await busOnly(String(event.payload.orderId))) return; // Stage 18: bus tickets are not hotel documents (DEF-046)
       await docs.ensureForOrder(String(event.payload.orderId));
     },
   };
@@ -164,7 +172,7 @@ export function documentJobs(ordersDeps, orderConfirmed, bookingCancelled = 'hot
   async function retryMissing() {
     const now = ordersDeps.clock.now().getTime();
     const recent = await OrderRecord.find(
-      { status: { $in: DOCUMENT_STATUSES }, confirmedAt: { $gte: new Date(now - 7 * 86_400_000) } },
+      { status: { $in: DOCUMENT_STATUSES }, confirmedAt: { $gte: new Date(now - 7 * 86_400_000) }, 'items.type': { $ne: 'BUS' } },
       { _id: 1, ref: 1, confirmedAt: 1 },
     )
       .setOptions(ORDERS)

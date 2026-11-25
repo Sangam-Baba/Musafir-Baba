@@ -17,7 +17,7 @@ import { publicRoute } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
 import { createBusSearch, PERMISSIONS as BUS_BOOKING } from '../modules/bus-booking/index.js';
 import { OrganizationRecord } from '../modules/organizations/index.js';
-import { DateStr, Id, input } from './bus-http.js';
+import { busOperators, DateStr, Id, input } from './bus-http.js';
 import { createSearchGate } from './search-gateway.js';
 
 const SCOPE = systemScope('bus search: company names and status', { routine: true });
@@ -36,16 +36,8 @@ const SearchQuery = z.strictObject({
   sort: z.enum(['departure', 'price']).optional(),
 });
 
-/** @param {string[]} ids */
-async function operators(ids) {
-  const orgs = await OrganizationRecord.find({ _id: { $in: ids }, type: 'BUS_OPERATOR' }, { displayName: 1, status: 1 })
-    .setOptions(SCOPE)
-    .lean();
-  return new Map(orgs.map((o) => [String(o._id), { name: o.displayName, active: o.status === 'ACTIVE' }]));
-}
-
-/** @param {string} orgId */
-async function orgInfo(orgId) {
+/** A company's type, status and client category (search gateway). @param {string} orgId */
+export async function orgInfo(orgId) {
   const o = /^[a-f0-9]{24}$/.test(orgId)
     ? await OrganizationRecord.findById(orgId, { type: 1, status: 1, clientCategory: 1 }).setOptions(SCOPE).lean()
     : null;
@@ -68,7 +60,7 @@ export function busSearchRoutes(deps) {
     return router;
   }
   const gate = createSearchGate({ clock: deps.clock, orgInfo, permission: BUS_BOOKING.search, prefix: 'bus-search' });
-  const search = createBusSearch({ clock: deps.clock, operators, stateOf: deps.stateOf });
+  const search = createBusSearch({ clock: deps.clock, operators: busOperators, stateOf: deps.stateOf });
   router.get('/buses/search', publicRoute(), validate({ query: SearchQuery }), gate('bus.search', 'heavy'), (_req, res, next) => {
     const q = input(res).query;
     search

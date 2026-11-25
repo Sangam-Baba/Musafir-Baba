@@ -14,5 +14,7 @@ describe('bus switch off', () => {
     expect((await app.srv.get('/api/v1/bus/vehicles')).body.code).toBe('BUS_NOT_ENABLED');
     expect((await app.srv.get('/api/v1/admin/bus/vehicles')).body.code).toBe('BUS_NOT_ENABLED');
     expect((await app.srv.get('/api/v1/buses/search')).body.code).toBe('BUS_SELLING_NOT_ENABLED'); // B5: selling switch
+    expect((await app.srv.post('/api/v1/bus-orders', {})).body.code).toBe('BUS_SELLING_NOT_ENABLED'); // B6
+    expect((await app.srv.post('/api/v1/client/bus-orders', {})).body.code).toBe('BUS_SELLING_NOT_ENABLED');
   });
 });

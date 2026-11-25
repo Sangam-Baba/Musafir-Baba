@@ -5,7 +5,7 @@
  * (CREDIT). A balance is shown on its normal side (positive = what the account normally holds).
  */
 
-/** @typedef {'PLATFORM' | 'HOTEL' | 'CLIENT'} OwnerType */
+/** @typedef {'PLATFORM' | 'HOTEL' | 'CLIENT' | 'BUS_OPERATOR'} OwnerType */
 /** @typedef {'DEBIT' | 'CREDIT'} NormalSide */
 
 export const PLATFORM_ORG = 'platform';
@@ -27,6 +27,8 @@ export const ACCOUNT_TYPES = Object.freeze({
   DEDUCTIONS_PAYABLE: { owner: 'PLATFORM', normal: 'CREDIT', name: 'TDS / deductions from hotel payouts (payable)', mode: 'DERIVED' }, // Stage 15
   // each hotel company
   PAYABLE: { owner: 'HOTEL', normal: 'CREDIT', name: 'Payable to the hotel', mode: 'DERIVED' },
+  // each bus company (Stage 18 B6) — kept apart from hotel payables, so hotel payouts and reports never include it
+  OPERATOR_PAYABLE: { owner: 'BUS_OPERATOR', normal: 'CREDIT', name: 'Payable to the bus company', mode: 'DERIVED' },
   // each B2B client (opened with Stage 11)
   WALLET: { owner: 'CLIENT', normal: 'CREDIT', name: 'Client wallet', mode: 'LIVE' },
   RECEIVABLE: { owner: 'CLIENT', normal: 'DEBIT', name: 'Client credit used (receivable)', mode: 'LIVE' },

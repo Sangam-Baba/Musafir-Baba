@@ -8,7 +8,7 @@
  *   priced at a guess. The buyer never sees the net fare or the margin (website: price with GST; client: + GST lines).
  * - Seats free for the journey: `taken` has none of its legs (part-route).
  */
-import { DomainError, NotFoundError } from '../../core/errors.js';
+import { ConflictError, DomainError, NotFoundError } from '../../core/errors.js';
 import { systemScope } from '../../core/db/tenant-plugin.js';
 import { addDays, fareFor, FareRecord, legMask, RouteRecord, sellable, VehicleRecord } from '../bus-catalog/index.js';
 import { journeyLegs, TripRecord, TripSeatRecord } from '../bus-inventory/index.js';
@@ -182,6 +182,64 @@ async function seatMap(deps, data, q) {
   };
 }
 
+/**
+ * The server's price for some seats on a journey (booking, B6): the trip still offered, the stop not passed, each
+ * seat free for the journey, ladies-only seats only for women, a fare for each — then the full breakdown.
+ * @param {SearchDeps} deps
+ * @param {PricingNow} data
+ * @param {{ tripId: string, fromStopId: string, toStopId: string, seats: { no: string, gender: string }[], caller: Caller }} q
+ */
+async function quoteSeats(deps, data, q) {
+  const t = /^[a-f0-9]{24}$/.test(q.tripId) ? await TripRecord.findOne({ _id: q.tripId }).setOptions(SCOPE).lean() : null;
+  if (!t || t.status !== 'SCHEDULED' || t.saleStopped || !t.seatsReady) throw new NotFoundError('TRIP_NOT_FOUND');
+  const c = await sellableContext(deps, [t], istDate(data.now));
+  if (!offered(c, t)) throw new NotFoundError('TRIP_NOT_FOUND');
+  const legs = journeyLegs(t.stops, q.fromStopId, q.toStopId);
+  if (!legs.ok) throw new DomainError(legs.code);
+  const [from, to] = /** @type {[any, any]} */ ([t.stops[legs.fromIdx], t.stops[legs.toIdx]]);
+  if (new Date(from.at).getTime() <= data.now.getTime()) throw new DomainError('TRIP_DEPARTED');
+  const placeOfSupply = await deps.stateOf(from.cityId);
+  if (!placeOfSupply) throw new NotFoundError('TRIP_NOT_FOUND');
+  const docs = new Map(
+    (
+      await TripSeatRecord.find({ tripId: q.tripId, no: { $in: q.seats.map((s) => s.no) } })
+        .setOptions(SCOPE)
+        .lean()
+    ).map((s) => [s.no, s]),
+  );
+  const fare = c.fares.get(t.routeId);
+  const net = q.seats.map((s) => {
+    const d = docs.get(s.no);
+    if (!d) throw new DomainError('SEAT_NOT_FOUND', { seat: s.no });
+    if ((d.taken & legs.mask) !== 0) throw new ConflictError('SEAT_UNAVAILABLE', { seat: s.no });
+    if (d.ladies && s.gender !== 'F') throw new ConflictError('LADIES_SEAT', { seat: s.no });
+    const f = fareFor(/** @type {any} */ (fare), {
+      fromIdx: legs.fromIdx,
+      toIdx: legs.toIdx,
+      seatType: d.type,
+      deck: d.deck,
+      date: t.date,
+    });
+    if (!f) throw new DomainError('NOT_SELLABLE', { reason: 'NO_FARE', seat: s.no });
+    return { no: s.no, seatType: d.type, deck: d.deck, netPaise: f.netPaise };
+  });
+  const ctx = { ...q.caller, operatorOrgId: t.operatorOrgId, routeId: t.routeId, cityId: from.cityId };
+  const breakdown = busBreakdown(data, { ctx, date: t.date, placeOfSupply, seats: net });
+  const bus = /** @type {any} */ (c.buses.get(t.vehicleId));
+  return {
+    trip: t,
+    from: { idx: legs.fromIdx, stopId: from.stopId, cityId: from.cityId, name: from.name, at: from.at },
+    to: { idx: legs.toIdx, stopId: to.stopId, cityId: to.cityId, name: to.name, at: to.at },
+    seats: net,
+    breakdown,
+    snapshot: {
+      operatorName: c.operators.get(t.operatorOrgId)?.name ?? '',
+      bus: { regNo: bus.regNo, name: bus.name, acType: bus.acType, kind: bus.kind, amenities: bus.amenities },
+      stops: t.stops.map((/** @type {any} */ x) => ({ name: x.name, at: x.at })),
+    },
+  };
+}
+
 /** @param {SearchDeps} deps */
 export function createBusSearch(deps) {
   const quotes = createQuoteService({ clock: deps.clock });
@@ -221,5 +279,7 @@ export function createBusSearch(deps) {
      * @param {{ tripId: string, fromStopId: string, toStopId: string, caller: Caller }} q
      */
     seatMap: async (q) => seatMap(deps, await pricing(), q),
+    /** @param {Parameters<typeof quoteSeats>[2]} q */
+    quote: async (q) => quoteSeats(deps, await pricing(), q),
   };
 }

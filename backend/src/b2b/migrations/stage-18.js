@@ -8,6 +8,7 @@ import {
   STOPS_COLLECTION,
   VEHICLES_COLLECTION,
 } from '../modules/bus-catalog/index.js';
+import { BOOKINGS_COLLECTION } from '../modules/bus-booking/index.js';
 import { CLAIMS_COLLECTION, TRIP_SEATS_COLLECTION, TRIPS_COLLECTION } from '../modules/bus-inventory/index.js';
 
 /** @type {import('../core/db/migrations.js').Migration[]} */
@@ -77,6 +78,27 @@ export const STAGE_18 = [
       await ctx.createIndex(CLAIMS_COLLECTION, { status: 1, createdAt: 1 }, { name: 'stuck' });
       await ctx.createCollection(FARES_COLLECTION);
       await ctx.createIndex(FARES_COLLECTION, { routeId: 1 }, { name: 'route_unique', unique: true });
+    },
+  },
+  {
+    id: '0086-bus-bookings',
+    description: 'Bus bookings: one per order, PNR unique, by company and trip / date, by buyer, pending events',
+    up: async (ctx) => {
+      await ctx.createCollection(BOOKINGS_COLLECTION);
+      await ctx.createIndex(BOOKINGS_COLLECTION, { orderId: 1 }, { name: 'order_unique', unique: true });
+      await ctx.createIndex(BOOKINGS_COLLECTION, { ref: 1 }, { name: 'ref_unique', unique: true });
+      await ctx.createIndex(BOOKINGS_COLLECTION, { operatorOrgId: 1, tripId: 1, status: 1 }, { name: 'operator_trip' });
+      await ctx.createIndex(BOOKINGS_COLLECTION, { operatorOrgId: 1, date: 1 }, { name: 'operator_date' });
+      await ctx.createIndex(
+        BOOKINGS_COLLECTION,
+        { clientOrgId: 1, createdAt: -1 },
+        { name: 'client', partialFilterExpression: { clientOrgId: { $type: 'string' } } },
+      );
+      await ctx.createIndex(
+        BOOKINGS_COLLECTION,
+        { hasPendingEvents: 1 },
+        { name: 'pending_events', partialFilterExpression: { hasPendingEvents: true } },
+      );
     },
   },
 ];

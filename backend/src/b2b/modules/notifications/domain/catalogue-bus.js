@@ -65,4 +65,12 @@ export const BUS_CATEGORIES = Object.freeze({
     emailTo: 'OWNERS',
     link: '/business/bus-routes',
   },
+  'bus.booking-new': {
+    audience: 'ORG',
+    permission: 'bus-booking.booking.read',
+    critical: false,
+    label: 'New bus booking',
+    emailTo: 'OWNERS',
+    link: '/business/bus-bookings',
+  },
 });

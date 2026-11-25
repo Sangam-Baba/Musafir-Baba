@@ -50,6 +50,8 @@ export function createLedger(deps) {
 
     /** A hotel company's payable (repeat-safe). @param {string} hotelOrgId */
     openHotelPayable: (hotelOrgId) => openAccount(hotelOrgId, 'PAYABLE', 'system:hotel-activated'),
+    /** Stage 18: a bus company's payable (its net fares). @param {string} operatorOrgId */
+    openOperatorPayable: (operatorOrgId) => openAccount(operatorOrgId, 'OPERATOR_PAYABLE', 'system:bus-booking'),
 
     /** The id of an owner's account of a type (MusafirBaba's: owner `platform`). @param {string} ownerOrgId @param {AccountType} type */
     async accountId(ownerOrgId, type) {

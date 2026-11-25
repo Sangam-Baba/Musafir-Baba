@@ -260,6 +260,7 @@ export const EVENT_CATEGORIES = Object.freeze({
   'bus-catalog.route.approved': 'bus.route-approved',
   'bus-catalog.route.changes-requested': 'bus.route-changes',
   'bus-catalog.route.suspended': 'bus.route-suspended',
+  'bus-booking.booking.confirmed': 'bus.booking-new',
 });
 
 /** Events that change an admin work queue (a `queue:changed` push to MusafirBaba staff). @type {Readonly<Record<string, string>>} */

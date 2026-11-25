@@ -1,6 +1,6 @@
 "use client";
 // Search Buses (B2B clients, Stage 18 B5): from city → to city on a date, filters, then a bus's seat map for the chosen
-// boarding and getting-off points, with B2B prices (price + GST). Booking opens in the next step (B6).
+// boarding and getting-off points, with B2B prices (price + GST); pick seats, add passengers and book (B6).
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BusFront, Loader2, Search } from "lucide-react";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import { useState } from "react";
 import { b2b } from "@/b2b/api";
 import { AMENITY_LABEL, duration, istTime, KIND_LABEL, rupees, type BusResult, type BuyerSeatMap } from "@/b2b/bus";
 import { BusinessShell } from "@/b2b/components/BusinessShell";
+import { BusBookForm } from "@/b2b/components/bus/BusBookForm";
 import { SeatMap, seatAt } from "@/b2b/components/bus/SeatMap";
 import { inputCls } from "@/b2b/components/listing/ui";
 import { PageHeader, Panel, Pill } from "@/b2b/components/portal/ui";
@@ -21,7 +22,7 @@ export default function BusSearchPage() {
   return <BusinessShell>{(me) => <BusSearch me={me} />}</BusinessShell>;
 }
 
-function Seats({ trip }: { trip: BusResult }) {
+function Seats({ trip, me }: { trip: BusResult; me: Me }) {
   const [from, setFrom] = useState(trip.boardingPoints[0]?.stopId ?? "");
   const [to, setTo] = useState(trip.droppingPoints[0]?.stopId ?? "");
   const [picked, setPicked] = useState<string[]>([]);
@@ -64,7 +65,11 @@ function Seats({ trip }: { trip: BusResult }) {
                 <p className="mt-2 flex justify-between border-t border-slate-100 pt-2 font-semibold"><span>Total (incl. GST)</span><span>{rupees(total)}</span></p>
               </div>
             )}
-            <p className="text-[12px] text-slate-500">Booking buses from here opens with the next update.</p>
+            {picked.length > 0 && (me.permissions.includes("orders.order.create") && !me.viewAs ? (
+              <BusBookForm key={picked.join(",")} me={me} tripId={trip.tripId} fromStopId={from} toStopId={to} seats={seats.filter((s) => picked.includes(s.no))} totalPaise={total} />
+            ) : (
+              <p className="text-[12px] text-slate-500">You can see prices; booking needs the Booking Agent or Admin role.</p>
+            ))}
           </div>
         </div>
       )}
@@ -72,7 +77,7 @@ function Seats({ trip }: { trip: BusResult }) {
   );
 }
 
-function ResultCard({ r, open, onToggle }: { r: BusResult; open: boolean; onToggle: () => void }) {
+function ResultCard({ r, open, onToggle, me }: { r: BusResult; open: boolean; onToggle: () => void; me: Me }) {
   return (
     <li className={`rounded-lg border bg-white p-4 ${open ? "border-[#FE5300]" : "border-slate-200"}`}>
       <button type="button" onClick={onToggle} className="flex w-full flex-wrap items-center gap-4 text-left">
@@ -88,7 +93,7 @@ function ResultCard({ r, open, onToggle }: { r: BusResult; open: boolean; onTogg
         <Pill tone={r.seatsLeft < 5 ? "amber" : "green"}>{r.seatsLeft} seats left</Pill>
       </button>
       {r.bus.amenities.length > 0 && <p className="mt-2 text-[11px] text-slate-500">{r.bus.amenities.map((a) => AMENITY_LABEL[a]).join(" · ")}</p>}
-      {open && <Seats trip={r} />}
+      {open && <Seats trip={r} me={me} />}
     </li>
   );
 }
@@ -139,7 +144,7 @@ function BusSearch({ me }: { me: Me }) {
       ) : (results.data?.data.length ?? 0) === 0 ? (
         <p className="rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-[13px] text-slate-500">No buses found for that day.</p>
       ) : (
-        <ul className="space-y-2">{results.data?.data.map((r) => <ResultCard key={r.tripId} r={r} open={open === r.tripId} onToggle={() => setOpen(open === r.tripId ? null : r.tripId)} />)}</ul>
+        <ul className="space-y-2">{results.data?.data.map((r) => <ResultCard key={r.tripId} r={r} me={me} open={open === r.tripId} onToggle={() => setOpen(open === r.tripId ? null : r.tripId)} />)}</ul>
       )}
     </div>
   );

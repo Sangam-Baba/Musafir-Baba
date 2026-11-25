@@ -6,7 +6,7 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { auth, useInventoryApp } from './helpers/inventory-app.js';
+import { auth, PASSWORD, useInventoryApp } from './helpers/inventory-app.js';
 
 const app = useInventoryApp({
   clock: { now: () => new Date('2026-12-10T10:00:00Z') },
@@ -21,7 +21,7 @@ describe('bus search over HTTP', () => {
     expect(anon.headers.get('ratelimit-limit')).toBe('40'); // per-IP heavy limit
     expect((await app.srv.get('/api/v1/buses/search?from=x&to=y&date=2026-12-12')).status).toBe(400);
 
-    const owner = await app.users.create({ email: 'owner@travelco.in', name: 'Owner', password: 'correct-horse-battery-1' });
+    const owner = await app.users.create({ email: 'owner@travelco.in', name: 'Owner', password: PASSWORD });
     const client = await app.orgs.createOrganization({
       type: 'CLIENT',
       legalName: 'Travel Co',
@@ -30,7 +30,9 @@ describe('bus search over HTTP', () => {
       createdBy: 's',
     });
     const token = await app.login('owner@travelco.in');
-    expect((await app.srv.get(Q, auth(token))).status).toBe(200);
+    const asClient = await app.srv.get(Q, auth(token));
+    expect(asClient.status).toBe(200);
+    expect(asClient.headers.get('ratelimit-limit')).toBe('600'); // signed in → per-company limits, not the visitor's 40
     const viewer = await app.staff(client.id, 'viewer@travelco.in', 'client.viewer');
     expect((await app.srv.get(Q, auth(viewer))).status).toBe(403);
     const hotel = await app.hotelWithProperty('owner@notaclient.in');

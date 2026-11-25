@@ -15,13 +15,15 @@ import { idempotencyKey, type Wallet } from "../../wallet";
 import type { Order, OrderDocument } from "../../website/checkout";
 import { inr } from "../../website/hotels";
 import { ClientBookingActions } from "./ClientBookingActions";
+import { isBusItem } from "../../bus";
+import { BusTicket } from "../bus/BusTicket";
 
 type ClientOrderView = Order & { paymentMode: string; customerReference: string | null };
 const DOC_LABEL: Record<OrderDocument["type"], string> = { VOUCHER_CLIENT: "Voucher for your guest (your name)", VOUCHER: "MusafirBaba voucher", TAX_INVOICE: "Tax invoice", RECEIPT: "Receipt", CREDIT_NOTE: "Credit note" };
 const FAILED_TEXT: Record<string, string> = {
   INSUFFICIENT_WALLET_BALANCE: "There wasn't enough in your wallet, so the rooms were let go. Add money and book again.",
   CREDIT_OVERDUE: "Your credit payment is overdue, so the rooms were let go. Add money and book again.",
-  ROOMS_LOST: "The rooms were no longer available. Nothing was taken from your wallet.",
+  ROOMS_LOST: "The rooms (or seats) were no longer available. Nothing was taken from your wallet.",
 };
 
 function useCountdown(until: string | null) {
@@ -96,7 +98,8 @@ export function ClientOrder({ orderRef, canPay }: { orderRef: string; canPay: bo
     refetchInterval: (query) => (["CONFIRMING", "PAYMENT_PENDING"].includes(query.state.data?.status ?? "") ? 3000 : false),
   });
   const confirmed = q.data?.status === "CONFIRMED";
-  const docs = useQuery({ queryKey: ["b2b", "client-order-docs", orderRef], queryFn: () => b2b<{ data: OrderDocument[] }>(`/client/orders/${encodeURIComponent(orderRef)}/documents`), enabled: confirmed, refetchInterval: (query) => ((query.state.data?.data.length ?? 0) === 0 ? 4000 : false) });
+  const bus = (q.data?.items ?? []).some((it) => isBusItem(it)); // Stage 18: a bus order's e-ticket is the order itself (no hotel documents)
+  const docs = useQuery({ queryKey: ["b2b", "client-order-docs", orderRef], queryFn: () => b2b<{ data: OrderDocument[] }>(`/client/orders/${encodeURIComponent(orderRef)}/documents`), enabled: confirmed && !bus, refetchInterval: (query) => ((query.state.data?.data.length ?? 0) === 0 ? 4000 : false) });
   if (q.isLoading) return <div className="flex justify-center py-16"><Loader2 className="animate-spin text-slate-400" /></div>;
   if (!q.data) return <p className="rounded-lg bg-red-50 p-3 text-[13px] text-red-700">{errorMessage(q.error)}</p>;
   const o = q.data;
@@ -108,7 +111,7 @@ export function ClientOrder({ orderRef, canPay }: { orderRef: string; canPay: bo
           {o.customerReference && <span className="text-slate-500">· your ref {o.customerReference}</span>}
           <span className="ml-auto font-semibold text-slate-900">{inr(o.totalPaise)} <span className="font-normal text-slate-500">incl. GST {inr(o.gstPaise)}</span></span>
         </div>
-        {o.items.map((it) => (
+        {o.items.map((it) => isBusItem(it) ? <BusTicket key={it.ref} t={it} /> : (
           <div key={it.ref} className="mt-2 border-t border-slate-100 pt-2 text-slate-700">
             <p className="font-medium text-slate-900">{it.property.name} — {it.roomTypeName}</p>
             <p>{it.stay.checkIn} → {it.stay.checkOut} · {it.stay.nights} night{it.stay.nights > 1 ? "s" : ""} · {it.rooms.map((r) => r.leadGuest).join(", ")}</p>
@@ -118,17 +121,17 @@ export function ClientOrder({ orderRef, canPay }: { orderRef: string; canPay: bo
         ))}
       </div>
       {o.status === "AWAITING_PAYMENT" && <PayBox order={o} canPay={canPay} />}
-      {["CONFIRMING", "PAYMENT_PENDING"].includes(o.status) && <p className="rounded-xl bg-slate-50 p-4 text-[13px] text-slate-700"><Loader2 className="mr-1 inline animate-spin" size={14} /> Confirming with the hotel…</p>}
+      {["CONFIRMING", "PAYMENT_PENDING"].includes(o.status) && <p className="rounded-xl bg-slate-50 p-4 text-[13px] text-slate-700"><Loader2 className="mr-1 inline animate-spin" size={14} /> {bus ? "Confirming your seats…" : "Confirming with the hotel…"}</p>}
       {(o.status === "FAILED" || o.status === "EXPIRED") && <p className="rounded-xl border border-red-200 bg-red-50 p-4 text-[13px] text-red-800">{FAILED_TEXT[o.failure?.code ?? ""] ?? "This order didn't go through. Please search again."}</p>}
       {confirmed && (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-[13px] text-emerald-900">
           <p className="flex items-center gap-1.5 font-semibold"><CheckCircle2 size={16} /> Confirmed{o.paymentMode === "WALLET" ? " · paid from your wallet" : ""}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
+          {bus ? <p className="mt-1">Your e-ticket is above — print it or share the PNR with the passengers.</p> : <div className="mt-2 flex flex-wrap gap-2">
             {(docs.data?.data ?? []).map((d) => (
               <button key={d.id} onClick={() => openDocument(o.ref, d.id)} className="flex items-center gap-1 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-emerald-800"><FileText size={14} /> {DOC_LABEL[d.type]}{d.number ? ` ${d.number}` : ""}</button>
             ))}
             {(docs.data?.data.length ?? 0) === 0 && <span className="text-emerald-800">Preparing your documents…</span>}
-          </div>
+          </div>}
         </div>
       )}
     </div>

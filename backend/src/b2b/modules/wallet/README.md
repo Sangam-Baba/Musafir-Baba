@@ -16,3 +16,8 @@ credit lines in Stage 11). Every rupee is a balanced journal entry; balances are
 - Balances are never edited directly. A mistake is fixed by a **correcting entry** (maker–checker).
 - Platform and hotel accounts are DERIVED (worked out from the journal into snapshots by background work, never
   written by booking flows). Only client wallet / receivable accounts are LIVE (Stage 11).
+
+## Bus companies (Stage 18, ADR-0018)
+
+- `OPERATOR_PAYABLE` (owner type `BUS_OPERATOR`) holds a bus company's net fares — separate from the hotel `PAYABLE`,
+  so hotel payables, payout runs and reports never include bus money. Paying operators comes in Stage 18 B7.

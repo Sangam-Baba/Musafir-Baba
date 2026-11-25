@@ -65,4 +65,29 @@ export const BUS_TEMPLATES = Object.freeze({
     subject: 'Your bus route was suspended on MusafirBaba',
     text: 'Hello,\n\nA {{orgName}} route was suspended by MusafirBaba; no new trips are made for it. Open Routes for the reason.\n\nOpen Routes: {{link}}\n\nMusafirBaba Business',
   },
+  'bus.booking-new': {
+    version: 1,
+    vars: ['orgName', 'link'],
+    title: 'New bus booking',
+    body: 'A new booking was made on a {{orgName}} trip. Open Bookings for the passengers and the manifest.',
+    subject: 'New bus booking on MusafirBaba',
+    text: 'Hello,\n\nA new booking was made on a {{orgName}} trip.\n\nOpen Bookings for the passengers and the trip manifest: {{link}}\n\nMusafirBaba Business',
+  },
+  // Stage 18 B6: the buyer's e-ticket and "seats gone — refund on the way" (email only, like hotel orders)
+  'bus.ticket-customer': {
+    version: 1,
+    vars: ['name', 'pnr', 'orderRef', 'operator', 'journey', 'departure', 'seats', 'total', 'link'],
+    title: 'Bus ticket confirmed',
+    body: 'Your bus ticket {{pnr}} ({{journey}}) is confirmed.',
+    subject: 'Bus ticket confirmed — {{journey}} ({{pnr}})',
+    text: 'Hello {{name}},\n\nYour bus ticket is confirmed and paid.\n\nPNR: {{pnr}} (order {{orderRef}})\nBus: {{operator}}\nJourney: {{journey}}\nBoarding: {{departure}}\nSeats: {{seats}}\nTotal paid: {{total}} (incl. GST)\n\nYour e-ticket: {{link}}\n\nPlease reach the boarding point 15 minutes early and carry a photo ID.\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
+  'bus.refunding-customer': {
+    version: 1,
+    vars: ['name', 'orderRef', 'total', 'link'],
+    title: 'Seats gone — refund on the way',
+    body: 'The seats for {{orderRef}} were taken before your payment reached us. Your {{total}} is being refunded.',
+    subject: 'Your payment of {{total}} is being refunded ({{orderRef}})',
+    text: 'Hello {{name}},\n\nWe are sorry: the seats for your booking {{orderRef}} were taken before your payment reached us, so the ticket could not be issued.\n\nYour payment of {{total}} is being refunded to the same card, UPI or bank account through PayU. Banks usually take a few working days to show it.\n\nSee the status: {{link}}\n\nMusafirBaba · +91 92896 02447 · care@musafirbaba.com',
+  },
 });

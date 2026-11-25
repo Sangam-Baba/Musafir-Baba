@@ -67,7 +67,7 @@ const LinkQuery = z.strictObject({
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  */
-function buyerOf(req, res) {
+export function buyerOf(req, res) {
   const { actor } = contextOf(res);
   if (actor.type === 'customer')
     return {

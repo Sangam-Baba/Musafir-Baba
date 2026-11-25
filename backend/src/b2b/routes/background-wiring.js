@@ -22,6 +22,7 @@ import {
 import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
 import { amendmentEmailConsumer, customerEmailConsumers, hotelFailedEmailConsumer, noShowEmailConsumer } from './customer-emails.js';
+import { busEmailConsumers } from './bus-emails.js';
 import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
 import { payableJobs, payablesFor } from './payables-wiring.js';
 import { ackEscalation, BookingRecord, bookingInvariants, createHotelFailures, createNoShows } from '../modules/hotel-booking/index.js';
@@ -155,6 +156,7 @@ function emailConsumers(engine, config, email) {
   };
   return [
     ...customerEmailConsumers(deps),
+    ...busEmailConsumers(deps), // Stage 18 B6: e-ticket and bus refund emails
     amendmentEmailConsumer(deps, 'hotel-booking.amendment.staff-replied'),
     noShowEmailConsumer(deps, 'hotel-booking.no-show.marked'),
     hotelFailedEmailConsumer(deps, 'hotel-booking.booking.hotel-failed'),

@@ -26,6 +26,8 @@ export async function orderEmailTo(o) {
 /** @param {number} paise */
 const rupees = (paise) => `₹${(paise / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const REFUNDED_FAILURES = ['ROOMS_LOST'];
+/** @param {any} o */
+const isBus = (o) => o.items?.[0]?.type === 'BUS';
 
 /**
  * @param {{
@@ -56,7 +58,7 @@ export function customerEmailConsumers(deps) {
       types: [deps.events.orderConfirmed],
       handler: async (/** @type {{ payload: any }} */ e) => {
         const o = await load(String(e.payload.orderId));
-        if (!o) return;
+        if (!o || isBus(o)) return; // Stage 18: bus orders get their own emails (bus-emails.js)
         const item = o.items[0];
         const view = /** @type {any} */ (item ? await deps.ordersDeps.handlers.get(item.type).view(item, 'BUYER') : null);
         await mail(o, 'order.confirmed-customer', {
@@ -71,7 +73,7 @@ export function customerEmailConsumers(deps) {
       types: [deps.events.orderCancelled],
       handler: async (/** @type {{ payload: any }} */ e) => {
         const o = await load(String(e.payload.orderId));
-        if (!o) return;
+        if (!o || isBus(o)) return; // Stage 18: bus orders get their own emails (bus-emails.js)
         let refund = 0;
         let propertyName = 'your hotel';
         for (const it of o.items) {
@@ -87,7 +89,7 @@ export function customerEmailConsumers(deps) {
       types: [deps.events.orderFailed],
       handler: async (/** @type {{ payload: any }} */ e) => {
         const o = await load(String(e.payload.orderId));
-        if (!o || !o.payment?.verified || !REFUNDED_FAILURES.includes(o.failure?.code)) return;
+        if (!o || isBus(o) || !o.payment?.verified || !REFUNDED_FAILURES.includes(o.failure?.code)) return;
         await mail(o, 'order.refunding-customer', {});
       },
     },

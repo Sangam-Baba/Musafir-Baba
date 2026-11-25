@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { systemScope } from '../core/db/tenant-plugin.js';
 import { ForbiddenError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
+import { CityRecord } from '../modules/hotel-catalog/index.js';
 import { OrganizationRecord } from '../modules/organizations/index.js';
 
 export const Id = z.string().regex(/^[a-f0-9]{24}$/);
@@ -44,3 +45,15 @@ export async function withOperatorNames(list) {
     operatorRef: byId.get(v.operatorOrgId)?.reference ?? null,
   }));
 }
+
+/** Bus companies' names and whether they may sell (status ACTIVE). @param {string[]} ids */
+export async function busOperators(ids) {
+  const orgs = await OrganizationRecord.find({ _id: { $in: ids }, type: 'BUS_OPERATOR' }, { displayName: 1, status: 1 })
+    .setOptions(NAMES_SCOPE)
+    .lean();
+  return new Map(orgs.map((o) => [String(o._id), { name: o.displayName, active: o.status === 'ACTIVE' }]));
+}
+
+/** The GST state of a city from the shared city list (read only). @param {string} id */
+export const cityStateOf = async (id) =>
+  /^[a-f0-9]{24}$/.test(id) ? ((await CityRecord.findById(id, { stateCode: 1 }).lean())?.stateCode ?? null) : null;
