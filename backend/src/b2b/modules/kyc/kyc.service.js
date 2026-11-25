@@ -231,7 +231,7 @@ export function createKycService(deps) {
 
     /**
      * Repeat-safe: one application per org (unique index); a second call returns the existing one.
-     * @param {{ orgId: string, orgType: 'CLIENT' | 'HOTEL', createdBy: string, details?: import('./domain/hotel-details.js').HotelDetails | import('./domain/client-details.js').ClientDetails | null }} input
+     * @param {{ orgId: string, orgType: 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', createdBy: string, details?: import('./domain/hotel-details.js').HotelDetails | import('./domain/client-details.js').ClientDetails | null }} input
      */
     async ensureApplication(input) {
       const existing = await ApplicationRecord.findOne({ orgId: input.orgId }).lean();

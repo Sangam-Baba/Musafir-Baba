@@ -27,7 +27,7 @@ const DocParams = Params.extend({ key: z.string().regex(/^[a-z][a-z0-9_]{1,40}$/
 const Note = z.string().trim().min(1).max(2000).nullish();
 const QueueQuery = z.strictObject({
   status: z.enum(APPLICATION_STATUSES).optional(),
-  orgType: z.enum(['CLIENT', 'HOTEL']).optional(),
+  orgType: z.enum(['CLIENT', 'HOTEL', 'BUS_OPERATOR']).optional(),
   risk: z.enum(['high', 'normal']).optional(),
 });
 

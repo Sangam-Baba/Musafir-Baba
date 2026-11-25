@@ -14,7 +14,7 @@ import { systemClock } from './clock.js';
  *   | { type: 'staff', staffId: string, permissions: readonly string[], legacySessionId?: string, viaAdminToken?: boolean }
  *   | { type: 'user', userId: string, sessionId: string }
  *   | { type: 'member', userId: string, orgId: string, permissions: readonly string[], sessionId?: string,
- *       orgType?: 'PLATFORM' | 'CLIENT' | 'HOTEL', roles?: readonly string[], branchIds?: readonly string[], propertyIds?: readonly string[], ownOnly?: boolean,
+ *       orgType?: 'PLATFORM' | 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', roles?: readonly string[], branchIds?: readonly string[], propertyIds?: readonly string[], ownOnly?: boolean,
  *       viewAs?: { id: string, staffId: string, mode: 'READ' | 'WRITE', expiresAt: Date, reason: string },
  *       apiKeyId?: string }
  *   | { type: 'system', reason: string }} Actor

@@ -7,7 +7,7 @@
  * - `sensitive`: may not be put into a custom role without admin approval (plan §7).
  */
 
-export const ORG_TYPES = /** @type {const} */ (['PLATFORM', 'CLIENT', 'HOTEL']);
+export const ORG_TYPES = /** @type {const} */ (['PLATFORM', 'CLIENT', 'HOTEL', 'BUS_OPERATOR']); // BUS_OPERATOR: Stage 18
 
 /** @typedef {typeof ORG_TYPES[number]} OrgType */
 /** @typedef {{ code: string, group: string, description: string, orgTypes: readonly OrgType[], sensitive: boolean }} PermissionDef */

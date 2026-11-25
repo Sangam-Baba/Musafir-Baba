@@ -13,7 +13,7 @@ export const ROLES_COLLECTION = 'acl_roles';
 const schema = new b2bMongoose.Schema(
   {
     orgId: { type: String, required: true },
-    orgType: { type: String, enum: ['CLIENT', 'HOTEL'], required: true },
+    orgType: { type: String, enum: ['CLIENT', 'HOTEL', 'BUS_OPERATOR'], required: true },
     name: { type: String, required: true, maxlength: 60 },
     nameKey: { type: String, required: true },
     description: { type: String, default: '', maxlength: 300 },

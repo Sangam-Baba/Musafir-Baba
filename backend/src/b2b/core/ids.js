@@ -15,6 +15,7 @@ export const REFERENCE_FORMATS = /** @type {const} */ ({
   MBHT: [6], // property
   MBC: [6], // client organisation
   MBHO: [6], // hotel organisation (the company; its properties are MBHT)
+  MBBO: [6], // bus operator company (Stage 18)
 });
 
 /** @typedef {keyof typeof REFERENCE_FORMATS} ReferencePrefix */

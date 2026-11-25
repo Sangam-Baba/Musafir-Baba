@@ -16,7 +16,7 @@ export const APPLICATION_STATUSES = /** @type {const} */ (['DRAFT', 'SUBMITTED',
 const schema = new b2bMongoose.Schema(
   {
     orgId: { type: String, required: true },
-    orgType: { type: String, enum: ['CLIENT', 'HOTEL'], required: true },
+    orgType: { type: String, enum: ['CLIENT', 'HOTEL', 'BUS_OPERATOR'], required: true },
     status: { type: String, enum: APPLICATION_STATUSES, default: 'DRAFT' },
     details: { type: b2bMongoose.Schema.Types.Mixed, default: null },
     gstRegistered: { type: Boolean, default: null },
