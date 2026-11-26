@@ -188,7 +188,7 @@ describe('which events go to whom', () => {
     });
     expect(await toPublicEvent({ type: 'orders.order.created', payload: {} })).toBeNull();
     expect(webhookParts(clock, {})).toEqual({ consumers: [], schedules: [] });
-    expect(webhookParts(clock, { B2B_API_ENABLED: 'true', B2B_AUTH_SECRET: SEAL }).consumers[0]?.types).toHaveLength(8);
+    expect(webhookParts(clock, { B2B_API_ENABLED: 'true', B2B_AUTH_SECRET: SEAL }).consumers[0]?.types).toHaveLength(10); // + bus_booking.confirmed / .cancelled (S18-T11)
     await OrderRecord.collection.deleteMany({ ref: { $in: ['MBO-WH1', 'MBO-WH2'] } });
   });
 });

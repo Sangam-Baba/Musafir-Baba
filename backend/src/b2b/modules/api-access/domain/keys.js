@@ -7,7 +7,15 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { BlockList, isIP } from 'node:net';
 
 export const KEY_ENVS = /** @type {const} */ (['live', 'test']);
-export const SCOPES = /** @type {const} */ (['hotel:search', 'hotel:book', 'orders:read', 'wallet:read', 'webhooks:manage']);
+export const SCOPES = /** @type {const} */ ([
+  'hotel:search',
+  'hotel:book',
+  'orders:read',
+  'wallet:read',
+  'webhooks:manage',
+  'bus:search',
+  'bus:book',
+]);
 export const MAX_ACTIVE_KEYS = 2;
 export const MAX_IPS = 20;
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
@@ -24,6 +32,9 @@ export const SCOPE_RULES = {
   'orders:read': { requires: 'orders.order.read', patterns: ['orders.**.read', 'hotel-booking.**.read'] },
   'wallet:read': { requires: 'wallet.account.read', patterns: ['wallet.account.read', 'wallet.statement.read'] },
   'webhooks:manage': { requires: 'webhooks.endpoint.manage', patterns: ['webhooks.**'] },
+  // Stage 18 B8: buses (bus orders also need the search permission — the bus search gate checks it)
+  'bus:search': { requires: 'bus-booking.search.use', patterns: ['bus-booking.search.use'] },
+  'bus:book': { requires: 'orders.order.create', patterns: ['orders.order.create', 'orders.order.read', 'bus-booking.search.use'] },
 };
 
 /** A key's text from random bytes (unbiased: bytes ≥ 232 are skipped). @param {(n: number) => Buffer} random @param {number} length */

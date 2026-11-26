@@ -7,6 +7,8 @@ export const SCOPES = [
   { value: "orders:read", label: "Read orders and bookings" },
   { value: "wallet:read", label: "Read the wallet balance" },
   { value: "webhooks:manage", label: "Manage webhook addresses" },
+  { value: "bus:search", label: "Search buses and seat maps" },
+  { value: "bus:book", label: "Book, pay and cancel bus seats" },
 ] as const;
 export type Scope = (typeof SCOPES)[number]["value"];
 
@@ -19,6 +21,8 @@ export const EVENTS = [
   { value: "refund.processed", label: "Refund done" },
   { value: "wallet.low_balance", label: "Wallet balance low" },
   { value: "quota.threshold_reached", label: "Plan limit 80 % / 100 %" },
+  { value: "bus_booking.confirmed", label: "Bus booking confirmed" },
+  { value: "bus_booking.cancelled", label: "Bus seats cancelled" },
 ] as const;
 
 export type ApiKey = {

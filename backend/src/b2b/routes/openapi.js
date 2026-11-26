@@ -7,10 +7,14 @@
 import { publicRoute } from '../core/http/permissions.js';
 import { SCOPES } from '../modules/api-access/index.js';
 import { WEBHOOK_EVENTS } from '../modules/webhooks/index.js';
+import { busPaths } from './openapi-bus.js';
 
-const ref = (/** @type {string} */ name) => ({ $ref: `#/components/schemas/${name}` });
-const json = (/** @type {object} */ schema) => ({ content: { 'application/json': { schema } } });
-const ok = (/** @type {string} */ description, /** @type {object} */ schema = { type: 'object' }) => ({ description, ...json(schema) });
+export const ref = (/** @type {string} */ name) => ({ $ref: `#/components/schemas/${name}` });
+export const json = (/** @type {object} */ schema) => ({ content: { 'application/json': { schema } } });
+export const ok = (/** @type {string} */ description, /** @type {object} */ schema = { type: 'object' }) => ({
+  description,
+  ...json(schema),
+});
 const ERRORS = {
   400: { $ref: '#/components/responses/Problem' },
   401: { $ref: '#/components/responses/Problem' },
@@ -20,17 +24,23 @@ const ERRORS = {
   422: { $ref: '#/components/responses/Problem' },
   429: { $ref: '#/components/responses/Problem' },
 };
-const IDEMPOTENCY = {
+export const IDEMPOTENCY = {
   name: 'Idempotency-Key',
   in: 'header',
   required: true,
   description: '16–64 characters [A-Za-z0-9_-]. Retry with the same key and body → the same answer, never a second booking.',
   schema: { type: 'string' },
 };
-const REF = (/** @type {string} */ what) => ({ name: 'ref', in: 'path', required: true, description: what, schema: { type: 'string' } });
+export const REF = (/** @type {string} */ what) => ({
+  name: 'ref',
+  in: 'path',
+  required: true,
+  description: what,
+  schema: { type: 'string' },
+});
 
 /** @param {string} scope @param {string} summary @param {Record<string, any>} more */
-const op = (scope, summary, more) => ({
+export const op = (scope, summary, more) => ({
   summary,
   description: `Scope: \`${scope}\`.`,
   security: [{ apiKey: [] }],
@@ -185,7 +195,7 @@ export function openApiDocument(env) {
     info: {
       title: 'MusafirBaba B2B API',
       version: '1.0.0',
-      description: `Search, book, pay and cancel hotel stays from your own software. Send your key as \`Authorization: Bearer mb_live_…\`. Scopes: ${SCOPES.join(', ')}. Amounts are integer paise (₹1 = 100). Guides: https://musafirbaba.com/business/developers/docs`,
+      description: `Search, book, pay and cancel hotel stays and bus seats from your own software. Send your key as \`Authorization: Bearer mb_live_…\`. Scopes: ${SCOPES.join(', ')}. Amounts are integer paise (₹1 = 100). Guides: https://musafirbaba.com/business/developers/docs`,
     },
     servers: [{ url: server }],
     components: {
@@ -193,7 +203,7 @@ export function openApiDocument(env) {
       responses: { Problem: { description: 'Error', content: { 'application/problem+json': { schema: ref('Problem') } } } },
       schemas: SCHEMAS,
     },
-    paths: PATHS,
+    paths: { ...PATHS, ...busPaths() }, // Stage 18 B8: bus search and booking
     webhooks: {
       bookingUpdate: {
         post: {

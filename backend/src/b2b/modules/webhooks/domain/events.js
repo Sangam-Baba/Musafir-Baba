@@ -13,6 +13,8 @@ export const WEBHOOK_EVENTS = /** @type {const} */ ([
   'refund.processed',
   'wallet.low_balance',
   'quota.threshold_reached',
+  'bus_booking.confirmed', // Stage 18 B8
+  'bus_booking.cancelled', // some or all seats
 ]);
 /** @typedef {typeof WEBHOOK_EVENTS[number]} WebhookEvent */
 /** @typedef {WebhookEvent} WebhookEventType */
