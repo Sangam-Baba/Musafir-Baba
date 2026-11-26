@@ -316,6 +316,20 @@ export const NAV_GROUPS = [
         permission: "master-vehicle-type",
       },
       {
+        // Types for /rental/{city}/{special-type}; same access as Vehicle Types
+        label: "Special Types",
+        href: "/admin/rental-special-types",
+        icon: ListChecks,
+        permission: "master-vehicle-type",
+      },
+      {
+        // Pages for /rental/{city}/{special-type}[/{permalink}]; same access as City + Type Pages
+        label: "Special Pages",
+        href: "/admin/rental-special-pages",
+        icon: MapPin,
+        permission: "master-pickup-destination",
+      },
+      {
         label: "Vehicle Brands",
         href: "/admin/master-data/brand",
         icon: Tags,

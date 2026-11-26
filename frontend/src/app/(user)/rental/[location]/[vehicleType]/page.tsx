@@ -5,6 +5,8 @@ import { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import ReadMore from "@/components/common/ReadMore";
 import PageFaqs from "@/components/common/PageFaqs";
+import { getSpecialRentalPage, specialRentalMetadata } from "@/lib/rentalSpecial";
+import SpecialRentalPage from "@/components/rental-special/SpecialRentalPage";
 
 // /rental/{location}/{type} — e.g. /rental/delhi/car.
 // The old order, /rental/{type}/{location} (e.g. /rental/car/delhi), is
@@ -97,6 +99,13 @@ export async function generateMetadata({ params }: { params: Promise<{ location:
     getAllVehicles(),
   ]);
 
+  // Special landing page (/rental/{location}/{special-type}): looked up only
+  // when the second segment is not a vehicle type, so type pages are unchanged
+  if (!typeData) {
+    const special = await getSpecialRentalPage(location, vehicleType);
+    if (special) return specialRentalMetadata(special);
+  }
+
   // Old-order URLs redirect in the page below; no metadata needed for them
   if (!destData || !typeData) return { title: "Not Found" };
 
@@ -145,6 +154,11 @@ export default async function DestinationPage({ params }: { params: Promise<{ lo
   ]);
 
   if (!typeData || !destData) {
+    // Special landing page: same rule as in generateMetadata above
+    if (!typeData) {
+      const special = await getSpecialRentalPage(location, vehicleType);
+      if (special) return <SpecialRentalPage page={special} />;
+    }
     if (await isLegacyOrder(location, vehicleType)) {
       permanentRedirect(`/rental/${vehicleType}/${location}`);
     }
