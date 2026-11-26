@@ -24,7 +24,8 @@ import { payoutRunsFor } from '../routes/finance-wiring.js';
 import { usageRecorder } from '../routes/metering-wiring.js';
 import { payablesFor } from '../routes/payables-wiring.js';
 import { billingFor, runBilling } from '../routes/subscriptions-wiring.js';
-import { auth, company, DEMO_CATEGORY, DEMO_MARK, ok, property, SYSTEM } from './demo-data.js';
+import { addDemoBus } from './demo-bus.js';
+import { auth, company, DEMO_CATEGORY, DEMO_CLIENT_EMAIL, DEMO_MARK, login, ok, property, SYSTEM } from './demo-data.js';
 
 const HOTEL2 = [
   { city: 'manali', name: 'Demo — Snow Peak Lodge', type: 'hotel', stars: 3, deluxe: 320000, suite: 550000 },
@@ -306,6 +307,7 @@ export async function addDemoFlows(deps, base) {
   await finishAndPay(deps, { ...base, hotel2: p.hotel2 }, log);
   await plan(deps, base.clientOrgId, log);
   await extras(deps, base, w, log);
+  log.push(...(await addDemoBus(deps, { company, clientToken: await login(deps, DEMO_CLIENT_EMAIL) }))); // Stage 18
   await usageRecorder(deps.clock).flush();
   return log;
 }

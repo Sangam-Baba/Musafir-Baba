@@ -27,6 +27,7 @@ import { SessionRecord, UserRecord } from '../modules/identity/index.js';
 import { OrderRecord } from '../modules/orders/index.js';
 import { ClientCategoryRecord, InvitationRecord, MemberRecord, OrganizationRecord } from '../modules/organizations/index.js';
 import { ClientMarkupRecord } from '../modules/pricing/index.js';
+import { removeDemoBus } from './demo-bus.js';
 import { removeDemoFlows } from './demo-cleanup.js';
 
 export const DEMO_MARK = 'demo-data';
@@ -66,7 +67,7 @@ export async function login(deps, email) {
     .accessToken;
 }
 
-/** @param {DemoDeps} deps @param {{ email: string, name: string, type: 'HOTEL' | 'CLIENT', legalName: string }} a */
+/** @param {DemoDeps} deps @param {{ email: string, name: string, type: 'HOTEL' | 'CLIENT' | 'BUS_OPERATOR', legalName: string }} a */
 export async function company(deps, a) {
   const user = await deps.users.create({ email: a.email, name: a.name, password: deps.password });
   const org = await deps.orgs.createOrganization({
@@ -255,6 +256,7 @@ export async function removeDemoData() {
   if (ids.length === 0) return { removed: 0 };
   const hotelIds = orgs.filter((o) => o.type === 'HOTEL').map((o) => String(o._id));
   const clientIds = orgs.filter((o) => o.type === 'CLIENT').map((o) => String(o._id));
+  const bus = await removeDemoBus(orgs.filter((o) => o.type === 'BUS_OPERATOR').map((o) => String(o._id))); // Stage 18 demo
   const members = await MemberRecord.find({ orgId: { $in: ids } }, { userId: 1 })
     .setOptions(SYSTEM)
     .lean();
@@ -295,5 +297,5 @@ export async function removeDemoData() {
   await UserRecord.deleteMany({ _id: { $in: userIds } });
   await OrganizationRecord.deleteMany({ _id: { $in: ids } }).setOptions(SYSTEM);
   await ClientCategoryRecord.updateOne({ key: DEMO_CATEGORY }, { $set: { active: false } });
-  return { removed: ids.length, users: userIds.length, ...flows };
+  return { removed: ids.length, users: userIds.length, ...flows, ...bus };
 }

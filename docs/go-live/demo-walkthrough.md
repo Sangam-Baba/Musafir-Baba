@@ -44,3 +44,14 @@ real clients.
 | Hotel view | `/business` as `demo.hotel@example.com` | Bookings, Statement, **Payouts** (statement with the deduction lines) |
 | Client view | `/business` as `demo.client@example.com` | Search Hotels (B2B price + your selling price), My Bookings, Wallet, Plan & Billing, Reports, Voucher Branding, **Developers** |
 | Guide | Admin → B2B admin → **How it works**; business area → **How it works** | the whole system with a worked example |
+
+## Buses (Stage 18, full demo only)
+
+- Sign in to the business area as `demo.bus@example.com` (the printed password): **My Buses** (Demo Konkan Express,
+  approved), **Routes & schedules** (Mumbai → Goa night, fares with weekend +₹100), **Trips & seats** (a counter block
+  of U1–U2 three days out), **Bus Bookings** (the B2B booking and its manifest), **Bus Payouts**.
+- As the demo client: **Search Buses** → Mumbai → Goa, three days from today → the seat map; the order page shows the
+  e-ticket (cancel seats from there).
+- Website: `/buses` (with `NEXT_PUBLIC_FEATURE_BUS=true`).
+- The demo adds a bus margin rule and a **demo-only 5 % bus GST** so buses show in search — not a real rate.
+

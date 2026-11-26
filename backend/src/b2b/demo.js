@@ -4,7 +4,8 @@
  *   node src/b2b/demo.js add      → demo hotel (3 properties) + demo B2B client; prints the two logins and password
  *   node src/b2b/demo.js full     → LOCAL / TEST DATABASES ONLY: the above plus real flows — a second hotel company, two
  *                                   more clients, wallets, bookings, a cancellation, a payout run, a plan invoice, an API
- *                                   key and webhook address, a booking request (refuses NODE_ENV=production)
+ *                                   key and webhook address, a booking request, and (Stage 18) a bus company with a route,
+ *                                   trips, a bus booking and a counter block (refuses NODE_ENV=production)
  *   node src/b2b/demo.js remove   → deletes exactly the demo companies and what belongs to them
  * In production: docker exec musafirbaba-backend node src/b2b/demo.js add
  * Uses the server's own settings (MONGO_URI, B2B_AUTH_SECRET). Runs the B2B API in this process on 127.0.0.1 for the
@@ -50,7 +51,9 @@ function client(base) {
 async function add(full) {
   const app = express();
   // the full demo turns online booking and wallets on for this in-process API only — the server's settings are not changed
-  const env = full ? { ...process.env, B2B_ORDERS_ENABLED: 'true', B2B_WALLET_ENABLED: 'true' } : process.env;
+  const env = full
+    ? { ...process.env, B2B_ORDERS_ENABLED: 'true', B2B_WALLET_ENABLED: 'true', B2B_BUS_ENABLED: 'true', B2B_BUS_SELLING_ENABLED: 'true' }
+    : process.env;
   const logger = createLogger({ write: () => {} });
   app.use('/api/v1', createB2BRouter({ connect: false, logger, env }));
   const server = http.createServer(app);
