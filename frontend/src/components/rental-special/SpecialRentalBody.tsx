@@ -1,21 +1,20 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { BlogContent } from "@/components/custom/BlogContent";
 import QueryForm from "@/components/custom/QueryForm";
-import Breadcrumb from "@/components/common/Breadcrumb";
 import { getRideQuote, type RideQuote } from "@/lib/rideApi";
-import type { SpecialRentalPageData } from "@/lib/rentalSpecial";
+import { DEFAULT_FROM, DEFAULT_RIDE_TIME, type SpecialRentalPageData } from "@/lib/rentalSpecial";
 import SpecialRentalSearch, { todayStr, type SpecialSearch } from "./SpecialRentalSearch";
 import SpecialRentalFares, { rupees } from "./SpecialRentalFares";
 import SpecialRentalAuthor from "./SpecialRentalAuthor";
+import SpecialRentalBreadcrumb from "./SpecialRentalBreadcrumb";
 
-// Interactive part of a special rental page: the search (prices load at once
-// for the admin's start point + where to), then two columns — price table and
-// content on the left, minimum price + enquiry form on the right.
-
-const DEFAULT_FROM = "Delhi";
+// Interactive part of a special rental page: the search (prices for the
+// admin's start point + where to come from the server's cached quote, else
+// the browser asks), then two columns — price table and content on the left,
+// minimum price + enquiry form on the right.
 
 async function fetchQuote(s: SpecialSearch): Promise<RideQuote> {
   const res = await getRideQuote({
@@ -54,19 +53,28 @@ function MinPrice({ quote, isSearching }: { quote: RideQuote | null; isSearching
   );
 }
 
-export default function SpecialRentalBody({ page }: { page: SpecialRentalPageData }) {
+export default function SpecialRentalBody({
+  page,
+  initialQuote,
+  typeHref,
+}: {
+  page: SpecialRentalPageData;
+  initialQuote: Promise<RideQuote | null>;
+  typeHref?: string;
+}) {
   const [initial] = useState<SpecialSearch>(() => ({
     pickup: page.searchFrom?.address ? page.searchFrom : { address: DEFAULT_FROM },
     drop: page.searchTo ?? {},
     tripType: "ONE_WAY",
     rideDate: todayStr(),
-    rideTime: "10:00 AM",
+    rideTime: DEFAULT_RIDE_TIME,
     returnDate: "",
   }));
   const [quote, setQuote] = useState<RideQuote | null>(null);
   // True from the start when the admin's route is complete (it loads at once)
   const [isSearching, setIsSearching] = useState(() => validate(initial) === null);
   const [error, setError] = useState<string | null>(null);
+  const userSearched = useRef(false); // a visitor's search always wins
 
   const run = useCallback(async (s: SpecialSearch, fromUser: boolean) => {
     const invalid = validate(s);
@@ -74,6 +82,7 @@ export default function SpecialRentalBody({ page }: { page: SpecialRentalPageDat
       if (fromUser) toast.error(invalid);
       return;
     }
+    if (fromUser) userSearched.current = true;
     setIsSearching(true);
     try {
       const q = await fetchQuote(s);
@@ -87,10 +96,26 @@ export default function SpecialRentalBody({ page }: { page: SpecialRentalPageDat
     }
   }, []);
 
-  // Prices for the admin's route as soon as the page opens
+  // Prices for the admin's route: the server's cached quote when it has one,
+  // otherwise the same search from the browser
   useEffect(() => {
-    run(initial, false);
-  }, [run, initial]);
+    let active = true;
+    initialQuote
+      .catch(() => null)
+      .then((q) => {
+        if (!active || userSearched.current) return;
+        if (q) {
+          setQuote(q);
+          setError(null);
+          setIsSearching(false);
+        } else {
+          run(initial, false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [initialQuote, run, initial]);
 
   return (
     <>
@@ -100,7 +125,15 @@ export default function SpecialRentalBody({ page }: { page: SpecialRentalPageDat
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         <div className="mt-4">
-          <Breadcrumb title={page.title || page.specialType.name} />
+          <SpecialRentalBreadcrumb
+            typeName={page.specialType.name}
+            typeHref={typeHref}
+            pageTitle={
+              page.slug
+                ? page.title || page.slug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+                : undefined
+            }
+          />
         </div>
 
         <div className="mt-6 mb-10 flex flex-col md:flex-row gap-8">
