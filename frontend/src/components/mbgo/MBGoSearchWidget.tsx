@@ -69,30 +69,16 @@ function to24Hour(display: string) {
 
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
-// Optional starting values (used by the special rental pages). Without them
-// the widget starts empty, exactly as on /mbgo.
-export interface MBGoSearchPoint {
-  address?: string;
-  lat?: number;
-  lng?: number;
-}
-
-const coordsOf = (p?: MBGoSearchPoint) =>
-  typeof p?.lat === "number" && typeof p?.lng === "number" ? { lat: p.lat, lng: p.lng } : null;
-
-export default function MBGoSearchWidget({
-  initialPickup,
-  initialDrop,
-}: { initialPickup?: MBGoSearchPoint; initialDrop?: MBGoSearchPoint } = {}) {
+export default function MBGoSearchWidget() {
   const router = useRouter();
   const setSearch = useRideBookingStore((s) => s.setSearch);
   const setQuote = useRideBookingStore((s) => s.setQuote);
 
   const [activeTab, setActiveTab] = useState("local");
-  const [pickup, setPickup] = useState(initialPickup?.address ?? "");
-  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(coordsOf(initialPickup));
-  const [drop, setDrop] = useState(initialDrop?.address ?? "");
-  const [dropCoords, setDropCoords] = useState<{ lat: number; lng: number } | null>(coordsOf(initialDrop));
+  const [pickup, setPickup] = useState("");
+  const [pickupCoords, setPickupCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [drop, setDrop] = useState("");
+  const [dropCoords, setDropCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [rideDate, setRideDate] = useState(todayStr());
   const [rideTime, setRideTime] = useState("10:00 AM");
   const [tripType, setTripType] = useState<"ONE_WAY" | "ROUND_TRIP">("ONE_WAY");
