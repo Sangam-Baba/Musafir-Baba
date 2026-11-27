@@ -403,11 +403,17 @@ const nextConfig: NextConfig = {
         destination: "/bookings/flight-tickets",
         permanent: true,
       },
-      {
-        source: "/hotels",
-        destination: "/bookings/hotel-bookings",
-        permanent: true,
-      },
+      // Old SEO redirect — kept while the new hotel booking pages are switched off. With
+      // NEXT_PUBLIC_FEATURE_HOTELS=true, /hotels opens the hotel search (src/app/(user)/hotels).
+      ...(process.env.NEXT_PUBLIC_FEATURE_HOTELS === "true"
+        ? []
+        : [
+            {
+              source: "/hotels",
+              destination: "/bookings/hotel-bookings",
+              permanent: true,
+            },
+          ]),
       {
         source: "/japan-visa",
         destination: "/visa/japan-visa",
