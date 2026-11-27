@@ -8,12 +8,12 @@ import { DomainError } from '../../core/errors.js';
 
 /**
  * @typedef {import('../../core/context.js').RequestContext} Ctx
- * @typedef {{ type: string, bookingId: string, bookingRef: string, hotelOrgId: string, holdId: string | null,
- *   totalPaise: number, gstPaise: number }} OrderItem
+ * @typedef {{ type: string, bookingId: string, bookingRef: string, hotelOrgId: string | null, supplierOrgId?: string | null,
+ *   holdId: string | null, totalPaise: number, gstPaise: number }} OrderItem   hotelOrgId: HOTEL items; supplierOrgId: BUS items
  * @typedef {{ id: string, ref: string, channel: string,
  *   buyer: { clientOrgId: string | null, customerId: string | null, guestKey: string | null },
  *   contact: { name: string, email: string, phone: string } }} OrderInfo
- * @typedef {{ totalPaise: number, gstPaise: number, hotelOrgId: string, tokenHash: string, data: unknown }} Priced
+ * @typedef {{ totalPaise: number, gstPaise: number, hotelOrgId?: string, supplierOrgId?: string, tokenHash: string, data: unknown }} Priced
  * @typedef {{ item: OrderItem, holdExpiresAt: Date }} Prepared
  * @typedef {{ accountId: string, debitPaise?: number, creditPaise?: number }} LedgerLine
  * @typedef {{
@@ -31,7 +31,11 @@ import { DomainError } from '../../core/errors.js';
  *   cancelRooms: (ctx: Ctx, item: OrderItem) => Promise<void>,
  *   cancelLedgerLines: (item: OrderItem, amounts?: { chargePaise: number, refundPaise: number }) => Promise<{ refundPaise: number, lines: LedgerLine[] }>,
  *   cancelDone: (ctx: Ctx, item: OrderItem) => Promise<void>,
- * }} ItemHandler
+ *   partStart?: (ctx: Ctx, item: OrderItem, part: Record<string, unknown>) => Promise<{ started: boolean, status: string }>,
+ *   partRelease?: (ctx: Ctx, item: OrderItem, partId: string) => Promise<void>,
+ *   partLedgerLines?: (item: OrderItem, partId: string) => Promise<{ refundPaise: number, lines: LedgerLine[] }>,
+ *   partDone?: (ctx: Ctx, item: OrderItem, partId: string) => Promise<void>,
+ * }} ItemHandler   part*: optional — cancelling part of a booking (bus seats, Stage 18 B7)
  * @typedef {{
  *   start: (ctx: Ctx, order: Record<string, any>, opts: { windowMinutes: number, returnUrl: string }) =>
  *     Promise<{ intentId: string, txnId: string, action: string, fields: Record<string, string> }>,

@@ -18,11 +18,11 @@ import { BranchRecord } from './models/branch.model.js';
 import { MemberRecord } from './models/member.model.js';
 import { OrganizationRecord, USABLE_ORG_STATUSES } from './models/organization.model.js';
 
-/** @typedef {'CLIENT' | 'HOTEL'} BusinessOrgType */
+/** @typedef {'CLIENT' | 'HOTEL' | 'BUS_OPERATOR'} BusinessOrgType */
 /** @typedef {{ orgId: string, reference: string, displayName: string, type: string, status: string, roles: string[] }} MembershipSummary */
-/** @typedef {{ orgId: string, orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', roles: string[], branchIds: string[], propertyIds: string[], ownOnly: boolean }} UsableMembership */
+/** @typedef {{ orgId: string, orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', roles: string[], branchIds: string[], propertyIds: string[], ownOnly: boolean }} UsableMembership */
 
-const OWNER_ROLE = /** @type {const} */ ({ CLIENT: 'client.owner', HOTEL: 'hotel.owner' });
+const OWNER_ROLE = /** @type {const} */ ({ CLIENT: 'client.owner', HOTEL: 'hotel.owner', BUS_OPERATOR: 'bus.owner' });
 const ID = /^[a-f0-9]{24}$/;
 const BY_MEMBER_ORGS = systemScope('organizations: org details for a member', { routine: true });
 
@@ -54,7 +54,7 @@ export function createOrganizationsService(deps) {
     async createOrganization(input) {
       const org = new OrganizationRecord({
         type: input.type,
-        reference: newReference(input.type === 'CLIENT' ? 'MBC' : 'MBHO'),
+        reference: newReference(input.type === 'CLIENT' ? 'MBC' : input.type === 'BUS_OPERATOR' ? 'MBBO' : 'MBHO'),
         legalName: input.legalName.trim(),
         displayName: (input.displayName ?? input.legalName).trim(),
         status: input.status ?? 'ONBOARDING',

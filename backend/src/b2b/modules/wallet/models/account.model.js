@@ -15,7 +15,7 @@ export const ACCOUNTS_COLLECTION = 'wal_accounts';
 
 const schema = new b2bMongoose.Schema(
   {
-    ownerType: { type: String, enum: ['PLATFORM', 'HOTEL', 'CLIENT'], required: true },
+    ownerType: { type: String, enum: ['PLATFORM', 'HOTEL', 'CLIENT', 'BUS_OPERATOR'], required: true },
     ownerOrgId: { type: String, required: true },
     type: { type: String, enum: Object.keys(ACCOUNT_TYPES), required: true },
     name: { type: String, required: true, maxlength: 120 },

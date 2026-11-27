@@ -39,7 +39,11 @@ function collectRoutes(stack, inherited, where) {
 
 describe('every /api/v1 route declares who may use it', () => {
   const router = /** @type {any} */ (
-    createB2BRouter({ connect: false, logger: createLogger({ write: () => {} }), env: { B2B_AUTH_SECRET: 'x'.repeat(40) } })
+    createB2BRouter({
+      connect: false,
+      logger: createLogger({ write: () => {} }),
+      env: { B2B_AUTH_SECRET: 'x'.repeat(40), B2B_BUS_ENABLED: 'true', B2B_BUS_SELLING_ENABLED: 'true', B2B_ORDERS_ENABLED: 'true' },
+    }) // bus routes are mounted only with their switches on
   );
   const routes = collectRoutes(router.stack, null, 'v1');
 
@@ -60,6 +64,13 @@ describe('every /api/v1 route declares who may use it', () => {
         'GET /hotels/:ref', // public hotel content: LIVE + visible listings only
         'GET /hotels/destinations', // website autocomplete: channel-visible names only, per-IP limit (search gateway)
         'POST /hotels/search', // website search: LIVE visible hotels, from-prices only (no tokens), per-IP limit
+        'GET /buses/search', // Stage 18: website / client bus search through the search gateway (own permission and limits)
+        'GET /buses/trips/:id/seats', // Stage 18: seat map for a journey (gateway; prices without net fares or margins)
+        'POST /bus-orders', // Stage 18 B6: website bus booking — customers and guests like POST /orders (per-IP limit, gateway, idempotency)
+        'GET /bookings/buses/:ref/cancel-quote', // Stage 18 B7: the buyer's cancel quote — owner checked like /bookings/hotels/:ref (else 404)
+        'POST /bookings/buses/:ref/cancel', // Stage 18 B7: the buyer cancels seats — owner checked, Idempotency-Key, refund guard
+        'GET /bookings/buses/:ref/review', // Stage 18 B8: the buyer's own review — owner checked (else 404)
+        'POST /bookings/buses/:ref/review', // Stage 18 B8: the buyer reviews once after the trip — owner checked
         'POST /hotels/offers/price-check', // token-bound re-price for the caller who got the token, per-IP limit
         'POST /hotels/:ref/offers', // LIVE visible hotel only, the caller's price view (no hotel rate), per-IP limit
         'GET /invitations/lookup',
@@ -80,6 +91,7 @@ describe('every /api/v1 route declares who may use it', () => {
         'POST /password/reset',
         'POST /refresh',
         'GET /catalog/masters',
+        'POST /registrations/operator', // Stage 18: bus operators sign up (503 while B2B_BUS_ENABLED is off)
         'POST /registrations/hotel',
         'POST /registrations/client', // B2B client self-registration (S10-T03): same checks and IP limit as hotels
         'POST /orders', // website booking: guests too (browser session id), Idempotency-Key, per-IP limit, server re-prices the token

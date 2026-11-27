@@ -91,6 +91,8 @@ function customerToken(): string | null {
   }
 }
 
+/** The guest session and (if signed in) the customer's token — also used by the website bus pages (Stage 18 B8). */
+export const orderHeaders = (extra: Record<string, string> = {}): Record<string, string> => headers(extra);
 const headers = (extra: Record<string, string> = {}): Record<string, string> => {
   const token = customerToken();
   return { "X-Guest-Session": guestSession(), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra };

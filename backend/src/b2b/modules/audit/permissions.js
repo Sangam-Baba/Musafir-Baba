@@ -6,7 +6,7 @@ export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePer
   eventRead: {
     code: 'audit.event.read',
     description: "See the organisation's activity log (logins, team and role changes)",
-    orgTypes: ['CLIENT', 'HOTEL'],
+    orgTypes: ['CLIENT', 'HOTEL', 'BUS_OPERATOR'],
   },
   platformRead: {
     code: 'platform.audit.read',

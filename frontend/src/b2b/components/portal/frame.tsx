@@ -1,7 +1,7 @@
 "use client";
 // The partner portal frame: dark sidebar (only pages that work today), top bar with the business switcher,
 // the bell and the account menu. Behaviour (switching business, log out, view-as) stays in BusinessShell.
-import { Activity, Building2, CalendarCheck, ClipboardList, FileSpreadsheet, Hotel, Headphones, Home, LogOut, Menu, Percent, Search, Settings, ShieldCheck, Users, Wallet, BarChart3, CreditCard, X, Banknote, PieChart, Palette, Code2, type LucideIcon } from "lucide-react";
+import { Activity, Building2, CalendarCheck, ClipboardList, FileSpreadsheet, Hotel, Headphones, Home, LogOut, Menu, Percent, Search, Settings, ShieldCheck, Users, Wallet, BarChart3, CreditCard, X, Banknote, PieChart, Palette, Code2, BookOpen, BusFront, Route, CalendarRange, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,12 +17,19 @@ const MAIN: NavItem[] = [
   { href: "/business/profile", label: "Business Profile", icon: Building2 },
   { href: "/business/verification", label: "Verification", icon: ShieldCheck, permission: "kyc.application.read" },
   { href: "/business/properties", label: "My Properties", icon: Hotel, permission: "hotel-catalog.property.read" },
+  { href: "/business/buses", label: "My Buses", icon: BusFront, permission: "bus-catalog.vehicle.read" }, // Stage 18: bus operators only
+  { href: "/business/bus-routes", label: "Routes & schedules", icon: Route, permission: "bus-catalog.route.read" }, // Stage 18 B3
+  { href: "/business/bus-trips", label: "Trips & seats", icon: CalendarRange, permission: "bus-inventory.trip.read" }, // Stage 18 B3
+  { href: "/business/bus-bookings", label: "Bus Bookings", icon: ClipboardList, permission: "bus-booking.booking.read" }, // Stage 18 B6
+  { href: "/business/bus-payouts", label: "Bus Payouts", icon: Banknote, permission: "bus-payouts.payable.read" }, // Stage 18 B7 (Owner)
   // hotels (Stage 08): confirmed bookings to acknowledge — the acknowledge permission is hotel-only, so clients never see it
   { href: "/business/bookings", label: "Bookings", icon: CalendarCheck, permission: "hotel-booking.booking.acknowledge" },
   { href: "/business/statement", label: "Statement", icon: FileSpreadsheet, permission: "wallet.statement.read" },
   { href: "/business/payouts", label: "Payouts", icon: Banknote, permission: "wallet.statement.read" }, // Stage 15: hotels
   // B2B clients (Stage 12 part A) — shown only to roles that have these permissions, so hotels never see them
   { href: "/business/hotels", label: "Search Hotels", icon: Search, permission: "hotel-search.search.use" },
+  // Stage 18 B5: bus search for clients — only while the bus feature is switched on for the website
+  ...(process.env.NEXT_PUBLIC_FEATURE_BUS === "true" ? [{ href: "/business/bus-search", label: "Search Buses", icon: BusFront, permission: "bus-booking.search.use" }] : []),
   { href: "/business/my-bookings", label: "My Bookings", icon: CalendarCheck, permission: "orders.order.read" }, // Stage 12B: clients
   { href: "/business/booking-requests", label: "Booking Requests", icon: ClipboardList, permission: "hotel-booking.request.read" },
   { href: "/business/markup", label: "My Markup", icon: Percent, permission: "pricing.markup.read" },
@@ -37,6 +44,7 @@ const ADMIN: NavItem[] = [
   { href: "/business/team", label: "Team & Access", icon: Users },
   { href: "/business/activity", label: "Activity", icon: Activity },
   { href: "/business/security", label: "Settings & Security", icon: Settings },
+  { href: "/business/how-it-works", label: "How it works", icon: BookOpen }, // guide with a worked example
   { href: "/business/help", label: "Help & Support", icon: Headphones },
 ];
 

@@ -45,6 +45,26 @@ export const DOCUMENT_SETS = Object.freeze({
       { key: 'cancelled_cheque', label: 'Cancelled cheque of the company bank account (for refunds)', required: true },
     ])
   ),
+  // Stage 18: bus operators — the company's papers here; each bus's RC / permit / insurance / fitness come with the bus
+  BUS_OPERATOR: /** @type {readonly DocumentRequirement[]} */ (
+    Object.freeze([
+      { key: 'gst_certificate', label: 'GST registration certificate', required: true, when: 'gst-registered' },
+      {
+        key: 'gst_declaration',
+        label: 'Declaration: turnover below the GST registration threshold',
+        required: true,
+        when: 'gst-unregistered',
+      },
+      { key: 'pan_card', label: 'PAN card of the business (or owner)', required: true },
+      {
+        key: 'registration_proof',
+        label: 'Business registration (incorporation certificate, partnership deed or trade licence)',
+        required: true,
+      },
+      { key: 'cancelled_cheque', label: 'Cancelled cheque of the payout bank account', required: true },
+      { key: 'signed_contract', label: 'Signed MusafirBaba bus operator agreement', required: true },
+    ])
+  ),
 });
 
 /**

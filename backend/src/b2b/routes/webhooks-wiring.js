@@ -9,6 +9,7 @@ import { ORDERS, OrderRecord, EVENTS as ORDER } from '../modules/orders/index.js
 import { EVENTS as PAYMENT } from '../modules/payments/index.js';
 import { EVENTS as SUBSCRIPTION } from '../modules/subscriptions/index.js';
 import { EVENTS as WALLET } from '../modules/wallet/index.js';
+import { EVENTS as BUS_BOOKING } from '../modules/bus-booking/index.js';
 import { createDeliveries } from '../modules/webhooks/index.js';
 import { apiEnabled } from './api-keys-wiring.js';
 import { inPilot } from './pilot.js';
@@ -60,6 +61,16 @@ const MAPPERS = {
   [PAYMENT.intentSucceeded]: forOrg('payment.succeeded', (p) => ({ txnId: p.txnId, purpose: p.purpose, amountPaise: p.amountPaise })),
   [PAYMENT.refundSucceeded]: forOrg('refund.processed', (p) => ({ refundId: p.refundId, txnId: p.txnId, amountPaise: p.amountPaise })),
   [WALLET.lowBalance]: forOrg('wallet.low_balance', (p) => ({ thresholdPaise: p.amountPaise })),
+  // Stage 18 B8: bus bookings of a B2B client (the order says whose)
+  [BUS_BOOKING.bookingConfirmed]: async (p) =>
+    forOrder(await orderOf(p.orderId), 'bus_booking.confirmed', { pnr: p.ref ?? null, seats: p.seats ?? null }),
+  [BUS_BOOKING.bookingCancelled]: async (p) =>
+    forOrder(await orderOf(p.orderId), 'bus_booking.cancelled', {
+      pnr: p.ref ?? null,
+      seats: p.seats ?? [],
+      refundPaise: p.refundPaise ?? 0,
+      allCancelled: p.all === true,
+    }),
   [SUBSCRIPTION.quotaReached]: forOrg('quota.threshold_reached', (p) => ({ percent: p.percent, used: p.used, limit: p.limit })),
 };
 

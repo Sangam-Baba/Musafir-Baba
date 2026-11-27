@@ -6,6 +6,7 @@ export { GST_STATES, isValidGstin, isValidPan, isValidPin, gstinCheckChar, panOf
 export { DOCUMENT_SETS, requiredDocuments, missingDocuments } from './domain/document-sets.js';
 export { validateHotelDetails, assessRisk, ENTITY_TYPES } from './domain/hotel-details.js';
 export { validateClientDetails } from './domain/client-details.js';
+export { validateOperatorDetails } from './domain/operator-details.js';
 export { validateBankDetails, lastFour } from './domain/bank-details.js';
 export { TRANSITIONS, EDITABLE_STATUSES, isEditable, transition } from './domain/workflow.js';
 export { APPLICATIONS_COLLECTION, APPLICATION_STATUSES, ApplicationRecord } from './models/application.model.js';

@@ -39,7 +39,8 @@ const DUPLICATE_KEY = 11000;
  *   idempotency: { scope: string, key: string }, ip: string | null, paymentMode: 'GATEWAY' | 'WALLET' | 'CREDIT',
  *   contact: { name: string, email: string, phone: string }, confirmDuplicate?: boolean, limits?: Partial<Record<keyof typeof ORDER_LIMITS, number>>,
  *   branchId?: string | null, customerReference?: string | null,
- *   item: { type: 'HOTEL', input: { caller: unknown, priceToken: string, rooms: { leadGuest: string, guests?: string[] }[], specialRequests?: string | null } } }} CreateInput
+ *   item: { type: 'HOTEL', input: { caller: unknown, priceToken: string, rooms: { leadGuest: string, guests?: string[] }[], specialRequests?: string | null } }
+ *     | { type: 'BUS', input: Record<string, unknown> & { rooms?: undefined, specialRequests?: null } } }} CreateInput
  * @typedef {{ customerId?: string | null, guestKey?: string | null, accessKey?: string | null, linkSecret?: string, clientOrgId?: string | null, staff?: boolean }} Viewer
  */
 
@@ -179,7 +180,7 @@ async function create(deps, ctx, input) {
   const order = await insertHolding(deps, input, priced);
   if (!order) return /** @type {Record<string, any>} */ (await findOrder(byKey));
   await velocityAlert(deps, input.ip, limits.alertPerIpPerHour);
-  return hold(deps, ctx, order, priced);
+  return hold(deps, ctx, order, { priced, handler });
 }
 
 /**
@@ -187,10 +188,9 @@ async function create(deps, ctx, input) {
  * @param {OrdersDeps} deps
  * @param {Ctx} ctx
  * @param {Record<string, any>} order
- * @param {import('./registry.js').Priced} priced
+ * @param {{ priced: import('./registry.js').Priced, handler: import('./registry.js').ItemHandler }} p the price and the handler that made it (HOTEL, BUS)
  */
-async function hold(deps, ctx, order, priced) {
-  const handler = deps.handlers.get('HOTEL');
+async function hold(deps, ctx, order, { priced, handler }) {
   const info = orderInfo(order);
   let prepared;
   try {
@@ -203,14 +203,23 @@ async function hold(deps, ctx, order, priced) {
   }
   const event = newEvent(
     EVENTS.orderCreated,
-    { orgId: prepared.item.hotelOrgId, orderId: info.id, ref: order.ref, channel: order.channel },
+    {
+      orgId: prepared.item.hotelOrgId ?? prepared.item.supplierOrgId ?? 'platform',
+      orderId: info.id,
+      ref: order.ref,
+      channel: order.channel,
+    },
     deps,
   );
   const moved = await transition(OrderRecord, {
     id: order._id,
     from: 'HOLDING',
     to: 'AWAITING_PAYMENT',
-    set: { items: [prepared.item], hotelOrgIds: [prepared.item.hotelOrgId], holdExpiresAt: prepared.holdExpiresAt },
+    set: {
+      items: [prepared.item],
+      hotelOrgIds: prepared.item.hotelOrgId ? [prepared.item.hotelOrgId] : [],
+      holdExpiresAt: prepared.holdExpiresAt,
+    },
     events: [event],
     clock: deps.clock,
     options: ORDERS,

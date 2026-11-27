@@ -21,13 +21,13 @@ import { findStaffByEmail, findStaffById } from '../legacy-read/index.js';
 
 const Id = z.string().regex(/^[a-f0-9]{24}$/);
 const OrgList = z.strictObject({
-  type: z.enum(['CLIENT', 'HOTEL']).optional(),
+  type: z.enum(['CLIENT', 'HOTEL', 'BUS_OPERATOR']).optional(),
   status: z.enum(['ONBOARDING', 'ACTIVE', 'SUSPENDED', 'CLOSED']).optional(),
   q: z.string().trim().min(1).max(100).optional(),
   limit: z.coerce.number().int().min(1).max(200).optional(),
 });
 const NewOrg = z.strictObject({
-  type: z.enum(['CLIENT', 'HOTEL']),
+  type: z.enum(['CLIENT', 'HOTEL', 'BUS_OPERATOR']),
   legalName: z.string().trim().min(2).max(200),
   displayName: z.string().trim().min(2).max(120).optional(),
   ownerEmail: z.string().trim().min(3).max(254).optional(),

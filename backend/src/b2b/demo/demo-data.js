@@ -27,12 +27,14 @@ import { SessionRecord, UserRecord } from '../modules/identity/index.js';
 import { OrderRecord } from '../modules/orders/index.js';
 import { ClientCategoryRecord, InvitationRecord, MemberRecord, OrganizationRecord } from '../modules/organizations/index.js';
 import { ClientMarkupRecord } from '../modules/pricing/index.js';
+import { removeDemoBus } from './demo-bus.js';
+import { removeDemoFlows } from './demo-cleanup.js';
 
 export const DEMO_MARK = 'demo-data';
 export const DEMO_CATEGORY = 'DEMO';
 export const DEMO_HOTEL_EMAIL = 'demo.hotel@example.com';
 export const DEMO_CLIENT_EMAIL = 'demo.client@example.com';
-const SYSTEM = systemScope('demo data (owner-approved demo, hidden from the public)');
+export const SYSTEM = systemScope('demo data (owner-approved demo, hidden from the public)');
 const DAYS = 90;
 
 const PROPERTIES = [
@@ -52,21 +54,21 @@ const ROOM = { description: '', sizeSqm: 28, extraBeds: { allowed: false, max: 0
  */
 
 /** @param {Res} r @param {string} what */
-function ok(r, what) {
+export function ok(r, what) {
   if (r.status >= 300) throw new Error(`demo data: ${what} → ${r.status} ${JSON.stringify(r.body)}`);
   return r.body;
 }
 /** @param {string} t */
-const auth = (t) => ({ authorization: `Bearer ${t}` });
+export const auth = (t) => ({ authorization: `Bearer ${t}` });
 
 /** @param {DemoDeps} deps @param {string} email */
-async function login(deps, email) {
+export async function login(deps, email) {
   return ok(await deps.api.post('/api/v1/auth/login', { identifier: email, password: deps.password }, { 'x-b2b-auth': '1' }), 'sign in')
     .accessToken;
 }
 
-/** @param {DemoDeps} deps @param {{ email: string, name: string, type: 'HOTEL' | 'CLIENT', legalName: string }} a */
-async function company(deps, a) {
+/** @param {DemoDeps} deps @param {{ email: string, name: string, type: 'HOTEL' | 'CLIENT' | 'BUS_OPERATOR', legalName: string }} a */
+export async function company(deps, a) {
   const user = await deps.users.create({ email: a.email, name: a.name, password: deps.password });
   const org = await deps.orgs.createOrganization({
     type: a.type,
@@ -144,7 +146,7 @@ async function setup(deps, h, base) {
  * @param {string} token
  * @param {typeof PROPERTIES[number]} p
  */
-async function property(deps, token, p) {
+export async function property(deps, token, p) {
   const h = auth(token);
   const id = ok(await deps.api.post('/api/v1/hotel/properties', { name: p.name, propertyTypeKey: p.type }, h), 'property').id;
   const base = `/api/v1/hotel/properties/${id}`;
@@ -254,12 +256,23 @@ export async function removeDemoData() {
   if (ids.length === 0) return { removed: 0 };
   const hotelIds = orgs.filter((o) => o.type === 'HOTEL').map((o) => String(o._id));
   const clientIds = orgs.filter((o) => o.type === 'CLIENT').map((o) => String(o._id));
+  const bus = await removeDemoBus(orgs.filter((o) => o.type === 'BUS_OPERATOR').map((o) => String(o._id))); // Stage 18 demo
   const members = await MemberRecord.find({ orgId: { $in: ids } }, { userId: 1 })
     .setOptions(SYSTEM)
     .lean();
   const userIds = (await UserRecord.find({ _id: { $in: members.map((m) => m.userId) }, email: /@example\.com$/ }, { _id: 1 }).lean()).map(
     (u) => String(u._id),
   );
+  const orders = await OrderRecord.find({ $or: [{ hotelOrgIds: { $in: hotelIds } }, { clientOrgId: { $in: clientIds } }] }, { ref: 1 })
+    .setOptions(SYSTEM)
+    .lean();
+  const flows = await removeDemoFlows({
+    ids,
+    hotelIds,
+    clientIds,
+    orderIds: orders.map((o) => String(o._id)),
+    orderRefs: orders.map((o) => String(o.ref)),
+  }); // the full demo's money, documents, plans, API
   const byHotel = { hotelOrgId: { $in: hotelIds } };
   await Promise.all([
     ...[
@@ -274,7 +287,7 @@ export async function removeDemoData() {
       BookingRecord,
       BookingStatusRecord,
     ].map((/** @type {import('mongoose').Model<any>} */ m) => m.deleteMany(byHotel).setOptions(SYSTEM)),
-    OrderRecord.deleteMany({ hotelOrgIds: { $in: hotelIds } }).setOptions(SYSTEM),
+    OrderRecord.deleteMany({ $or: [{ hotelOrgIds: { $in: hotelIds } }, { clientOrgId: { $in: clientIds } }] }).setOptions(SYSTEM),
     BookingRequestRecord.deleteMany({ clientOrgId: { $in: clientIds } }).setOptions(SYSTEM),
     ClientMarkupRecord.deleteMany({ clientOrgId: { $in: clientIds } }).setOptions(SYSTEM),
     InvitationRecord.deleteMany({ orgId: { $in: ids } }).setOptions(SYSTEM),
@@ -284,5 +297,5 @@ export async function removeDemoData() {
   await UserRecord.deleteMany({ _id: { $in: userIds } });
   await OrganizationRecord.deleteMany({ _id: { $in: ids } }).setOptions(SYSTEM);
   await ClientCategoryRecord.updateOne({ key: DEMO_CATEGORY }, { $set: { active: false } });
-  return { removed: ids.length, users: userIds.length };
+  return { removed: ids.length, users: userIds.length, ...flows, ...bus };
 }

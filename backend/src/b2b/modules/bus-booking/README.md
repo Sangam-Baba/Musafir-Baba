@@ -1,0 +1,23 @@
+# Module: bus-booking
+
+The buyer side of the bus service (plan `docs/plan/stages/stage-18-bus-service.md` B5–B6): search, seat map, prices,
+and (B6) booking.
+
+| | |
+| --- | --- |
+| **Collections** | `bus_bookings` (migration 0086) |
+| **Depends on** | `bus-catalog`, `bus-inventory`, `pricing` (index only); operator names / status and city states are passed in by the wiring |
+| **Permissions** | `bus-booking.search.use` (B2B clients); website visitors search without signing in |
+
+## Rules
+
+- Offered only when: trip scheduled, seats ready, online sale open, route approved, bus approved with valid papers today,
+  operator company active, and a fare for the seat class.
+- Price = net fare → margin (a BUS margin rule; hotel rules never match buses) → GST from a `BUS_TRANSPORT` tax rule.
+  No starter GST rate is seeded (CA to confirm) — without an approved rule nothing is offered. Place of supply = the
+  boarding stop's state. Website sees the price with GST; clients also the GST lines; never the net fare or margin.
+- Search: a boarding point in city A reached on the date (Indian time, not passed) and a later dropping point in city B;
+  part routes count; buses that left the day before can pick up on the date.
+- Booking (B6, ADR-0018): the BUS item handler of the order engine — server price, passengers, 15-minute seat hold with
+  the breakdown stored on the booking (price lock), confirm / rehold / release / extend / abandon, ledger lines to the
+  bus company's `OPERATOR_PAYABLE`, GST and margin. Cancellations come in B7. Operators read bookings and manifests.

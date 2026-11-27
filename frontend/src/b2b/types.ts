@@ -1,5 +1,5 @@
 // Shapes returned by the B2B API (kept in step with backend/src/b2b).
-export type OrgType = "PLATFORM" | "CLIENT" | "HOTEL";
+export type OrgType = "PLATFORM" | "CLIENT" | "HOTEL" | "BUS_OPERATOR";
 
 export interface BusinessUser {
   id: string;

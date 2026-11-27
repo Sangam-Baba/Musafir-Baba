@@ -31,8 +31,8 @@ const BY_LINK = systemScope('organizations: invitation lookup by emailed link', 
  *   clock: import('../../core/clock.js').Clock,
  *   secret: string | undefined,
  *   publicUrl: string,
- *   permissionsOf: (roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<string[]>,
- *   isKnownRole: (role: string, orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<boolean>,
+ *   permissionsOf: (roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', orgId: string) => Promise<string[]>,
+ *   isKnownRole: (role: string, orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', orgId: string) => Promise<boolean>,
  *   sendEmail: (message: import('../../core/email.js').EmailMessage) => Promise<unknown>,
  *   accessChanged?: (orgId: string, userId?: string) => void,
  * }} InvitationDeps
@@ -194,10 +194,10 @@ export function createInvitationsService(deps) {
     /**
      * A MusafirBaba admin invites the first Owner of an org they created (the route checks
      * `platform.org.manage`; there is no member yet whose permissions could be compared).
-     * @param {{ orgId: string, orgType: 'CLIENT' | 'HOTEL', email: string, staffId: string }} input
+     * @param {{ orgId: string, orgType: 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', email: string, staffId: string }} input
      */
     async inviteOwnerAsAdmin(input) {
-      const ownerRole = input.orgType === 'CLIENT' ? 'client.owner' : 'hotel.owner';
+      const ownerRole = { CLIENT: 'client.owner', HOTEL: 'hotel.owner', BUS_OPERATOR: 'bus.owner' }[input.orgType];
       return createInvitation(kit, { orgId: input.orgId, userId: `staff:${input.staffId}` }, { email: input.email, roles: [ownerRole] });
     },
 

@@ -19,6 +19,7 @@ export { seedTaxRules, createTaxRulesService } from './tax-rules.service.js';
 export {
   CHANNELS,
   ADJUSTMENTS,
+  PRODUCT_TYPES,
   MAX_FIXED_PAISE,
   MAX_PERCENT_BPS,
   DEFAULT_RULES,

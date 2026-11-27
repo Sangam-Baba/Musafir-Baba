@@ -4,6 +4,25 @@
 
 <!-- Copy this block for each session -->
 
+## 2026-11-25/26 — AI (Claude) — Stage 18 bus service B1–B8 (S18-T01 to T11)
+
+- **Goal:** start the owner-approved bus plan: bus operators as a company type, then buses, seat layouts, papers and staff approval.
+- **Done:** S18-T01–T11 → DONE (stage left IN_PROGRESS for the owner to confirm). B8: website /buses pages, reviews and photos, bus API scopes and webhooks, bus demo, go-live notes. B7: cancellations (ADR-0019), bus payouts in their own run (ADR-0020, owner decision), trip problems. B6: bus bookings through the order engine (ADR-0018: BUS item type, operator payable account), PNR, e-ticket, manifest, client booking from Search Buses, operator Bus Bookings page, bus emails. B5: bus pricing in the shared pricing module (ADR-0017: `productType` on margin rules, `BUS_TRANSPORT` tax kind with no seeded rate), new module `bus-booking` with search and seat map, `/buses/*` behind `B2B_BUS_SELLING_ENABLED`, admin rule / tax forms, client Search Buses page. B4: seat engine (claims for holds and counter blocks, one conditional update per seat, give-back, sweeper), stop sale, fares with date rules and change log; Trips & seats blocks, Fares editor; migration 0085. B3: boarding points, routes (stops + times, staff approval), schedules, new module `bus-inventory` with trips and trip seats made 90 days ahead by a repeat-safe job; Routes & schedules and Trips & seats screens; migration 0084. Operator company type (`BUS_OPERATOR`, `MBBO-…`, Owner / Manager / Counter staff), operator registration + KYC; seat layouts with templates and an editor; buses with four papers and expiry; staff review (admin Partners → Buses); paper reminders; operator screens My Buses / bus page / Seat layouts. Also earlier the same day: admin regrouped into Partners / Services / Control, "How it works" guides, full local demo data.
+- **Not done / why:** bus photos → DEF-043 (with the website pages in B8). Open: DEF-044 (change bus), DEF-045 (bus usage counting — owner), DEF-046 / 047 (CA); `/hotels` redirect fix in next.config.ts waits for the owner's OK. Bus GST invoice / receipt → DEF-046 (CA). Bus usage meters → DEF-045 (B8). Change bus with seat re-mapping → DEF-044 (B7). Nothing pushed — owner wants everything tried locally first.
+- **Files / PR:** `backend/src/b2b/modules/bus-catalog/*`, `routes/bus-catalog.js`, `routes/files.js` (upload purpose `bus-paper`, labelled per-purpose guard), notifications `catalogue-bus.js` / `templates-bus.js`, migration 0083; frontend `app/business/buses/*`, `b2b/bus.ts`, `b2b/components/bus/*`, `admin/BusReviewTab.tsx`. No PR yet (local commits).
+- **Tests run:** `lint:b2b` ✅, `typecheck:b2b` ✅, `b2b:guards` ✅ (only the known .DS_Store / screenui-desgine items), bus tests ✅, full suite ✅ (182 files, 1157 tests), website tsc (b2b files) ✅, `next build` ✅.
+- **Decisions / deferrals:** ADR-0016 (bus product, `bus_` prefix); DEF-043; routes capped at 31 stops (plan said 32) so leg masks stay int32 for MongoDB `$bit`; trips copy their seat map so later layout edits never move sold seats.
+- **Next step:** owner review and merge, migrations 0083–0089 on the server, CA answers, then switches one at a time (docs/go-live/bus-service.md).
+
+
+## 2026-11-24 — AI (Claude) — Release: Stages 13–16 live (switched off)
+
+- **Goal:** put the merged Stages 13–16 on the server without changing anything people see.
+- **Done:** PR #224 merged by the owner; backend redeployed from `main`; migrations 0070–0082 run on the server (13 applied, 69 already done; a second run applied none). Checked: `/api/v1/health` ok (database up, reconciler running), `/openapi.json` 200, an API key → 401 `API_NOT_ENABLED`, `/api-keys` → 503 (switch off), musafirbaba.com and the existing API 200, safety-check runs being saved (all 9 checks clean), no errors in the backend log except the deliberate switched-off check.
+- **Not done / why:** switches stay off (billing, API, pilot list unset) until the owner decides; staff permissions for the new admin screens to be granted by the owner.
+- **Next step:** owner tasks of Stage 16 (pilots, pen test, staging load / DR drill, on-call, sign-offs); set `B2B_OPS_ALERT_EMAIL` on the server so safety-check alerts reach a person.
+
+
 ## 2026-11-24 — AI (Claude) — Stage 16 hardening (S16-T01 to T08; T09–T12 are owner tasks)
 
 - **Goal:** everything in hardening and launch that code and documents can do; prepare the owner tasks.

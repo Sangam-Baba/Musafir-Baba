@@ -2,7 +2,7 @@
 /** Permissions of the access module (roles). */
 import { definePermissions } from '../../core/permissions.js';
 
-const ALL = /** @type {const} */ (['PLATFORM', 'CLIENT', 'HOTEL']);
+const ALL = /** @type {const} */ (['PLATFORM', 'CLIENT', 'HOTEL', 'BUS_OPERATOR']);
 
 export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePermissions('Roles', {
   roleRead: { code: 'access.role.read', description: 'See roles and what each role may do', orgTypes: ALL },

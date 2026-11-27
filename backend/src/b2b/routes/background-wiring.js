@@ -22,6 +22,7 @@ import {
 import { documentInvariants } from '../modules/documents/index.js';
 import { DOCUMENTS_RETRY_EVERY_MS, documentJobs } from './documents-wiring.js';
 import { amendmentEmailConsumer, customerEmailConsumers, hotelFailedEmailConsumer, noShowEmailConsumer } from './customer-emails.js';
+import { busEmailConsumers } from './bus-emails.js';
 import { SUMMARIES_REBUILD_EVERY_MS, summaryJobs } from './reporting-wiring.js';
 import { payableJobs, payablesFor } from './payables-wiring.js';
 import { ackEscalation, BookingRecord, bookingInvariants, createHotelFailures, createNoShows } from '../modules/hotel-booking/index.js';
@@ -32,6 +33,11 @@ import { walletParts } from './wallet-wiring.js';
 import { usageRecorder, usageSchedules } from './metering-wiring.js';
 import { subscriptionParts } from './subscriptions-wiring.js';
 import { webhookParts } from './webhooks-wiring.js';
+import { createBusReview, createSchedules } from '../modules/bus-catalog/index.js';
+import { createClaims, createTrips } from '../modules/bus-inventory/index.js';
+import { BUS_ENGINE_SCOPE, BusBookingRecord, completeTrips } from '../modules/bus-booking/index.js';
+import { createPartCancellations } from '../modules/orders/index.js';
+import { todayIn } from '../core/dates.js';
 import { createKycRetention, RETENTION_EVERY_MS } from '../flows/kyc-retention.js';
 import { bookedNightOwners, extendCalendarWindow, SWEEP_EVERY_MS, sweepHolds } from '../modules/hotel-inventory/index.js';
 
@@ -79,6 +85,8 @@ export function startDatabase(env, log, hub, identity) {
   const wallet = walletParts(systemClock);
   const subscriptions = subscriptionParts(systemClock, env);
   const webhooks = webhookParts(systemClock, env); // Stage 14: nothing unless B2B_API_ENABLED=true
+  const busSchedules =
+    env.B2B_BUS_ENABLED === 'true' ? [busPaperReminders(), busTrips(), busSeatSweeper(), busPartReconcile(engine), busCompletion()] : []; // Stage 18
   connectB2BDatabase(config.MONGO_URI, 'api')
     .then(() =>
       startBackground({
@@ -106,6 +114,7 @@ export function startDatabase(env, log, hub, identity) {
         schedules: [
           ...schedulesOf(env, log, engine, { config, documents, summaries, payables, wallet, subscriptions }),
           ...webhooks.schedules,
+          ...busSchedules,
         ],
       }),
     )
@@ -150,6 +159,7 @@ function emailConsumers(engine, config, email) {
   };
   return [
     ...customerEmailConsumers(deps),
+    ...busEmailConsumers(deps), // Stage 18 B6: e-ticket and bus refund emails
     amendmentEmailConsumer(deps, 'hotel-booking.amendment.staff-replied'),
     noShowEmailConsumer(deps, 'hotel-booking.no-show.marked'),
     hotelFailedEmailConsumer(deps, 'hotel-booking.booking.hotel-failed'),
@@ -233,4 +243,55 @@ function schedulesOf(env, log, engine, parts) {
     },
     ...parts.subscriptions.schedules,
   ];
+}
+
+/** Stage 18: bus paper reminders (30 / 7 days before expiry and on expiry), every 6 hours, repeat-safe. */
+function busPaperReminders() {
+  const review = createBusReview({ clock: systemClock, today: () => todayIn(systemClock, 'Asia/Kolkata') });
+  return { name: 'bus-paper-reminders', everyMs: 6 * 60 * 60_000, run: () => review.reminders() };
+}
+
+/** Bus trips 90 days ahead from active schedules; unsold trips of ended schedules cancelled (S18-T06, repeat-safe). */
+function busTrips() {
+  const today = () => todayIn(systemClock, 'Asia/Kolkata');
+  const trips = createTrips({ today, catalog: createSchedules({ today }) });
+  return { name: 'bus-trips', everyMs: 6 * 60 * 60_000, run: () => trips.generate() };
+}
+
+/** Expired seat holds and claims stuck mid-way given back (S18-T07, repeat-safe). */
+function busSeatSweeper() {
+  const claims = createClaims({ clock: systemClock });
+  return { name: 'bus-seat-sweeper', everyMs: 60_000, run: () => claims.sweep() };
+}
+
+/**
+ * Bus seat cancellations left PENDING (the process stopped mid-way) → finished: seats back, ledger, refund, done
+ * (every step repeat-safe; S18-T10). Only parts older than 2 minutes, so a running request finishes them itself.
+ * @param {ReturnType<typeof bookingEngine>} engine
+ */
+function busPartReconcile(engine) {
+  const parts = createPartCancellations(engine.ordersDeps);
+  async function run() {
+    const before = new Date(systemClock.now().getTime() - 2 * 60_000);
+    const stuck = await BusBookingRecord.find(
+      { parts: { $elemMatch: { status: 'PENDING', at: { $lte: before } } } },
+      { orderId: 1, parts: 1 },
+    )
+      .setOptions(BUS_ENGINE_SCOPE)
+      .limit(100)
+      .lean();
+    let finished = 0;
+    for (const b of stuck)
+      for (const p of b.parts.filter((/** @type {any} */ x) => x.status === 'PENDING')) {
+        await parts.finishPart(b.orderId, String(b._id), String(p.id));
+        finished += 1;
+      }
+    return { finished };
+  }
+  return { name: 'bus-part-cancel-reconcile', everyMs: 60_000, run };
+}
+
+/** Bus trips that ended → bookings COMPLETED (payables ready to pay, orders complete) — hourly, repeat-safe (S18-T10). */
+function busCompletion() {
+  return { name: 'bus-trip-completion', everyMs: 60 * 60_000, run: () => completeTrips({ clock: systemClock }) };
 }

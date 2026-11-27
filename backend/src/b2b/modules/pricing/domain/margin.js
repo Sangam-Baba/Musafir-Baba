@@ -9,28 +9,45 @@
  * - Per-booking fees (FIXED_PER_BOOKING) are a separate, optional layer: the best matching one is added once.
  * - No nightly rule for a night → that night is **not sellable** (never sold at zero margin by accident).
  * - A margin below zero (sell under the hotel's rate) only on a rule that says so (`allowBelowNet`, approved).
+ * - Product (Stage 18, ADR-0016): a rule is for hotels unless it says `productType: 'BUS'` — every rule made before buses
+ *   keeps matching hotels only, and a bus is never priced by a hotel rule. Bus rules may match the bus company and
+ *   route; for buses the "per night" amounts are per seat (one trip), the per-booking fee once per booking.
  */
 import { DomainError } from '../../../core/errors.js';
 import { Money } from '../../../core/money.js';
 
 export const CHANNELS = /** @type {const} */ (['WEBSITE', 'B2B_PORTAL', 'B2B_API']);
 export const ADJUSTMENTS = /** @type {const} */ (['FIXED_PER_NIGHT', 'PERCENT', 'FIXED_PER_BOOKING']);
+export const PRODUCT_TYPES = /** @type {const} */ (['HOTEL', 'BUS']);
 /** Largest margin a rule may add: ₹1,00,000 per night / booking, or 500 % — a typo is refused, not sold. */
 export const MAX_FIXED_PAISE = 10_000_000;
 export const MAX_PERCENT_BPS = 50_000;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
-const MATCH_FIELDS = /** @type {const} */ (['clientCategory', 'clientOrgId', 'hotelOrgId', 'propertyId', 'cityId', 'starRating']);
+const MATCH_FIELDS = /** @type {const} */ ([
+  'clientCategory',
+  'clientOrgId',
+  'hotelOrgId',
+  'propertyId',
+  'cityId',
+  'starRating',
+  'operatorOrgId',
+  'routeId',
+]);
+const HOTEL_ONLY = /** @type {const} */ (['hotelOrgId', 'propertyId', 'starRating']);
+const BUS_ONLY = /** @type {const} */ (['operatorOrgId', 'routeId']);
 
 /**
  * @typedef {typeof CHANNELS[number]} Channel
  * @typedef {{ channels?: Channel[], clientCategory?: string, clientOrgId?: string, hotelOrgId?: string,
- *   propertyId?: string, cityId?: string, starRating?: number, stayFrom?: string, stayTo?: string }} RuleMatch
+ *   propertyId?: string, cityId?: string, starRating?: number, stayFrom?: string, stayTo?: string,
+ *   productType?: typeof PRODUCT_TYPES[number], operatorOrgId?: string, routeId?: string }} RuleMatch
  * @typedef {{ type: typeof ADJUSTMENTS[number], value: number, minPaise?: number | null, maxPaise?: number | null }} Adjustment
  * @typedef {{ id: string, name: string, priority: number, match: RuleMatch, adjustment: Adjustment,
  *   allowBelowNet?: boolean, effectiveFrom?: Date | null, effectiveTo?: Date | null, createdAt: Date,
  *   replaces?: string | null }} MarginRule
- * @typedef {{ channel: Channel, clientCategory?: string | null, clientOrgId?: string | null, hotelOrgId: string,
- *   propertyId: string, cityId?: string | null, starRating?: number | null }} PriceContext
+ * @typedef {{ channel: Channel, clientCategory?: string | null, clientOrgId?: string | null, hotelOrgId?: string,
+ *   propertyId?: string, cityId?: string | null, starRating?: number | null, productType?: typeof PRODUCT_TYPES[number],
+ *   operatorOrgId?: string | null, routeId?: string | null }} PriceContext
  * @typedef {{ ruleId: string, marginPaise: number }} NightMargin
  */
 
@@ -48,6 +65,14 @@ export function marginRuleProblems(r) {
   return out;
 }
 
+/** Stage 18: the product and the fields only one product has. @param {RuleMatch} m */
+function productProblems(m) {
+  if (m.productType !== undefined && !PRODUCT_TYPES.includes(m.productType))
+    return [{ code: 'PRODUCT_INVALID', field: 'match.productType' }];
+  const others = (m.productType ?? 'HOTEL') === 'BUS' ? HOTEL_ONLY : BUS_ONLY;
+  return others.filter((f) => m[f] !== undefined && m[f] !== null).map((f) => ({ code: 'FIELD_NOT_FOR_PRODUCT', field: `match.${f}` }));
+}
+
 /** @param {RuleMatch} m */
 function matchProblems(m) {
   const out = [];
@@ -55,6 +80,7 @@ function matchProblems(m) {
     out.push({ code: 'CHANNEL_INVALID', field: 'match.channels' });
   if (m.starRating !== undefined && (!Number.isInteger(m.starRating) || m.starRating < 0 || m.starRating > 5))
     out.push({ code: 'STAR_INVALID', field: 'match.starRating' });
+  out.push(...productProblems(m));
   if (m.stayFrom !== undefined && !DATE.test(m.stayFrom)) out.push({ code: 'DATE_INVALID', field: 'match.stayFrom' });
   if (m.stayTo !== undefined && (!DATE.test(m.stayTo) || (m.stayFrom !== undefined && m.stayTo < m.stayFrom)))
     out.push({ code: 'DATE_RANGE', field: 'match.stayTo' });
@@ -98,6 +124,7 @@ export function ruleMatches(r, ctx, at) {
   const m = r.match ?? {};
   if (r.effectiveFrom && at.now < r.effectiveFrom) return false;
   if (r.effectiveTo && at.now >= r.effectiveTo) return false;
+  if ((m.productType ?? 'HOTEL') !== (ctx.productType ?? 'HOTEL')) return false; // hotel rules never price buses, and back
   if (m.channels && !m.channels.includes(ctx.channel)) return false;
   if (MATCH_FIELDS.some((f) => m[f] !== undefined && m[f] !== null && m[f] !== ctx[f])) return false;
   if (m.stayFrom && at.date < m.stayFrom) return false;

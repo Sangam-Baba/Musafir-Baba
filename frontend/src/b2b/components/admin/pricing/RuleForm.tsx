@@ -21,6 +21,9 @@ function initial(rule: MarginRule | null) {
     priority: String(rule?.priority ?? 10),
     channels: (rule?.match.channels ?? ["WEBSITE"]) as Channel[],
     allChannels: rule ? !rule.match.channels : false,
+    productType: (rule?.match.productType ?? "HOTEL") as "HOTEL" | "BUS",
+    operatorOrgId: rule?.match.operatorOrgId ?? "",
+    routeId: rule?.match.routeId ?? "",
     cityId: rule?.match.cityId ?? "",
     starRating: rule?.match.starRating !== undefined ? String(rule.match.starRating) : "",
     clientCategory: rule?.match.clientCategory ?? "",
@@ -43,7 +46,11 @@ function bodyOf(f: Form) {
   const match: Record<string, unknown> = {};
   if (!f.allChannels) match.channels = f.channels;
   if (f.cityId) match.cityId = f.cityId;
-  if (f.starRating !== "") match.starRating = Number(f.starRating);
+  if (f.productType === "BUS") {
+    match.productType = "BUS"; // Stage 18: a rule without a product is a hotel rule
+    if (f.operatorOrgId.trim()) match.operatorOrgId = f.operatorOrgId.trim();
+    if (f.routeId.trim()) match.routeId = f.routeId.trim();
+  } else if (f.starRating !== "") match.starRating = Number(f.starRating);
   if (f.clientCategory.trim()) match.clientCategory = f.clientCategory.trim();
   if (f.stayFrom) match.stayFrom = f.stayFrom;
   if (f.stayTo) match.stayTo = f.stayTo;
@@ -115,6 +122,16 @@ export function RuleForm({ token, rule, active, cities, onSaved, onCancel }: { t
           </label>
         ))}
       </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field label="Product">
+          <select className={fleetSelectClass} value={f.productType} onChange={(e) => set({ productType: e.target.value as "HOTEL" | "BUS" })}>
+            <option value="HOTEL">Hotels</option>
+            <option value="BUS">Buses (per seat)</option>
+          </select>
+        </Field>
+        {f.productType === "BUS" && <Field label="Bus company id (optional)"><Input className={inputSm} value={f.operatorOrgId} onChange={(e) => set({ operatorOrgId: e.target.value })} placeholder="any" /></Field>}
+        {f.productType === "BUS" && <Field label="Route id (optional)"><Input className={inputSm} value={f.routeId} onChange={(e) => set({ routeId: e.target.value })} placeholder="any" /></Field>}
+      </div>
       <div className="grid gap-3 sm:grid-cols-5">
         <Field label="City">
           <select className={fleetSelectClass} value={f.cityId} onChange={(e) => set({ cityId: e.target.value })}>
@@ -122,7 +139,7 @@ export function RuleForm({ token, rule, active, cities, onSaved, onCancel }: { t
             {cities.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </Field>
-        <Field label="Stars"><Input className={inputSm} type="number" min={0} max={5} value={f.starRating} onChange={(e) => set({ starRating: e.target.value })} placeholder="any" /></Field>
+        {f.productType === "HOTEL" ? <Field label="Stars"><Input className={inputSm} type="number" min={0} max={5} value={f.starRating} onChange={(e) => set({ starRating: e.target.value })} placeholder="any" /></Field> : <span />}
         <Field label="Client category"><Input className={inputSm} value={f.clientCategory} onChange={(e) => set({ clientCategory: e.target.value })} placeholder="any (e.g. GOLD)" /></Field>
         <Field label="Stays from"><Input className={inputSm} type="date" value={f.stayFrom} onChange={(e) => set({ stayFrom: e.target.value })} /></Field>
         <Field label="Stays until (incl.)"><Input className={inputSm} type="date" value={f.stayTo} onChange={(e) => set({ stayTo: e.target.value })} /></Field>
@@ -130,8 +147,8 @@ export function RuleForm({ token, rule, active, cities, onSaved, onCancel }: { t
       <div className="grid gap-3 sm:grid-cols-5">
         <Field label="Margin type">
           <select className={fleetSelectClass} value={f.type} onChange={(e) => set({ type: e.target.value as Adjustment["type"] })}>
-            <option value="FIXED_PER_NIGHT">₹ per room per night</option>
-            <option value="PERCENT">% of hotel rate</option>
+            <option value="FIXED_PER_NIGHT">{f.productType === "BUS" ? "₹ per seat" : "₹ per room per night"}</option>
+            <option value="PERCENT">{f.productType === "BUS" ? "% of the operator fare" : "% of hotel rate"}</option>
             <option value="FIXED_PER_BOOKING">₹ per booking (added once)</option>
           </select>
         </Field>

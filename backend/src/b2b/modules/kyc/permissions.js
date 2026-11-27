@@ -2,7 +2,7 @@
 /** Permissions of the kyc module (verification of hotels now, B2B clients in Stage 10). */
 import { definePermissions } from '../../core/permissions.js';
 
-const BUSINESS = /** @type {const} */ (['CLIENT', 'HOTEL']);
+const BUSINESS = /** @type {const} */ (['CLIENT', 'HOTEL', 'BUS_OPERATOR']);
 
 export const { codes: PERMISSIONS, catalogue: PERMISSION_CATALOGUE } = definePermissions('Verification (KYC)', {
   applicationRead: {

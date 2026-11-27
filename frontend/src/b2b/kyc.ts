@@ -25,6 +25,7 @@ export interface HotelDetailsInput {
   pan: string;
   address: { line1: string; line2?: string; city: string; stateCode: string; pin: string };
   propertyCount: number;
+  fleetSize?: number; // Stage 18: bus operators
   termsAccepted: boolean;
   termsVersion: string;
   tradeName?: string;
@@ -45,6 +46,7 @@ export interface StoredDetails {
   panLast4: string;
   address: { line1: string; line2: string | null; city: string; stateCode: string; pin: string };
   propertyCount?: number; // hotels only
+  fleetSize?: number; // bus operators only
   termsVersion: string;
   tradeName?: string | null;
   entityType?: EntityType | null;
@@ -77,7 +79,7 @@ export const stateName = (code: string) => GST_STATES.find(([c]) => c === code)?
 export interface KycApplication {
   id: string;
   orgId: string;
-  orgType: "CLIENT" | "HOTEL";
+  orgType: "CLIENT" | "HOTEL" | "BUS_OPERATOR";
   status: KycStatus;
   details: StoredDetails | null;
   documents: { key: string; fileId: string; attachedAt: string }[];

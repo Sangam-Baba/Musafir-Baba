@@ -9,7 +9,7 @@
 import { b2bMongoose } from '../../../core/db/connection.js';
 import { eventFields } from '../../../core/db/events.js';
 import { defineModel } from '../../../core/db/model.js';
-import { ADJUSTMENTS, CHANNELS } from '../domain/margin.js';
+import { ADJUSTMENTS, CHANNELS, PRODUCT_TYPES } from '../domain/margin.js';
 
 export const MARGIN_RULES_COLLECTION = 'prc_margin_rules';
 export const MARGIN_RULE_STATUSES = /** @type {const} */ (['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'RETIRED']);
@@ -25,6 +25,9 @@ const match = new b2bMongoose.Schema(
     starRating: { type: Number },
     stayFrom: { type: String },
     stayTo: { type: String },
+    productType: { type: String, enum: PRODUCT_TYPES }, // Stage 18: absent = HOTEL
+    operatorOrgId: { type: String },
+    routeId: { type: String },
   },
   { _id: false },
 );

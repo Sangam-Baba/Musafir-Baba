@@ -40,7 +40,7 @@ const CreateBody = z.strictObject({
 const Ref = z.strictObject({ ref: z.string().min(5).max(32) });
 
 /** @param {import('express').Response} res */
-function member(res) {
+export function member(res) {
   const { actor } = contextOf(res);
   if (actor.type !== 'member' || actor.orgType !== 'CLIENT') throw new ForbiddenError();
   return { orgId: actor.orgId, userId: actor.userId, branchIds: actor.branchIds ?? [], ownOnly: actor.ownOnly === true };
@@ -48,14 +48,14 @@ function member(res) {
 /** @param {import('express').Response} res */
 const noStore = (res) => res.set('Cache-Control', 'private, no-store');
 /** @param {import('express').Request} req */
-function idemKey(req) {
+export function idemKey(req) {
   const key = req.get('idempotency-key') ?? '';
   if (!KEY.test(key)) throw new ValidationError({ problems: [{ field: 'Idempotency-Key', code: 'REQUIRED' }] });
   return key;
 }
 
 /** The branch an order is booked for: a branch-limited person's own (the first if not given). @param {ReturnType<typeof member>} m @param {string | null | undefined} asked */
-function branchFor(m, asked) {
+export function branchFor(m, asked) {
   if (m.branchIds.length === 0) return asked ?? null;
   if (asked && !m.branchIds.includes(asked)) throw new ForbiddenError('BRANCH_NOT_ALLOWED');
   return asked ?? m.branchIds[0] ?? null;

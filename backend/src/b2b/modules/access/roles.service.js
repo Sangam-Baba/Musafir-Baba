@@ -15,7 +15,7 @@ import { RoleRecord } from './models/role.model.js';
 
 const ID = /^[a-f0-9]{24}$/;
 
-/** @typedef {'PLATFORM' | 'CLIENT' | 'HOTEL'} OrgType */
+/** @typedef {'PLATFORM' | 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR'} OrgType */
 
 /** @param {import('../../core/context.js').RequestContext} ctx */
 function memberOf(ctx) {

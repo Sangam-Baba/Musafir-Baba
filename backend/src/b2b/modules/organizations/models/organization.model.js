@@ -14,7 +14,7 @@ export const USABLE_ORG_STATUSES = /** @type {const} */ (['ONBOARDING', 'ACTIVE'
 
 const schema = new b2bMongoose.Schema(
   {
-    type: { type: String, enum: ['PLATFORM', 'CLIENT', 'HOTEL'], required: true },
+    type: { type: String, enum: ['PLATFORM', 'CLIENT', 'HOTEL', 'BUS_OPERATOR'], required: true },
     reference: { type: String, required: true },
     legalName: { type: String, required: true, maxlength: 200 },
     displayName: { type: String, required: true, maxlength: 120 },

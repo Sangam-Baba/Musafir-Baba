@@ -30,7 +30,7 @@ export function emptyDetails(): HotelDetailsInput {
 
 /** What the API expects: optional fields left out when empty. */
 /** The details as the API expects them; B2B clients have no property count (Stage 10). */
-export function toRequest(v: HotelDetailsInput, termsVersion: string, kind: "HOTEL" | "CLIENT" = "HOTEL") {
+export function toRequest(v: HotelDetailsInput, termsVersion: string, kind: "HOTEL" | "CLIENT" | "BUS_OPERATOR" = "HOTEL") {
   const opt = (s: string | undefined) => (s && s.trim() ? s.trim() : undefined);
   return {
     legalName: v.legalName,
@@ -42,6 +42,7 @@ export function toRequest(v: HotelDetailsInput, termsVersion: string, kind: "HOT
     pan: v.pan,
     address: { ...v.address, line2: opt(v.address.line2) },
     ...(kind === "HOTEL" ? { propertyCount: v.propertyCount } : {}),
+    ...(kind === "BUS_OPERATOR" ? { fleetSize: v.fleetSize ?? 1 } : {}),
     termsAccepted: v.termsAccepted,
     termsVersion,
     tradeName: opt(v.tradeName),
@@ -85,6 +86,7 @@ export function BusinessDetailsForm({
   lockEmail,
   showTerms = true,
   showPropertyCount = true,
+  showFleetSize = false,
 }: {
   value: HotelDetailsInput;
   onChange: (v: HotelDetailsInput) => void;
@@ -93,6 +95,7 @@ export function BusinessDetailsForm({
   panHint?: string;
   lockEmail?: boolean;
   showTerms?: boolean;
+  showFleetSize?: boolean; // Stage 18: bus operators
   showPropertyCount?: boolean;
 }) {
   const set = (patch: Partial<HotelDetailsInput>) => onChange({ ...value, ...patch });
@@ -122,6 +125,11 @@ export function BusinessDetailsForm({
         {showPropertyCount && (
           <Box label="Number of properties" required error={errors.propertyCount}>
             <input className={input} type="number" min={1} max={500} value={value.propertyCount} onChange={(e) => set({ propertyCount: Number(e.target.value) })} disabled={disabled} required />
+          </Box>
+        )}
+        {showFleetSize && (
+          <Box label="Number of buses" required error={errors.fleetSize}>
+            <input className={input} type="number" min={1} max={1000} value={value.fleetSize ?? 1} onChange={(e) => set({ fleetSize: Number(e.target.value) })} disabled={disabled} required />
           </Box>
         )}
       </Group>

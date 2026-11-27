@@ -20,7 +20,7 @@ import { findSessionById } from '../legacy-read/index.js';
 import { PERMISSIONS as IDENTITY } from '../modules/identity/index.js';
 import { staffMfaKey } from './admin-auth.js';
 
-const OWNER_ROLE = /** @type {const} */ ({ CLIENT: 'client.owner', HOTEL: 'hotel.owner' });
+const OWNER_ROLE = /** @type {const} */ ({ CLIENT: 'client.owner', HOTEL: 'hotel.owner', BUS_OPERATOR: 'bus.owner' });
 
 /**
  * @typedef {{
@@ -28,7 +28,7 @@ const OWNER_ROLE = /** @type {const} */ ({ CLIENT: 'client.owner', HOTEL: 'hotel
  *   orgs: ReturnType<typeof import('../modules/organizations/index.js').createOrganizationsService>,
  *   users: ReturnType<typeof import('../modules/identity/index.js').createUserRepository>,
  *   mfa: ReturnType<typeof import('../modules/identity/index.js').createMfaService>,
- *   permissionsOf: (roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<string[]>,
+ *   permissionsOf: (roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', orgId: string) => Promise<string[]>,
  *   secret: string | undefined,
  *   clock: import('../core/clock.js').Clock,
  * }} ViewAsDeps

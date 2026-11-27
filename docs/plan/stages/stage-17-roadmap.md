@@ -12,6 +12,7 @@ Each item becomes its own stage file (same template) when scheduled.
 | P6 | Sub-agents (clients reselling to their own agents) | Distribution growth | Orgs with parent, markups, wallets |
 | P7 | Promotions/coupons | Conversion | Pricing pipeline (separate from margins) |
 | P8 | OAuth client credentials, SDKs, public sandbox | Larger API clients | api-access |
+| P9a | **Bus service** — planned in detail: [stage-18-bus-service.md](stage-18-bus-service.md) (owner decisions 25 Nov 2026; waiting for approval) | Operators onboard buses, seat maps, part-route booking | orgs, KYC, pricing, orders engine, payments, wallet, documents, payouts, metering, API |
 | P9 | Next products: transfers, activities, packages, flights, visa | Revenue lines | orders, wallet, payments, documents, pricing, metering, reporting — each product adds catalog + booking modules implementing `OrderItemHandler` |
 | P10 | Split `hotel-search` or `webhooks` into services | Scale | Module boundaries |
 

@@ -135,7 +135,7 @@ export function createOrgAdminService(deps) {
 
     /**
      * Creates a client or hotel org (onboarding) and, if given, emails its future owner an invitation.
-     * @param {{ type: 'CLIENT' | 'HOTEL', legalName: string, displayName?: string | undefined, ownerEmail?: string | undefined, staffId: string }} input
+     * @param {{ type: 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', legalName: string, displayName?: string | undefined, ownerEmail?: string | undefined, staffId: string }} input
      */
     async create(input) {
       const org = await deps.orgs.createOrganization({

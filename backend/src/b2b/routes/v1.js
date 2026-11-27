@@ -56,6 +56,7 @@ import {
   createPropertyService,
   createRevisionService,
   createRoomTypeService,
+  CityRecord,
 } from '../modules/hotel-catalog/index.js';
 import { createGstRegistrations, createKycReviewService, createKycService } from '../modules/kyc/index.js';
 import { createNotificationsService } from '../modules/notifications/index.js';
@@ -74,6 +75,9 @@ import { createViewAsService } from '../modules/identity/index.js';
 import { createStaffRoles } from './admin-wiring.js';
 import { realtimeRoutes } from './realtime.js';
 import { apiKeysFor, createApiKeyAuthenticator } from './api-keys-wiring.js';
+import { busCatalogRoutes } from './bus-catalog.js';
+import { busSearchRoutes } from './bus-search.js';
+import { cityStateOf } from './bus-http.js';
 
 const BODY_LIMIT = '1mb';
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -166,6 +170,11 @@ function stage02Routes(env, clock, identity) {
   const files = createFiles(env, clock);
   const kyc = createKycService({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET });
   router.use(fileRoutes(files));
+  // Stage 18 (503 unless B2B_BUS_ENABLED); bus points use the shared city list (read only)
+  const cityExists = async (/** @type {string} */ id) =>
+    /^[a-f0-9]{24}$/.test(id) && Boolean(await CityRecord.exists({ _id: id, active: true }));
+  router.use(busCatalogRoutes({ clock, env, files, cityExists }));
+  router.use(busSearchRoutes({ clock, env, stateOf: cityStateOf })); // B5: 503 unless B2B_BUS_SELLING_ENABLED too
   router.use(registrationRoutes(registrationDeps(env, clock, identity, kyc)));
   const isOwnOrg = ownOrgCheck(identity);
   const gst = createGstRegistrations({ clock, files, fieldKey: env.B2B_FILE_KEY ?? env.B2B_AUTH_SECRET, isOwnOrg });
@@ -287,5 +296,6 @@ function registrationDeps(env, clock, identity, kyc) {
     publicUrl: env.B2B_PUBLIC_URL || 'https://musafirbaba.com',
     secureCookies: identity.secureCookies,
     clock,
+    busEnabled: env.B2B_BUS_ENABLED === 'true', // Stage 18: operator registration
   };
 }

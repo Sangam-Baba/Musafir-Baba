@@ -25,6 +25,7 @@ export const ALLOWED_PREFIXES = /** @type {const} */ ([
   'bil_',
   'api_',
   'whk_',
+  'bus_', // Stage 18 (ADR-0016): checked — no existing collection starts with bus
   'doc_',
   'rpt_',
   'core_',

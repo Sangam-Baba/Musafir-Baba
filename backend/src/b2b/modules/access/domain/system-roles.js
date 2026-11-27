@@ -112,6 +112,7 @@ export const SYSTEM_ROLES = Object.freeze([
       'pricing.**.read',
       'hotel-search.**',
       'hotel-booking.**',
+      'bus-booking.**', // Stage 18: bus search (and booking from B6) — client-only permissions
       'orders.**',
       'metering.**.read', // Stage 12B: the company's usage
       'subscriptions.**.read', // Stage 13: the company's plan
@@ -130,6 +131,7 @@ export const SYSTEM_ROLES = Object.freeze([
       'pricing.**.read',
       'hotel-search.**',
       'hotel-booking.**',
+      'bus-booking.**', // Stage 18: bus search (and booking from B6) — client-only permissions
       'orders.**',
     ],
     defaultScope: 'BRANCH',
@@ -161,6 +163,31 @@ export const SYSTEM_ROLES = Object.freeze([
     description: 'Read bookings of their branches',
     patterns: [SEE_ORG, 'orders.**.read', 'hotel-booking.**.read'],
     defaultScope: 'BRANCH',
+  },
+  // Bus operators (Stage 18)
+  {
+    key: 'bus.owner',
+    orgType: 'BUS_OPERATOR',
+    name: 'Owner',
+    description: 'Everything for the company: buses, routes, trips, fares, bookings, bank details and payouts',
+    patterns: ['**'],
+    defaultScope: 'ORG',
+  },
+  {
+    key: 'bus.manager',
+    orgType: 'BUS_OPERATOR',
+    name: 'Manager',
+    description: 'Buses, routes, schedules, trips, fares and bookings',
+    patterns: [SEE_ORG, 'organizations.member.read', 'bus-catalog.**', 'bus-inventory.**', 'bus-booking.**'],
+    defaultScope: 'ORG',
+  },
+  {
+    key: 'bus.counterStaff',
+    orgType: 'BUS_OPERATOR',
+    name: 'Counter staff',
+    description: 'See trips; block and release seats sold at the counter; read bookings and manifests',
+    patterns: [SEE_ORG, 'bus-inventory.trip.read', 'bus-inventory.seat.block', 'bus-booking.**.read'],
+    defaultScope: 'ORG',
   },
   // Hotels
   {

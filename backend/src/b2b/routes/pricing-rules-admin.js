@@ -15,7 +15,7 @@ import { ForbiddenError } from '../core/errors.js';
 import { contextOf } from '../core/http/context-middleware.js';
 import { requirePermission } from '../core/http/permissions.js';
 import { validate } from '../core/http/validate.js';
-import { ADJUSTMENTS, CHANNELS, MARGIN_RULE_STATUSES, PERMISSIONS as PRC } from '../modules/pricing/index.js';
+import { ADJUSTMENTS, CHANNELS, MARGIN_RULE_STATUSES, PERMISSIONS as PRC, PRODUCT_TYPES } from '../modules/pricing/index.js';
 import { Id, versionOf } from './inventory-http.js';
 
 const Ref = z.string().trim().min(1).max(64);
@@ -36,6 +36,9 @@ export const RuleBody = z.strictObject({
       starRating: z.number().int().optional(),
       stayFrom: Day.optional(),
       stayTo: Day.optional(),
+      productType: z.enum(PRODUCT_TYPES).optional(), // Stage 18: absent = hotel
+      operatorOrgId: Id.optional(),
+      routeId: Id.optional(),
     })
     .default({}),
   adjustment: z.strictObject({ type: z.enum(ADJUSTMENTS), value: Paise, minPaise: Paise.nullish(), maxPaise: Paise.nullish() }),

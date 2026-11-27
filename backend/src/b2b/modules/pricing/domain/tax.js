@@ -10,7 +10,9 @@
 import { DomainError } from '../../../core/errors.js';
 import { Money } from '../../../core/money.js';
 
-export const TAX_KINDS = /** @type {const} */ (['ACCOMMODATION', 'SAAS']);
+// BUS_TRANSPORT (Stage 18): no starter rate — the CA confirms the rate / SAC and staff add it through the approval flow;
+// until then a bus quote finds no tax rule and is not sellable (never guessed).
+export const TAX_KINDS = /** @type {const} */ (['ACCOMMODATION', 'SAAS', 'BUS_TRANSPORT']);
 export const ACCOMMODATION_SAC = '996311';
 /** Highest rate a rule may carry (28 %) — a typo like 1800 → 18000 is refused. */
 export const MAX_RATE_BPS = 2800;

@@ -31,7 +31,7 @@ import {
 
 const HOUR = 60 * 60_000;
 
-/** @typedef {(roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL', orgId: string) => Promise<string[]>} PermissionsOf */
+/** @typedef {(roles: readonly string[], orgType: 'PLATFORM' | 'CLIENT' | 'HOTEL' | 'BUS_OPERATOR', orgId: string) => Promise<string[]>} PermissionsOf */
 
 /**
  * @param {NodeJS.ProcessEnv} env
