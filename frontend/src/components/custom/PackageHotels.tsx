@@ -4,8 +4,9 @@ import React, { useRef, useState } from "react";
 import Image from "next/image";
 import { BedDouble, ChevronLeft, ChevronRight, MapPin, Star } from "lucide-react";
 
-// Hotel cards in a package's "Hotels" section: photos (swipe / arrows),
-// name, star rating, location and a short note. Never shows a price.
+// Compact hotel cards in a package's "Hotels" section: a small photo
+// (swipe / arrows) beside name, star rating, location and a short note.
+// Never shows a price.
 
 export interface PackageHotelCard {
   name?: string;
@@ -32,14 +33,14 @@ function Photos({ images, name }: { images: { url: string; alt?: string }[]; nam
 
   if (images.length === 0) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center bg-gradient-to-br from-orange-50 to-gray-100">
-        <BedDouble className="h-10 w-10 text-orange-300" aria-hidden="true" />
+      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-50 to-gray-100">
+        <BedDouble className="h-7 w-7 text-orange-300" aria-hidden="true" />
       </div>
     );
   }
 
   return (
-    <div className="group relative aspect-[4/3] overflow-hidden bg-gray-100">
+    <div className="group relative h-full w-full overflow-hidden bg-gray-100">
       <div
         ref={track}
         onScroll={(e) => {
@@ -54,7 +55,7 @@ function Photos({ images, name }: { images: { url: string; alt?: string }[]; nam
               src={img.url}
               alt={img.alt || `${name} photo ${i + 1}`}
               fill
-              sizes="(max-width: 768px) 100vw, 50vw"
+              sizes="160px"
               className="object-cover"
             />
           </div>
@@ -67,30 +68,30 @@ function Photos({ images, name }: { images: { url: string; alt?: string }[]; nam
             type="button"
             onClick={() => go(index - 1)}
             aria-label="Previous photo"
-            className="absolute left-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow transition group-hover:flex"
+            className="absolute left-1 top-1/2 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow transition group-hover:flex"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={() => go(index + 1)}
             aria-label="Next photo"
-            className="absolute right-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow transition group-hover:flex"
+            className="absolute right-1 top-1/2 hidden h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow transition group-hover:flex"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3.5 w-3.5" />
           </button>
-          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+          <div className="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-1">
             {images.map((_, i) => (
               <button
                 key={i}
                 type="button"
                 onClick={() => go(i)}
                 aria-label={`Photo ${i + 1}`}
-                className={`h-1.5 rounded-full transition-all ${i === index ? "w-4 bg-white" : "w-1.5 bg-white/60"}`}
+                className={`h-1 rounded-full transition-all ${i === index ? "w-3 bg-white" : "w-1 bg-white/60"}`}
               />
             ))}
           </div>
-          <span className="absolute right-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-medium text-white">
+          <span className="absolute right-1 top-1 rounded-full bg-black/55 px-1.5 py-px text-[10px] font-medium text-white">
             {index + 1}/{images.length}
           </span>
         </>
@@ -115,29 +116,39 @@ export default function PackageHotels({ hotels }: { hotels?: PackageHotelCard[] 
   if (list.length === 0) return null;
 
   return (
-    <div className={`grid grid-cols-1 gap-5 ${list.length > 1 ? "sm:grid-cols-2" : "sm:max-w-xl"}`}>
+    <div className={`grid grid-cols-1 gap-3 ${list.length > 1 ? "md:grid-cols-2" : "md:max-w-xl"}`}>
       {list.map((h, i) => {
         const name = (h.name || "").trim();
         const images = (h.images ?? []).filter((img): img is { url: string; alt?: string } => !!img?.url);
         const stars = Math.max(0, Math.min(5, Math.round(Number(h.stars) || 0)));
         return (
-          <article key={`${name}-${i}`} className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-            <Photos images={images} name={name} />
-            <div className="space-y-2 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-[17px] font-bold leading-snug text-gray-900">{name}</h3>
+          <article
+            key={`${name}-${i}`}
+            className="flex gap-3 overflow-hidden rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm transition-shadow hover:shadow-md"
+          >
+            {/* Small photo (4:3), swipeable when there are several */}
+            <div className="h-[90px] w-[120px] shrink-0 overflow-hidden rounded-lg sm:h-[105px] sm:w-[140px]">
+              <Photos images={images} name={name} />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-[15px] font-bold leading-snug text-gray-900">{name}</h3>
                 {stars > 0 && (
-                  <span className="shrink-0 rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">{stars}-Star</span>
+                  <span className="shrink-0 rounded-full bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">{stars}-Star</span>
                 )}
               </div>
               <Stars value={stars} />
               {h.location && (
-                <p className="flex items-start gap-1.5 text-[13px] text-gray-600">
+                <p className="flex items-start gap-1 text-[12px] text-gray-600">
                   <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#FE5300]" aria-hidden="true" />
                   {h.location}
                 </p>
               )}
-              {h.description && <p className="whitespace-pre-line text-[14px] leading-relaxed text-gray-600">{h.description}</p>}
+              {h.description && (
+                <p className="line-clamp-2 whitespace-pre-line text-[12.5px] leading-snug text-gray-600" title={h.description}>
+                  {h.description}
+                </p>
+              )}
             </div>
           </article>
         );

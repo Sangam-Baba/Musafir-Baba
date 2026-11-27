@@ -118,7 +118,7 @@ export default function PackageHotelsEditor({ form }: { form: UseFormReturn<Fiel
             </div>
 
             <div>
-              <span className={label}>Photos ({images.length})</span>
+              <span className={label}>Photos ({images.length}) — 600×450 px (4:3), JPG/WebP under 100 KB, first photo shows first</span>
               <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
                 {images.map((img, i) => (
                   <div key={`${img.url}-${i}`} className="space-y-1 rounded-lg border bg-gray-50 p-1.5">
