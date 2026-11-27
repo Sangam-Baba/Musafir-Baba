@@ -28,9 +28,9 @@ import { getAllAuthors } from "@/app/admin/webpage/new/page";
 import { useRouter } from "next/navigation";
 import { rentalSlug } from "@/lib/rentalUrl";
 
-// "Special Page": /rental/{city}/{special-type} (permalink empty = landing
-// page) or /rental/{city}/{special-type}/{permalink}. One banner, the MBGo
-// ride search (start point + where to set here) and content.
+// "Special Page": /rental/{special-type} (permalink empty = landing page)
+// or /rental/{special-type}/{permalink} — no city in the URL. One banner,
+// the ride search with prices (start point + where to set here) and content.
 
 const LIST_PATH = "/admin/rental-special-pages";
 const DEFAULT_FROM = "Delhi";
@@ -42,7 +42,6 @@ const pointSchema = z.object({
 });
 
 const schema = z.object({
-  location: z.string().min(1, "Please select a city"),
   specialType: z.string().min(1, "Please select a special type"),
   slug: z.string().optional(),
   status: z.enum(["active", "inactive"]).default("active"),
@@ -86,7 +85,6 @@ const toPoint = (p?: { address?: string; lat?: number; lng?: number }) => ({
 });
 
 const EMPTY: FormData = {
-  location: "",
   specialType: "",
   slug: "",
   status: "active",
@@ -110,16 +108,11 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
   const form = useForm<FormData>({ resolver: zodResolver(schema) as Resolver<FormData>, defaultValues: EMPTY });
   const faqs = useFieldArray({ control: form.control, name: "faqs" });
 
-  const { data: destinationsRes } = useQuery<{ data: Option[] }>({
-    queryKey: ["master-data", "pickup-destination", "all"],
-    queryFn: () => authFetch(accessToken, "/master-data/pickup-destination?all=true"),
-  });
   const { data: typesRes } = useQuery<{ data: Option[] }>({
     queryKey: ["rental-special-type", "all"],
     queryFn: () => authFetch(accessToken, "/rental-special/types?all=true"),
   });
   const { data: authors } = useQuery<Option[]>({ queryKey: ["authors"], queryFn: getAllAuthors });
-  const destinations = destinationsRes?.data ?? [];
   const types = typesRes?.data ?? [];
 
   const { data, isLoading } = useQuery({
@@ -132,7 +125,6 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
   useEffect(() => {
     if (id && pageData) {
       form.reset({
-        location: String(pageData.location ?? ""),
         specialType: String(pageData.specialType ?? ""),
         slug: pageData.slug || "",
         status: pageData.status || "active",
@@ -184,13 +176,10 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
   const keywordsValue = form.watch("keywords");
   const keywordsString = Array.isArray(keywordsValue) ? keywordsValue.join(", ") : keywordsValue;
 
-  const selectedLoc = destinations.find((d) => d._id === form.watch("location"));
   const selectedType = types.find((t) => t._id === form.watch("specialType"));
   const permalink = rentalSlug(form.watch("slug"));
   const previewPath =
-    selectedLoc && selectedType
-      ? `/rental/${slugOf(selectedLoc)}/${slugOf(selectedType)}${permalink ? `/${permalink}` : ""}`
-      : null;
+    selectedType ? `/rental/${slugOf(selectedType)}${permalink ? `/${permalink}` : ""}` : null;
 
   const pointField = (name: "searchFrom" | "searchTo", label: string, placeholder: string, hint: string) => (
     <FormField
@@ -231,7 +220,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
               </a>
             </>
           ) : (
-            "Pick a city and a special type: one banner, the ride search, content, SEO and FAQs."
+            "Pick a special type: one banner, the ride search with prices, content, SEO and FAQs."
           )
         }
       />
@@ -243,27 +232,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
 
             <TabsContent value="general" forceMount className="data-[state=inactive]:hidden">
               <CityTypeTabPanel tab="general">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className={rLabel}>City *</FormLabel>
-                        <FormControl>
-                          <select {...field} className={dInput}>
-                            <option value="" disabled>Select city</option>
-                            {destinations.map((d) => (
-                              <option key={d._id} value={d._id}>
-                                {d.name}{d.status === "inactive" ? " (inactive)" : ""}
-                              </option>
-                            ))}
-                          </select>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
                     name="specialType"
@@ -312,7 +281,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
                           <input placeholder="e.g. delhi-to-agra" {...field} className={dInput} />
                         </FormControl>
                         <p className="text-[11px] text-slate-400">
-                          Leave empty for the landing page /rental/city/special-type.
+                          Leave empty for the landing page /rental/special-type.
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -327,7 +296,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
                         <FormControl>
                           <input
                             placeholder={
-                              selectedLoc && selectedType ? `Automatic: ${selectedType.name} in ${selectedLoc.name}` : "e.g. Wedding Car in Delhi"
+                              selectedType ? `Automatic: ${selectedType.name}` : "e.g. Wedding Car Rental"
                             }
                             {...field}
                             className={dInput}
@@ -518,7 +487,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
             </TabsContent>
           </Tabs>
 
-          <AdminSaveBar hint={previewPath ? `Saves the content of ${previewPath}` : "Pick a city and a special type to continue."}>
+          <AdminSaveBar hint={previewPath ? `Saves the content of ${previewPath}` : "Pick a special type to continue."}>
             <Button type="button" variant="outline" className={rSecondaryBtn} onClick={() => router.push(LIST_PATH)}>
               Cancel
             </Button>

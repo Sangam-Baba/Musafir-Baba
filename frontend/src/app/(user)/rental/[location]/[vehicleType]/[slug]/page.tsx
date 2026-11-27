@@ -1,8 +1,6 @@
 import { notFound, permanentRedirect } from "next/navigation";
 import RentalPageClient from "./pageClient";
 import { rentalLocationSlug, rentalTypeSlug, rentalVehiclePath } from "@/lib/rentalUrl";
-import { getSpecialRentalPage, specialRentalMetadata } from "@/lib/rentalSpecial";
-import SpecialRentalPage from "@/components/rental-special/SpecialRentalPage";
 
 export interface IVehicleUserData {
   _id: string;
@@ -92,16 +90,8 @@ const getRelatedVehicles = async (slug: string, location: string) => {
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ location: string, vehicleType: string, slug: string }> }) {
-  const { location, vehicleType, slug } = await params;
+  const { location, slug } = await params;
   const vehicle = await getVehicleBySlug(slug, location);
-
-  // Special page (/rental/{location}/{special-type}/{slug}): looked up only
-  // when this URL is not a vehicle's own (no vehicle, or about to redirect),
-  // so vehicle pages are unchanged and make no extra call.
-  if (!vehicle || vehicleType !== rentalTypeSlug(vehicle)) {
-    const special = await getSpecialRentalPage(location, vehicleType, slug);
-    if (special) return specialRentalMetadata(special);
-  }
 
   if (!vehicle) return { title: "Not Found" };
 
@@ -125,12 +115,6 @@ async function page({ params }: { params: Promise<{ location: string, vehicleTyp
   const relatedVehicles = await getRelatedVehicles(slug, location);
 
   const vehicle = await getVehicleBySlug(slug, location);
-
-  // Special page: same rule as in generateMetadata above
-  if (!vehicle || vehicleType !== rentalTypeSlug(vehicle)) {
-    const special = await getSpecialRentalPage(location, vehicleType, slug);
-    if (special) return <SpecialRentalPage page={special} />;
-  }
 
   if (!vehicle) {
     notFound();

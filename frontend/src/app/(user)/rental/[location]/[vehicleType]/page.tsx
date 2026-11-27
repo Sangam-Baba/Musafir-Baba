@@ -99,9 +99,10 @@ export async function generateMetadata({ params }: { params: Promise<{ location:
     getAllVehicles(),
   ]);
 
-  // Special landing page (/rental/{location}/{special-type}): looked up only
-  // when the second segment is not a vehicle type, so type pages are unchanged
-  if (!typeData) {
+  // Special detail page (/rental/{special-type}/{slug}, the URL's two
+  // segments): looked up only when this is not a location + type page, so
+  // those pages are unchanged and make no extra call
+  if (!destData || !typeData) {
     const special = await getSpecialRentalPage(location, vehicleType);
     if (special) return specialRentalMetadata(special);
   }
@@ -154,14 +155,13 @@ export default async function DestinationPage({ params }: { params: Promise<{ lo
   ]);
 
   if (!typeData || !destData) {
-    // Special landing page: same rule as in generateMetadata above
-    if (!typeData) {
-      const special = await getSpecialRentalPage(location, vehicleType);
-      if (special) return <SpecialRentalPage page={special} />;
-    }
     if (await isLegacyOrder(location, vehicleType)) {
       permanentRedirect(`/rental/${vehicleType}/${location}`);
     }
+    // Special detail page: same rule as in generateMetadata above (checked
+    // after the old-order redirect, which therefore behaves exactly as before)
+    const special = await getSpecialRentalPage(location, vehicleType);
+    if (special) return <SpecialRentalPage page={special} />;
     notFound();
   }
 

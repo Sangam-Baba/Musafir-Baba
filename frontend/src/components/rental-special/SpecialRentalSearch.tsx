@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ArrowUpDown, CalendarDays, Clock3, MapPin, Navigation, Search, Undo2 } from "lucide-react";
 import LocationAutocompleteInput from "@/components/mbgo/LocationAutocompleteInput";
 import type { SpecialSearchPoint } from "@/lib/rentalSpecial";
@@ -39,20 +39,83 @@ function to24Hour(display: string) {
   return `${String(hours).padStart(2, "0")}:${m}`;
 }
 
-// One bar on desktop (segments split by thin dividers), stacked rows inside one
-// rounded card on phones. Every field is a full-width tap target.
-const seg = "group relative flex min-w-0 items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-50/80 focus-within:bg-orange-50/40";
-const segLabel = "block text-[10.5px] font-semibold uppercase tracking-[0.08em] text-gray-400";
-const segInput =
-  "mt-0.5 w-full min-w-0 bg-transparent text-[15px] font-semibold text-gray-900 placeholder:font-medium placeholder:text-gray-400 focus:outline-none truncate";
-const segIcon = "h-[18px] w-[18px] shrink-0";
+// Route card on top (From / To, full addresses, never cut), then a row with
+// departure, time, return and the button. Stacks into one column on phones.
+const fieldLabel = "block text-[10.5px] font-semibold uppercase tracking-[0.1em] text-gray-400";
+const fieldValue = "text-[15px] font-semibold leading-snug text-gray-900";
+const inputCls =
+  "mt-1 w-full min-w-0 bg-transparent text-[15px] font-semibold text-gray-900 placeholder:font-medium placeholder:text-gray-400 focus:outline-none";
+const chip =
+  "flex min-w-0 items-center gap-3 rounded-2xl border border-gray-200 bg-gray-50/60 px-4 py-3 transition-colors hover:border-gray-300 focus-within:border-[#FE5300] focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10";
 
-function Segment({ icon, label, children, className = "" }: { icon: React.ReactNode; label: string; children: React.ReactNode; className?: string }) {
+// Shows the whole address (wrapping) while not editing; tap to edit with the
+// same suggestions as /mbgo (LocationAutocompleteInput, used unchanged).
+function LocationField({
+  label,
+  icon,
+  point,
+  placeholder,
+  onChange,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  point: SpecialSearchPoint;
+  placeholder: string;
+  onChange: (p: SpecialSearchPoint) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const address = point.address || "";
+
+  useEffect(() => {
+    if (editing) boxRef.current?.querySelector("input")?.focus();
+  }, [editing]);
+
   return (
-    <label className={`${seg} ${className}`}>
+    <div
+      ref={boxRef}
+      onFocus={(e) => {
+        if (e.target instanceof HTMLInputElement) setEditing(true);
+      }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setEditing(false);
+      }}
+      className="flex min-w-0 flex-1 items-start gap-3 px-4 py-3.5 sm:px-5 sm:py-4"
+    >
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-50 ring-1 ring-gray-100">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <span className={fieldLabel}>{label}</span>
+        {/* Always mounted (only hidden while the full address shows), so a
+            suggestion click or "Use current location" still lands after blur */}
+        <div className={editing || !address ? "" : "sr-only"}>
+          <LocationAutocompleteInput
+            value={address}
+            onChange={(addr, coords) => onChange({ address: addr, ...(coords || {}) })}
+            placeholder={placeholder}
+            className={inputCls}
+          />
+        </div>
+        {!editing && address && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            title="Change"
+            className={`${fieldValue} mt-1 block w-full whitespace-normal break-words text-left hover:text-[#FE5300]`}
+          >
+            {address}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Chip({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <label className={chip}>
       {icon}
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className={segLabel}>{label}</span>
+        <span className={fieldLabel}>{label}</span>
         {children}
       </span>
     </label>
@@ -71,10 +134,11 @@ export default function SpecialRentalSearch({
   const [s, setS] = useState<SpecialSearch>(initial);
   const set = (patch: Partial<SpecialSearch>) => setS((prev) => ({ ...prev, ...patch }));
   const roundTrip = s.tripType === "ROUND_TRIP";
+  const iconCls = "h-[18px] w-[18px] shrink-0 text-gray-400";
 
   return (
-    <div className="relative z-20 mx-auto w-full max-w-6xl rounded-3xl bg-white/95 p-3 shadow-[0_20px_60px_-15px_rgba(15,23,42,0.25)] ring-1 ring-black/5 backdrop-blur sm:p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 px-1 pb-3">
+    <div className="relative z-20 mx-auto w-full max-w-6xl rounded-[28px] bg-white p-3.5 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.28)] ring-1 ring-black/5 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
         <div role="tablist" aria-label="Trip type" className="inline-flex rounded-full bg-gray-100 p-1">
           {(["ONE_WAY", "ROUND_TRIP"] as const).map((type) => (
             <button
@@ -83,7 +147,7 @@ export default function SpecialRentalSearch({
               role="tab"
               aria-selected={s.tripType === type}
               onClick={() => set({ tripType: type })}
-              className={`rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all ${
+              className={`rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all sm:px-5 ${
                 s.tripType === type ? "bg-white text-[#FE5300] shadow-sm" : "text-gray-500 hover:text-gray-800"
               }`}
             >
@@ -101,88 +165,70 @@ export default function SpecialRentalSearch({
           e.preventDefault();
           onSearch(s);
         }}
-        className="flex flex-col gap-3 lg:flex-row lg:items-stretch"
+        className="space-y-3"
       >
-        <div className="flex flex-1 flex-col divide-y divide-gray-200 overflow-visible rounded-2xl border border-gray-200 bg-white lg:flex-row lg:divide-x lg:divide-y-0">
-          {/* From / To with the swap button on their shared edge */}
-          <div className="relative flex flex-col divide-y divide-gray-200 lg:flex-[2.2] lg:flex-row lg:divide-x lg:divide-y-0">
-            <Segment
-              icon={<Navigation className={`${segIcon} text-emerald-500`} />}
-              label="From"
-              className="rounded-t-2xl lg:flex-1 lg:rounded-l-2xl lg:rounded-tr-none"
-            >
-              <LocationAutocompleteInput
-                value={s.pickup.address || ""}
-                onChange={(address, coords) => set({ pickup: { address, ...(coords || {}) } })}
-                placeholder="Pickup city or address"
-                className={`${segInput} pr-8 lg:pr-4`}
-              />
-            </Segment>
-            <Segment icon={<MapPin className={`${segIcon} text-[#FE5300]`} />} label="To" className="lg:flex-1 lg:pl-7">
-              <LocationAutocompleteInput
-                value={s.drop.address || ""}
-                onChange={(address, coords) => set({ drop: { address, ...(coords || {}) } })}
-                placeholder="Where to?"
-                className={segInput}
-              />
-            </Segment>
-            <button
-              type="button"
-              onClick={() => set({ pickup: s.drop, drop: s.pickup })}
-              title="Swap pickup and drop"
-              aria-label="Swap pickup and drop"
-              className="absolute right-4 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition hover:border-[#FE5300] hover:text-[#FE5300] lg:left-[calc(50%)] lg:right-auto lg:-translate-x-1/2"
-            >
-              <ArrowUpDown className="h-3.5 w-3.5 lg:rotate-90" />
-            </button>
-          </div>
-
-          {/* Date + time side by side on phones too */}
-          <div className="grid grid-cols-2 divide-x divide-gray-200 lg:flex lg:flex-[1.6]">
-            <Segment icon={<CalendarDays className={`${segIcon} text-gray-400`} />} label="Departure" className="lg:flex-1">
-              <input
-                type="date"
-                value={s.rideDate}
-                min={todayStr()}
-                onChange={(e) => set({ rideDate: e.target.value })}
-                className={`${segInput} text-[14px]`}
-              />
-            </Segment>
-            <Segment icon={<Clock3 className={`${segIcon} text-gray-400`} />} label="Pickup time" className="lg:w-[150px] lg:flex-none">
-              <input
-                type="time"
-                value={to24Hour(s.rideTime)}
-                onChange={(e) => set({ rideTime: e.target.value ? to12Hour(e.target.value) : "" })}
-                className={`${segInput} text-[14px]`}
-              />
-            </Segment>
-          </div>
-
-          {roundTrip && (
-            <Segment
-              icon={<Undo2 className={`${segIcon} text-gray-400`} />}
-              label="Return"
-              className="rounded-b-2xl lg:w-[170px] lg:flex-none lg:rounded-r-2xl lg:rounded-bl-none"
-            >
-              <input
-                type="date"
-                value={s.returnDate}
-                min={s.rideDate || todayStr()}
-                onChange={(e) => set({ returnDate: e.target.value })}
-                className={`${segInput} text-[14px]`}
-              />
-            </Segment>
-          )}
+        {/* Route: From | To, swap button on the shared edge */}
+        <div className="relative flex flex-col divide-y divide-gray-200 rounded-2xl border border-gray-200 bg-white md:flex-row md:divide-x md:divide-y-0">
+          <LocationField
+            label="From"
+            icon={<Navigation className="h-4 w-4 text-emerald-500" />}
+            point={s.pickup}
+            placeholder="Pickup city or address"
+            onChange={(pickup) => set({ pickup })}
+          />
+          <LocationField
+            label="To"
+            icon={<MapPin className="h-4 w-4 text-[#FE5300]" />}
+            point={s.drop}
+            placeholder="Where to?"
+            onChange={(drop) => set({ drop })}
+          />
+          <button
+            type="button"
+            onClick={() => set({ pickup: s.drop, drop: s.pickup })}
+            title="Swap pickup and drop"
+            aria-label="Swap pickup and drop"
+            className="absolute right-4 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md transition hover:border-[#FE5300] hover:text-[#FE5300] md:left-1/2 md:right-auto md:-translate-x-1/2"
+          >
+            <ArrowUpDown className="h-4 w-4 md:rotate-90" />
+          </button>
         </div>
 
-        <button
-          type="submit"
-          disabled={isSearching}
-          className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FE5300] to-[#ff7a33] px-7 text-[15px] font-bold text-white shadow-lg shadow-orange-500/25 transition-all hover:shadow-xl hover:shadow-orange-500/30 active:scale-[0.98] disabled:opacity-70 lg:h-auto lg:w-auto"
-        >
-          <Search className="h-[18px] w-[18px]" />
-          {isSearching ? "Checking…" : "Check Prices"}
-        </button>
+        {/* When + button */}
+        <div className={`grid grid-cols-2 gap-3 ${roundTrip ? "md:grid-cols-[1fr_1fr_1fr_auto]" : "md:grid-cols-[1fr_1fr_auto]"}`}>
+          <Chip icon={<CalendarDays className={iconCls} />} label="Departure">
+            <input type="date" value={s.rideDate} min={todayStr()} onChange={(e) => set({ rideDate: e.target.value })} className={inputCls} />
+          </Chip>
+          <Chip icon={<Clock3 className={iconCls} />} label="Pickup time">
+            <input
+              type="time"
+              value={to24Hour(s.rideTime)}
+              onChange={(e) => set({ rideTime: e.target.value ? to12Hour(e.target.value) : "" })}
+              className={inputCls}
+            />
+          </Chip>
+          {roundTrip && (
+            <div className="col-span-2 md:col-span-1">
+              <Chip icon={<Undo2 className={iconCls} />} label="Return">
+                <input
+                  type="date"
+                  value={s.returnDate}
+                  min={s.rideDate || todayStr()}
+                  onChange={(e) => set({ returnDate: e.target.value })}
+                  className={inputCls}
+                />
+              </Chip>
+            </div>
+          )}
+          <button
+            type="submit"
+            disabled={isSearching}
+            className="col-span-2 flex h-[54px] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#FE5300] to-[#ff7a33] px-8 text-[15px] font-bold text-white shadow-lg shadow-orange-500/25 transition-all hover:shadow-xl hover:shadow-orange-500/30 active:scale-[0.98] disabled:opacity-70 md:col-span-1 md:h-full md:min-h-[58px]"
+          >
+            <Search className="h-[18px] w-[18px]" />
+            {isSearching ? "Checking…" : "Check Prices"}
+          </button>
+        </div>
       </form>
     </div>
   );

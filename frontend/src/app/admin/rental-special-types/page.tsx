@@ -10,9 +10,9 @@ import { FleetEmptyState, FleetPage, FleetPanel, fleetTh } from "@/components/ad
 import { RentalPageHeader, RentalStatusPill, rPrimaryBtn, rSecondaryBtn } from "@/components/admin/rental/RentalAdminUI";
 import { dInput } from "@/components/admin/destination/FormBits";
 
-// Special types for /rental/{city}/{special-type}[/{permalink}], e.g.
+// Special types for /rental/{special-type}[/{permalink}], e.g.
 // "Wedding Car". Name + status only; the pages themselves are under Special
-// Pages. A name a vehicle type already uses is refused by the backend.
+// Pages. A name a vehicle type or city already uses is refused by the backend.
 
 interface SpecialType {
   _id: string;
@@ -121,7 +121,7 @@ export default function RentalSpecialTypesPage() {
       <RentalPageHeader
         icon={Sparkles}
         title="Special Types"
-        description="Types for special rental pages, e.g. Wedding Car → /rental/delhi/wedding-car. The URL part comes from the name."
+        description="Types for special rental pages, e.g. Wedding Car → /rental/wedding-car. The URL part comes from the name."
         actions={
           <Button size="sm" className={rPrimaryBtn} onClick={() => setDraft({ id: null, name: "", status: "active" })}>
             <Plus className="h-3.5 w-3.5" /> Add special type
@@ -156,7 +156,7 @@ export default function RentalSpecialTypesPage() {
                 ) : (
                   <TableRow key={row._id} className="hover:bg-slate-50/70">
                     <TableCell className="py-2.5 pl-4 text-[13px] font-medium text-slate-900">{row.name}</TableCell>
-                    <TableCell className="py-2.5 text-[12px] text-slate-600">/rental/{"{city}"}/{row.slug}</TableCell>
+                    <TableCell className="py-2.5 text-[12px] text-slate-600">/rental/{row.slug}</TableCell>
                     <TableCell className="py-2.5">
                       <RentalStatusPill status={row.status} />
                     </TableCell>

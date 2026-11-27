@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-// One special rental page:
-//   slug ""      -> /rental/{location}/{special-type}         (landing page)
-//   slug "xyz"   -> /rental/{location}/{special-type}/xyz     (detail page)
-// Both show one banner, the MBGo ride search (start point + where to, set by
-// the admin) and the content. One page per location + type + slug.
+// One special rental page (no city in the URL):
+//   slug ""      -> /rental/{special-type}         (landing page)
+//   slug "xyz"   -> /rental/{special-type}/xyz     (detail page)
+// Both show one banner, the ride search with prices (start point + where to,
+// set by the admin) and the content. One page per type + slug.
 const searchPointSchema = new mongoose.Schema(
   {
     address: { type: String, trim: true },
@@ -16,11 +16,6 @@ const searchPointSchema = new mongoose.Schema(
 
 const rentalSpecialPageSchema = new mongoose.Schema(
   {
-    location: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "VehiclePickUpDestination",
-      required: true,
-    },
     specialType: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "RentalSpecialType",
@@ -57,7 +52,7 @@ const rentalSpecialPageSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-rentalSpecialPageSchema.index({ location: 1, specialType: 1, slug: 1 }, { unique: true });
+rentalSpecialPageSchema.index({ specialType: 1, slug: 1 }, { unique: true });
 
 export const RentalSpecialPage = mongoose.model(
   "RentalSpecialPage",

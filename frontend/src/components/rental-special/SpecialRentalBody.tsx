@@ -100,7 +100,7 @@ export default function SpecialRentalBody({ page }: { page: SpecialRentalPageDat
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         <div className="mt-4">
-          <Breadcrumb title={page.title || `${page.specialType.name} in ${page.location.name}`} />
+          <Breadcrumb title={page.title || page.specialType.name} />
         </div>
 
         <div className="mt-6 mb-10 flex flex-col md:flex-row gap-8">

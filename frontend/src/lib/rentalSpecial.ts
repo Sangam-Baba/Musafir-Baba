@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { rentalSlug } from "@/lib/rentalUrl";
 
-// Special rental pages: /rental/{location}/{special-type}[/{slug}].
-// The rental pages call getSpecialRentalPage() only when their own lookup
-// found nothing (or is about to redirect), so working vehicle URLs never wait
-// on it. Any failure (404, error, slow backend) returns null and the page
-// carries on exactly as before.
+// Special rental pages: /rental/{special-type}[/{slug}] (no city).
+// The rental pages call getSpecialRentalPage() only where they would otherwise
+// show Not Found, so working vehicle / type / city URLs never wait on it.
+// Any failure (404, error, slow backend) returns null and the page carries on
+// exactly as before.
 
 export interface SpecialSearchPoint {
   address?: string;
@@ -34,19 +33,14 @@ export interface SpecialRentalPageData {
   faqs?: { question?: string; answer?: string }[];
   author?: SpecialRentalAuthor | null;
   updatedAt?: string;
-  location: { _id: string; name: string; slug?: string };
   specialType: { _id: string; name: string; slug: string };
 }
 
 const LOOKUP_TIMEOUT_MS = 4000;
 
-export async function getSpecialRentalPage(
-  location: string,
-  type: string,
-  slug = "",
-): Promise<SpecialRentalPageData | null> {
+export async function getSpecialRentalPage(type: string, slug = ""): Promise<SpecialRentalPageData | null> {
   try {
-    const qs = new URLSearchParams({ location, type, slug });
+    const qs = new URLSearchParams({ type, slug });
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/rental-special/lookup?${qs}`, {
       next: { revalidate: 60 },
       signal: AbortSignal.timeout(LOOKUP_TIMEOUT_MS),
@@ -60,13 +54,12 @@ export async function getSpecialRentalPage(
 }
 
 export function specialRentalPath(page: SpecialRentalPageData): string {
-  const loc = rentalSlug(page.location?.slug) || rentalSlug(page.location?.name) || "any";
-  const base = `/rental/${loc}/${page.specialType.slug}`;
+  const base = `/rental/${page.specialType.slug}`;
   return page.slug ? `${base}/${page.slug}` : base;
 }
 
 export function specialRentalHeading(page: SpecialRentalPageData): string {
-  return page.title || `${page.specialType.name} in ${page.location.name}`;
+  return page.title || page.specialType.name;
 }
 
 // Same fields and rules as the other rental pages: own title/description,
@@ -77,7 +70,7 @@ export function specialRentalMetadata(page: SpecialRentalPageData): Metadata {
     title: page.metaTitle || `${heading} - MusafirBaba`,
     description:
       page.metaDescription ||
-      `Book ${page.specialType.name.toLowerCase()} in ${page.location.name} with MusafirBaba. Compare options and fares, and book online.`,
+      `Book ${page.specialType.name.toLowerCase()} with MusafirBaba. Compare options and fares, and book online.`,
     keywords: page.keywords?.length ? page.keywords.join(", ") : undefined,
     alternates: {
       canonical: `https://musafirbaba.com${specialRentalPath(page)}`,

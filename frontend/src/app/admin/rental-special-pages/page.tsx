@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/table";
 import { FleetEmptyState, FleetPage, FleetPanel, fleetTh } from "@/components/admin/fleet/FleetUI";
 import { RentalPageHeader, RentalStatusPill, rPrimaryBtn } from "@/components/admin/rental/RentalAdminUI";
-import { rentalSlug } from "@/lib/rentalUrl";
 
 interface Ref {
   _id: string;
@@ -25,7 +24,6 @@ interface Ref {
 }
 interface SpecialPageRow {
   _id: string;
-  location?: Ref | null;
   specialType?: Ref | null;
   slug?: string;
   title?: string;
@@ -43,14 +41,12 @@ const authFetch = async (accessToken: string, path: string, init: RequestInit = 
 };
 
 const pathOf = (row: SpecialPageRow) =>
-  row.location && row.specialType
-    ? `/rental/${rentalSlug(row.location.slug) || rentalSlug(row.location.name)}/${row.specialType.slug}${row.slug ? `/${row.slug}` : ""}`
-    : null;
+  row.specialType ? `/rental/${row.specialType.slug}${row.slug ? `/${row.slug}` : ""}` : null;
 
 const EDIT_BTN = "h-7 w-7 border-slate-200 text-slate-500 hover:border-orange-200 hover:bg-orange-50 hover:text-[#FE5300]";
 const DEL_BTN = "h-7 w-7 border-slate-200 text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600";
 
-// Admin list of /rental/{city}/{special-type}[/{permalink}] pages
+// Admin list of /rental/{special-type}[/{permalink}] pages
 export default function RentalSpecialPagesPage() {
   const router = useRouter();
   const accessToken = useAdminAuthStore((s) => s.accessToken) as string;
@@ -77,7 +73,7 @@ export default function RentalSpecialPagesPage() {
       <RentalPageHeader
         icon={Sparkles}
         title="Special Pages"
-        description="Pages like /rental/delhi/wedding-car (landing) or /rental/delhi/wedding-car/delhi-to-agra: one banner, the ride search, content, SEO and FAQs. Special types are managed under Special Types."
+        description="Pages like /rental/wedding-car (landing) or /rental/wedding-car/delhi-to-agra: one banner, the ride search, content, SEO and FAQs. Special types are managed under Special Types."
         actions={
           <Button size="sm" className={rPrimaryBtn} onClick={() => router.push("/admin/rental-special-pages/create")}>
             <Plus className="h-3.5 w-3.5" /> Add special page
@@ -100,8 +96,7 @@ export default function RentalSpecialPagesPage() {
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className={`${fleetTh} pl-4`}>City</TableHead>
-                <TableHead className={fleetTh}>Special type</TableHead>
+                <TableHead className={`${fleetTh} pl-4`}>Special type</TableHead>
                 <TableHead className={fleetTh}>Page</TableHead>
                 <TableHead className={fleetTh}>Heading</TableHead>
                 <TableHead className={fleetTh}>Status</TableHead>
@@ -114,9 +109,6 @@ export default function RentalSpecialPagesPage() {
                 return (
                   <TableRow key={row._id} className="hover:bg-slate-50/70">
                     <TableCell className="py-2.5 pl-4 text-[13px] font-medium text-slate-900">
-                      {row.location?.name ?? <span className="text-slate-400">— (deleted)</span>}
-                    </TableCell>
-                    <TableCell className="py-2.5 text-[12px] text-slate-600">
                       {row.specialType?.name ?? <span className="text-slate-400">— (deleted)</span>}
                     </TableCell>
                     <TableCell className="py-2.5 text-[12px]">

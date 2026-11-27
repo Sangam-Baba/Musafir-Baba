@@ -3,7 +3,7 @@ import PageFaqs from "@/components/common/PageFaqs";
 import { specialRentalHeading, type SpecialRentalPageData } from "@/lib/rentalSpecial";
 import SpecialRentalBody from "./SpecialRentalBody";
 
-// Layout of /rental/{location}/{special-type}[/{slug}]: a short banner, the
+// Layout of /rental/{special-type}[/{slug}]: a short banner, the
 // ride search with the price table (prices load at once for the admin's
 // start point + where to), then content | minimum price + enquiry form, FAQs.
 export default function SpecialRentalPage({ page }: { page: SpecialRentalPageData }) {
