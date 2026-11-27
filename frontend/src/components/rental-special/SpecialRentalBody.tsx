@@ -94,7 +94,7 @@ export default function SpecialRentalBody({ page }: { page: SpecialRentalPageDat
 
   return (
     <>
-      <div className="relative z-20 -mt-12 md:-mt-14 px-4 md:px-8">
+      <div className="relative z-20 -mt-10 md:-mt-16 px-3 sm:px-4 md:px-8">
         <SpecialRentalSearch initial={initial} isSearching={isSearching} onSearch={(s) => run(s, true)} />
       </div>
 

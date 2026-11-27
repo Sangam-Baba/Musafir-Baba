@@ -38,8 +38,32 @@ export default function SpecialRentalFares({
           {roundTrip ? `Round trip${quote.days ? `, ${quote.days} day${quote.days > 1 ? "s" : ""}` : ""}` : "One way"}
         </p>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-gray-200">
-        <table className="w-full min-w-[420px] text-left text-sm">
+      {/* Phones: one card per vehicle */}
+      <ul className="space-y-2.5 sm:hidden">
+        {offers.map((o) => (
+          <li
+            key={`${o.category}-${o.vehicleName}`}
+            className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14.5px] font-semibold text-gray-900">{o.category}</p>
+              <p className="truncate text-[12px] text-gray-500">
+                {o.vehicleName} · {o.seatingCapacity} seats
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+              <p className="text-[16px] font-bold text-gray-900">{rupees(o.baseFare)}</p>
+              <a href="#enquiry" className="rounded-full bg-orange-50 px-3 py-1 text-[11.5px] font-semibold text-[#FE5300] active:bg-orange-100">
+                Enquire
+              </a>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {/* Tablet and up: table */}
+      <div className="hidden overflow-hidden rounded-2xl border border-gray-200 sm:block">
+        <table className="w-full text-left text-sm">
           <thead className="bg-orange-50/70 text-[12px] uppercase tracking-wide text-gray-600">
             <tr>
               <th className="px-4 py-3 font-semibold">Vehicle</th>
