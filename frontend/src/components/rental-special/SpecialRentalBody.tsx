@@ -12,8 +12,8 @@ import SpecialRentalFares, { rupees } from "./SpecialRentalFares";
 import SpecialRentalAuthor from "./SpecialRentalAuthor";
 
 // Interactive part of a special rental page: the search (prices load at once
-// for the admin's start point + where to), the price table, then two columns
-// — content on the left, minimum price + enquiry form on the right.
+// for the admin's start point + where to), then two columns — price table and
+// content on the left, minimum price + enquiry form on the right.
 
 const DEFAULT_FROM = "Delhi";
 
@@ -36,7 +36,7 @@ function validate(s: SpecialSearch): string | null {
 }
 
 function MinPrice({ quote, isSearching }: { quote: RideQuote | null; isSearching: boolean }) {
-  const min = quote?.offers?.length ? Math.min(...quote.offers.map((o) => o.totalAmount)) : null;
+  const min = quote?.offers?.length ? Math.min(...quote.offers.map((o) => o.baseFare)) : null;
   return (
     <div className="rounded-2xl border-2 border-[#FE5300] bg-white p-5 shadow-lg">
       <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-500">Starting from</p>
@@ -103,12 +103,11 @@ export default function SpecialRentalBody({ page }: { page: SpecialRentalPageDat
           <Breadcrumb title={page.title || `${page.specialType.name} in ${page.location.name}`} />
         </div>
 
-        <section className="mt-4">
-          <SpecialRentalFares quote={quote} isSearching={isSearching} error={error} />
-        </section>
-
-        <div className="mt-10 mb-10 flex flex-col md:flex-row gap-8">
+        <div className="mt-6 mb-10 flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-[68%] lg:w-[72%] min-w-0">
+            <section className="mb-10">
+              <SpecialRentalFares quote={quote} isSearching={isSearching} error={error} />
+            </section>
             {page.content && (
               <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 mb-10">
                 <BlogContent html={page.content} />

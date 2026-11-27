@@ -16,7 +16,7 @@ export default function SpecialRentalFares({
   isSearching: boolean;
   error: string | null;
 }) {
-  const offers = [...(quote?.offers ?? [])].sort((a, b) => a.totalAmount - b.totalAmount);
+  const offers = [...(quote?.offers ?? [])].sort((a, b) => a.baseFare - b.baseFare);
 
   if (isSearching && !quote) {
     return <p className="py-8 text-center text-sm text-gray-500">Checking prices…</p>;
@@ -39,14 +39,12 @@ export default function SpecialRentalFares({
         </p>
       </div>
       <div className="overflow-x-auto rounded-xl border border-gray-200">
-        <table className="w-full min-w-[560px] text-left text-sm">
+        <table className="w-full min-w-[420px] text-left text-sm">
           <thead className="bg-orange-50/70 text-[12px] uppercase tracking-wide text-gray-600">
             <tr>
               <th className="px-4 py-3 font-semibold">Vehicle</th>
               <th className="px-4 py-3 font-semibold">Seats</th>
               <th className="px-4 py-3 font-semibold text-right">Fare</th>
-              <th className="px-4 py-3 font-semibold text-right">Driver allowance</th>
-              <th className="px-4 py-3 font-semibold text-right">Total</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
@@ -58,9 +56,7 @@ export default function SpecialRentalFares({
                   <p className="text-[12px] text-gray-500">{o.category}</p>
                 </td>
                 <td className="px-4 py-3 text-gray-700">{o.seatingCapacity}</td>
-                <td className="px-4 py-3 text-right text-gray-700">{rupees(o.baseFare)}</td>
-                <td className="px-4 py-3 text-right text-gray-700">{rupees(o.driverAllowance)}</td>
-                <td className="px-4 py-3 text-right font-bold text-gray-900">{rupees(o.totalAmount)}</td>
+                <td className="px-4 py-3 text-right font-bold text-gray-900">{rupees(o.baseFare)}</td>
                 <td className="px-4 py-3 text-right">
                   <a
                     href="#enquiry"
