@@ -1,5 +1,6 @@
 "use client";
 
+import type { PackageHotel } from "@/components/admin/package/PackageHotelsEditor";
 import SubDestinationSelect, { toIdList } from "@/components/admin/destination/SubDestinationSelect";
 import ExtraDestinationSelect from "@/components/admin/destination/ExtraDestinationSelect";
 import React, { useState } from "react";
@@ -109,6 +110,7 @@ interface PackageFormValues {
   packageAtAGlance?: string;
   whyChooseThisPackage?: string;
   hotelsAndAccommodation?: string;
+  accommodationHotels?: PackageHotel[];
   cta?: string;
   banner_text?: string;
   helpfulResources?: { title: string; url: string }[];
@@ -282,6 +284,7 @@ export default function CreatePackagePage() {
     packageAtAGlance: "",
     whyChooseThisPackage: "",
     hotelsAndAccommodation: "",
+    accommodationHotels: [],
     cta: "",
     banner_text: "",
     helpfulResources: [],
@@ -392,6 +395,7 @@ export default function CreatePackagePage() {
         reviews: reviewsIds,
         coverImages: sourceData.coverImages?.length ? sourceData.coverImages : (sourceData.coverImage?.url ? [sourceData.coverImage] : []),
         social: sourceData.social || { twitter: { inheritOpenGraph: true } },
+        accommodationHotels: sourceData.accommodationHotels || [],
       });
       // Kept outside react-hook-form entirely (see the state declaration
       // above for why) — seeded the same way tabsConfig would have been:

@@ -6,6 +6,7 @@ import { ImageGallery } from "@/components/custom/ImageGallery";
 import { Button } from "@/components/ui/button";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import PackageHotels, { usableHotels } from "@/components/custom/PackageHotels";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -140,7 +141,7 @@ function SlugClients({
     whychoose: hasHtmlContent(pkg.whyChooseThisPackage),
     description: hasHtmlContent(pkg.description),
     itineraries: !!(pkg.itinerary && pkg.itinerary.length > 0),
-    hotels: hasHtmlContent(pkg.hotelsAndAccommodation),
+    hotels: hasHtmlContent(pkg.hotelsAndAccommodation) || usableHotels(pkg.accommodationHotels).length > 0,
     includeexclude: hasInclusions || hasExclusions,
     // Hidden on package pages for now (section below is commented out).
     // Restore to `true` together with that block to bring "Why Us" back.
@@ -570,15 +571,23 @@ function SlugClients({
               </div>
               )}
 
-              {pkg.hotelsAndAccommodation && tabOrderIndex["hotels"] !== undefined && (
+              {(pkg.hotelsAndAccommodation || usableHotels(pkg.accommodationHotels).length > 0) && tabOrderIndex["hotels"] !== undefined && (
                 <div id="hotels" style={{ order: tabOrderIndex["hotels"] }} className="scroll-mt-40 mb-8 pb-8 border-b border-gray-200 last:border-0">
                   <div className="flex flex-col gap-2 mb-5">
                     <h2 className="text-2xl md:text-3xl font-bold font-heading text-black">{builtinSectionTitle("hotels")}</h2>
                     <div className="w-12 h-1 bg-[#FE5300] rounded-full"></div>
                   </div>
+                  {pkg.hotelsAndAccommodation && (
                   <section className="detail-content-headings prose prose-base max-w-none text-gray-600 leading-relaxed">
                     <BlogContent html={pkg.hotelsAndAccommodation} />
                   </section>
+                  )}
+                  {/* Hotel cards (optional; packages without them are unchanged) */}
+                  {usableHotels(pkg.accommodationHotels).length > 0 && (
+                    <div className={pkg.hotelsAndAccommodation ? "mt-6" : ""}>
+                      <PackageHotels hotels={pkg.accommodationHotels} />
+                    </div>
+                  )}
                 </div>
               )}
 

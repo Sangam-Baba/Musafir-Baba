@@ -1,5 +1,6 @@
 "use client";
 
+import PackageHotelsEditor from "@/components/admin/package/PackageHotelsEditor";
 import React, { useState } from "react";
 import { useFieldArray } from "react-hook-form";
 import {
@@ -339,6 +340,18 @@ export default function PackageTabsEditor({
 
               if (entry.type === "custom") {
                 onContentChange = (content) => update(entry.key, { content });
+              } else if (entry.builtinKey === "hotels" && richTextField) {
+                // Hotels: the same rich text as before (intro / details),
+                // plus hotel cards (name, stars, location, photos — no price)
+                customBody = (
+                  <div className="space-y-4">
+                    <div>
+                      <FormLabel className="text-[10px] font-bold text-gray-500 uppercase block mb-1">Text (optional, shown above the hotel cards)</FormLabel>
+                      <BlogEditor value={form.watch(richTextField) || ""} onChange={(content: string) => form.setValue(richTextField, content)} />
+                    </div>
+                    <PackageHotelsEditor form={form} />
+                  </div>
+                );
               } else if (richTextField) {
                 onContentChange = (content) => form.setValue(richTextField, content);
               } else {
