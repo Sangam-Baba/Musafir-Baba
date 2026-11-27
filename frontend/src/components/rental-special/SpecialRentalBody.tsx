@@ -59,7 +59,7 @@ export default function SpecialRentalBody({
   typeHref,
 }: {
   page: SpecialRentalPageData;
-  initialQuote: Promise<RideQuote | null>;
+  initialQuote?: Promise<RideQuote | null> | null;
   typeHref?: string;
 }) {
   const [initial] = useState<SpecialSearch>(() => ({
@@ -100,7 +100,9 @@ export default function SpecialRentalBody({
   // otherwise the same search from the browser
   useEffect(() => {
     let active = true;
-    initialQuote
+    // Promise.resolve: a missing or already-resolved value is fine too, so
+    // the page can never crash here; null just means the browser asks
+    Promise.resolve(initialQuote ?? null)
       .catch(() => null)
       .then((q) => {
         if (!active || userSearched.current) return;
