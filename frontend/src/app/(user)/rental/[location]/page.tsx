@@ -4,6 +4,8 @@ import RentalsClient from "../RentalsClient";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import ReadMore from "@/components/common/ReadMore";
+import { getSpecialRentalPage, specialRentalMetadata } from "@/lib/rentalSpecial";
+import SpecialRentalPage from "@/components/rental-special/SpecialRentalPage";
 
 // /rental/{segment} serves two kinds of page:
 //   1. /rental/{type}      e.g. /rental/car   — checked FIRST, rendered exactly
@@ -63,7 +65,12 @@ export async function generateMetadata({ params }: { params: Promise<{ location:
   const { location: segment } = await params;
   const resolved = await resolveSegment(segment);
 
-  if (!resolved) return { title: "Not Found" };
+  if (!resolved) {
+    // Special landing page (/rental/{special-type}): looked up only when the
+    // segment is neither a vehicle type nor a location, so those are unchanged
+    const special = await getSpecialRentalPage(segment);
+    return special ? specialRentalMetadata(special) : { title: "Not Found" };
+  }
 
   if (resolved.kind === "type") {
     const typeData = resolved.data;
@@ -102,6 +109,9 @@ export default async function RentalSegmentPage({ params }: { params: Promise<{ 
   ]);
 
   if (!resolved) {
+    // Special landing page: same rule as in generateMetadata above
+    const special = await getSpecialRentalPage(segment);
+    if (special) return <SpecialRentalPage page={special} />;
     notFound();
   }
 

@@ -3,6 +3,7 @@ import { brandController, typeController, destinationController, fuelTypeControl
 import isAuthenticated from "../middleware/auth.middleware.js";
 import authorizedRoles from "../middleware/roleCheck.middleware.js";
 import { validateSession } from "../middleware/session.middleware.js";
+import { refuseSpecialTypeName } from "../controllers/rentalSpecial.controller.js";
 
 const masterDataRoutes = Router();
 
@@ -35,6 +36,11 @@ const applyRoutes = (path, controller) => {
     controller.delete
   );
 };
+
+// Vehicle types may not take a special rental type's name (both own
+// /rental/{slug}); this check runs first and the type routes below are unchanged
+masterDataRoutes.post("/type", refuseSpecialTypeName);
+masterDataRoutes.patch("/type/:id", refuseSpecialTypeName);
 
 applyRoutes("/brand", brandController);
 applyRoutes("/type", typeController);
