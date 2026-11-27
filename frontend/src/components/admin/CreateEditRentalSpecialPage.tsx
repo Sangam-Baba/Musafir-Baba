@@ -33,6 +33,7 @@ import { rentalSlug } from "@/lib/rentalUrl";
 // the ride search with prices (start point + where to set here) and content.
 
 const LIST_PATH = "/admin/rental-special-pages";
+const TYPES_PATH = "/admin/rental-special-types";
 const DEFAULT_FROM = "Delhi";
 
 const pointSchema = z.object({
@@ -100,12 +101,15 @@ const EMPTY: FormData = {
   faqs: [],
 };
 
-export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
+// landingFor (a special type id): edit that type's own page, /rental/{type} —
+// type fixed, no permalink; opened from the Special Types screen.
+export const CreateEditRentalSpecialPage = ({ id, landingFor }: { id: string | null; landingFor?: string }) => {
+  const returnPath = landingFor ? TYPES_PATH : LIST_PATH;
   const router = useRouter();
   const accessToken = useAdminAuthStore((state) => state.accessToken) as string;
   const queryClient = useQueryClient();
 
-  const form = useForm<FormData>({ resolver: zodResolver(schema) as Resolver<FormData>, defaultValues: EMPTY });
+  const form = useForm<FormData>({ resolver: zodResolver(schema) as Resolver<FormData>, defaultValues: landingFor ? { ...EMPTY, specialType: landingFor } : EMPTY });
   const faqs = useFieldArray({ control: form.control, name: "faqs" });
 
   const { data: typesRes } = useQuery<{ data: Option[] }>({
@@ -153,7 +157,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
     onSuccess: () => {
       toast.success(id ? "Special page updated" : "Special page created");
       queryClient.invalidateQueries({ queryKey: ["rental-special-page"] });
-      router.push(LIST_PATH);
+      router.push(returnPath);
     },
     onError: (err) => toast.error(err.message || "Failed to save"),
   });
@@ -163,7 +167,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
   function onSubmit(values: FormData) {
     mutation.mutate({
       ...values,
-      slug: rentalSlug(values.slug),
+      slug: landingFor ? "" : rentalSlug(values.slug),
       // "No author" is sent as null (an empty string can't be stored as an author id)
       author: values.author ? values.author : null,
       keywords:
@@ -177,7 +181,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
   const keywordsString = Array.isArray(keywordsValue) ? keywordsValue.join(", ") : keywordsValue;
 
   const selectedType = types.find((t) => t._id === form.watch("specialType"));
-  const permalink = rentalSlug(form.watch("slug"));
+  const permalink = landingFor ? "" : rentalSlug(form.watch("slug"));
   const previewPath =
     selectedType ? `/rental/${slugOf(selectedType)}${permalink ? `/${permalink}` : ""}` : null;
 
@@ -209,7 +213,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
     <FleetPage className="gap-4">
       <RentalPageHeader
         icon={Sparkles}
-        title={id ? "Edit Special Page" : "Create Special Page"}
+        title={landingFor ? `${selectedType?.name ?? "Special type"} — page content` : id ? "Edit Special Page" : "Create Special Page"}
         description={
           previewPath ? (
             <>
@@ -240,7 +244,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
                       <FormItem>
                         <FormLabel className={rLabel}>Special type *</FormLabel>
                         <FormControl>
-                          <select {...field} className={dInput}>
+                          <select {...field} disabled={!!landingFor} className={dInput}>
                             <option value="" disabled>Select special type</option>
                             {types.map((t) => (
                               <option key={t._id} value={t._id}>
@@ -271,6 +275,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
                   />
                 </div>
                 <div className="grid gap-4 md:grid-cols-2">
+                  {!landingFor && (
                   <FormField
                     control={form.control}
                     name="slug"
@@ -287,6 +292,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
                       </FormItem>
                     )}
                   />
+                  )}
                   <FormField
                     control={form.control}
                     name="title"
@@ -488,7 +494,7 @@ export const CreateEditRentalSpecialPage = ({ id }: { id: string | null }) => {
           </Tabs>
 
           <AdminSaveBar hint={previewPath ? `Saves the content of ${previewPath}` : "Pick a special type to continue."}>
-            <Button type="button" variant="outline" className={rSecondaryBtn} onClick={() => router.push(LIST_PATH)}>
+            <Button type="button" variant="outline" className={rSecondaryBtn} onClick={() => router.push(returnPath)}>
               Cancel
             </Button>
             <Button type="submit" disabled={mutation.isPending} className={rPrimaryBtn}>

@@ -1,7 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Edit, Loader2, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { Check, Edit, ExternalLink, FileText, Loader2, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAdminAuthStore } from "@/store/useAdminAuthStore";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,15 @@ export default function RentalSpecialTypesPage() {
     queryFn: () => authFetch(accessToken, "/rental-special/types?all=true"),
   });
   const rows = data?.data ?? [];
+  const router = useRouter();
+  // Which types already have their own page content (/rental/{type})
+  const { data: pagesRes } = useQuery<{ data: { slug?: string; specialType?: { _id: string } | null }[] }>({
+    queryKey: ["rental-special-page"],
+    queryFn: () => authFetch(accessToken, "/rental-special/pages"),
+  });
+  const hasContent = new Set(
+    (pagesRes?.data ?? []).filter((p) => !p.slug && p.specialType).map((p) => p.specialType!._id),
+  );
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["rental-special-type"] });
 
   const save = useMutation({
@@ -142,7 +152,7 @@ export default function RentalSpecialTypesPage() {
             <TableHeader>
               <TableRow className="hover:bg-transparent">
                 <TableHead className={`${fleetTh} pl-4`}>Name</TableHead>
-                <TableHead className={fleetTh}>URL part</TableHead>
+                <TableHead className={fleetTh}>Page</TableHead>
                 <TableHead className={fleetTh}>Status</TableHead>
                 <TableHead className={`${fleetTh} pr-4 text-right`}>Actions</TableHead>
               </TableRow>
@@ -156,12 +166,34 @@ export default function RentalSpecialTypesPage() {
                 ) : (
                   <TableRow key={row._id} className="hover:bg-slate-50/70">
                     <TableCell className="py-2.5 pl-4 text-[13px] font-medium text-slate-900">{row.name}</TableCell>
-                    <TableCell className="py-2.5 text-[12px] text-slate-600">/rental/{row.slug}</TableCell>
+                    <TableCell className="py-2.5 text-[12px]">
+                      <a
+                        href={`/rental/${row.slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-slate-600 hover:text-[#FE5300]"
+                      >
+                        /rental/{row.slug}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                      <span className={`ml-2 text-[11px] ${hasContent.has(row._id) ? "text-emerald-600" : "text-slate-400"}`}>
+                        {hasContent.has(row._id) ? "Content added" : "No content yet"}
+                      </span>
+                    </TableCell>
                     <TableCell className="py-2.5">
                       <RentalStatusPill status={row.status} />
                     </TableCell>
                     <TableCell className="py-2.5 pr-4">
                       <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          title="Banner, search, content, FAQs and SEO of /rental/{type}"
+                          className="h-7 gap-1 border-slate-200 px-2 text-[12px] text-slate-600 hover:border-orange-200 hover:bg-orange-50 hover:text-[#FE5300]"
+                          onClick={() => router.push(`/admin/rental-special-types/${row._id}/content`)}
+                        >
+                          <FileText className="h-3.5 w-3.5" /> Page content
+                        </Button>
                         <Button
                           variant="outline"
                           size="icon"
