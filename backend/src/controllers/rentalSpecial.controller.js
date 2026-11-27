@@ -241,3 +241,26 @@ export const lookupSpecialPage = async (req, res) => {
     serverError(res);
   }
 };
+
+/* ------------------------------------------------- vehicle-type guard */
+
+// Runs before the existing vehicle-type create / update (registered in
+// masterData.routes.js ahead of them): refuses a vehicle type name whose slug
+// a special type already uses, so /rental/{slug} can't belong to both. It
+// only reads; anything unexpected (no name, a database error) simply passes
+// on to the existing handler unchanged.
+export const refuseSpecialTypeName = async (req, res, next) => {
+  try {
+    const name = typeof req.body?.name === "string" ? req.body.name : "";
+    const slug = toSlug(name);
+    if (slug && (await RentalSpecialType.exists({ slug }))) {
+      return res.status(409).json({
+        success: false,
+        message: "A special type already uses this name. Please choose another name.",
+      });
+    }
+  } catch {
+    // fall through to the existing handler
+  }
+  return next();
+};

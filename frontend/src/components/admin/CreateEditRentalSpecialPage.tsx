@@ -363,7 +363,13 @@ export const CreateEditRentalSpecialPage = ({ id, landingFor }: { id: string | n
                   name="bannerImage"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className={rLabel}>Banner image (recommended 1920×600)</FormLabel>
+                      <FormLabel className={rLabel}>
+                        Banner image (recommended 1920×480 px, JPG/WebP under 300 KB)
+                      </FormLabel>
+                      <p className="text-[11px] text-slate-400">
+                        Shown full width, 300 px tall on desktop and 220 px on phones, cropped to fill — keep the
+                        main subject in the centre (phones show only the middle part).
+                      </p>
                       <FormControl>
                         <div className="w-full rounded-lg border border-slate-200/80 bg-slate-50/60 p-4">
                           <ImageUploader
