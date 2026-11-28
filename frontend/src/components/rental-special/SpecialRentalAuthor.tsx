@@ -1,4 +1,5 @@
 import type { SpecialRentalAuthor as Author } from "@/lib/rentalSpecial";
+import AuthorSocialLinks from "@/components/custom/AuthorSocialLinks";
 
 // Same "Author Information" block and same fallback team text as the vehicle
 // rental detail page.
@@ -36,6 +37,7 @@ export default function SpecialRentalAuthor({
               {a.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{a.role}</span>}
             </p>
             {a.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{a.about}</p>}
+            {author && <AuthorSocialLinks links={author.socialLinks} authorName={author.name} />}
             <p>
               <span className="font-semibold text-gray-800">Last Updated:</span>{" "}
               {updatedAt

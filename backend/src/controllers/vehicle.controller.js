@@ -301,7 +301,7 @@ const getVehicleBySlug = async (req, res) => {
     const findOne = (filter) =>
       Vehicle.findOne(filter)
         .populate("location", "name slug city state")
-        .populate("author", "name role about avatar")
+        .populate("author", "name role about avatar socialLinks")
         .lean();
     const locationId = await resolveLocationId(req.query.location);
     let vehicle = locationId
@@ -317,7 +317,7 @@ const getVehicleBySlug = async (req, res) => {
     if (!vehicle.author) {
       const { Author } = await import("../models/Authors.js");
       const defaultAuthor = await Author.findOne({ name: /Abhishek Rai/i })
-        .select("name role about avatar")
+        .select("name role about avatar socialLinks")
         .lean();
       if (defaultAuthor) {
         vehicle.author = defaultAuthor;

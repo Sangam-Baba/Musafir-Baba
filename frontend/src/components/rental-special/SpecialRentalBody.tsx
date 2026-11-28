@@ -140,8 +140,18 @@ export default function SpecialRentalBody({
 
         <div className="mt-6 mb-10 flex flex-col md:flex-row gap-8">
           <div className="w-full md:w-[68%] lg:w-[72%] min-w-0">
+            {page.overview && (
+              <section className="mb-10">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3">
+                  {page.overviewHeading?.trim() || "Overview"}
+                </h2>
+                <div className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4">
+                  <BlogContent html={page.overview} />
+                </div>
+              </section>
+            )}
             <section className="mb-10">
-              <SpecialRentalFares quote={quote} isSearching={isSearching} error={error} />
+              <SpecialRentalFares quote={quote} isSearching={isSearching} error={error} title={page.pricesTitle} />
             </section>
             {page.content && (
               <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 mb-10">
