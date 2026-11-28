@@ -11,10 +11,12 @@ export default function SpecialRentalFares({
   quote,
   isSearching,
   error,
+  title,
 }: {
   quote: RideQuote | null;
   isSearching: boolean;
   error: string | null;
+  title?: string;
 }) {
   const offers = [...(quote?.offers ?? [])].sort((a, b) => a.baseFare - b.baseFare);
 
@@ -32,7 +34,7 @@ export default function SpecialRentalFares({
   return (
     <div className={isSearching ? "opacity-60 transition-opacity" : ""}>
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-        <h2 className="text-lg md:text-xl font-bold text-gray-900">Prices for this route</h2>
+        <h2 className="text-lg md:text-xl font-bold text-gray-900">{title?.trim() || "Prices for this route"}</h2>
         <p className="text-[13px] text-gray-500">
           {Math.round(quote.distanceKm)} km · about {Math.round(quote.durationMin / 60)} h ·{" "}
           {roundTrip ? `Round trip${quote.days ? `, ${quote.days} day${quote.days > 1 ? "s" : ""}` : ""}` : "One way"}

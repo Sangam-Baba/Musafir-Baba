@@ -52,6 +52,9 @@ const schema = z.object({
   author: z.string().optional(),
   bannerImage: z.object({ url: z.string().url("Invalid image URL"), alt: z.string().optional() }).optional().nullable(),
   content: z.string().optional(),
+  overviewHeading: z.string().optional(),
+  overview: z.string().optional(),
+  pricesTitle: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   keywords: z.any().optional(), // array, or comma-separated string while typing
@@ -95,6 +98,9 @@ const EMPTY: FormData = {
   author: "",
   bannerImage: null,
   content: "",
+  overviewHeading: "Overview",
+  overview: "",
+  pricesTitle: "",
   metaTitle: "",
   metaDescription: "",
   keywords: [],
@@ -138,6 +144,9 @@ export const CreateEditRentalSpecialPage = ({ id, landingFor }: { id: string | n
         author: pageData.author ? String(pageData.author) : "",
         bannerImage: pageData.bannerImage?.url ? pageData.bannerImage : null,
         content: pageData.content || "",
+        overviewHeading: pageData.overviewHeading || "Overview",
+        overview: pageData.overview || "",
+        pricesTitle: pageData.pricesTitle || "",
         metaTitle: pageData.metaTitle || "",
         metaDescription: pageData.metaDescription || "",
         keywords: pageData.keywords || [],
@@ -343,9 +352,55 @@ export const CreateEditRentalSpecialPage = ({ id, landingFor }: { id: string | n
               <CityTypeTabPanel tab="content">
                 <FormField
                   control={form.control}
+                  name="overviewHeading"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={rLabel}>Overview heading</FormLabel>
+                      <FormControl>
+                        <input placeholder="Overview" {...field} className={dInput} />
+                      </FormControl>
+                      <p className="text-[11px] text-slate-400">Leave empty to show &ldquo;Overview&rdquo;.</p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="overview"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={rLabel}>Overview</FormLabel>
+                      <p className="text-[11px] text-slate-400">
+                        Shown above the price table. Leave empty to hide this section.
+                      </p>
+                      <FormControl>
+                        <CompactBlogEditor value={field.value || ""} onChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pricesTitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={rLabel}>Price table heading</FormLabel>
+                      <FormControl>
+                        <input placeholder="Prices for this route" {...field} className={dInput} />
+                      </FormControl>
+                      <p className="text-[11px] text-slate-400">Leave empty to show &ldquo;Prices for this route&rdquo;.</p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="content"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel className={rLabel}>Page content</FormLabel>
+                      <p className="text-[11px] text-slate-400">Shown below the price table.</p>
                       <FormControl>
                         <CompactBlogEditor value={field.value || ""} onChange={field.onChange} />
                       </FormControl>

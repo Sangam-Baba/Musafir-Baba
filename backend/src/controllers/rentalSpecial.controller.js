@@ -117,7 +117,7 @@ const point = (p) => {
 // Only the fields admins edit -- never _id/timestamps from the client
 const pageFields = (body = {}) => {
   const fields = {};
-  for (const key of ["specialType", "title", "bannerImage", "content", "metaTitle", "metaDescription", "keywords", "faqs", "status"]) {
+  for (const key of ["specialType", "title", "bannerImage", "content", "overviewHeading", "overview", "pricesTitle", "metaTitle", "metaDescription", "keywords", "faqs", "status"]) {
     if (body[key] !== undefined) fields[key] = body[key];
   }
   if (body.slug !== undefined) fields.slug = toSlug(body.slug);
@@ -211,7 +211,7 @@ export const deleteSpecialPage = async (req, res) => {
 const withDefaultAuthor = async (page) => {
   if (page.author) return page;
   const { Author } = await import("../models/Authors.js");
-  const fallback = await Author.findOne({ name: /Abhishek Rai/i }).select("name role about avatar").lean();
+  const fallback = await Author.findOne({ name: /Abhishek Rai/i }).select("name role about avatar socialLinks").lean();
   return fallback ? { ...page, author: fallback } : page;
 };
 
@@ -233,7 +233,7 @@ export const lookupSpecialPage = async (req, res) => {
       status: "active",
     })
       .populate("specialType", "name slug")
-      .populate("author", "name role about avatar")
+      .populate("author", "name role about avatar socialLinks")
       .lean();
     if (!page) return fail(res, 404, "Special page not found");
     res.status(200).json({ success: true, data: await withDefaultAuthor(page) });

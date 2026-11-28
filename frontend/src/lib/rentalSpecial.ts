@@ -18,6 +18,7 @@ export interface SpecialRentalAuthor {
   role?: string;
   about?: string;
   avatar?: { url?: string };
+  socialLinks?: { platform?: string; link?: string }[];
 }
 
 export interface SpecialRentalPageData {
@@ -26,6 +27,9 @@ export interface SpecialRentalPageData {
   title?: string;
   bannerImage?: { url?: string; alt?: string };
   content?: string;
+  overviewHeading?: string;
+  overview?: string;
+  pricesTitle?: string;
   searchFrom?: SpecialSearchPoint;
   searchTo?: SpecialSearchPoint;
   metaTitle?: string;

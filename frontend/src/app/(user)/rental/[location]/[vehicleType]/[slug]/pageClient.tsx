@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { secureFetch } from "@/lib/secureFetch";
 import { getUser } from "@/app/(user)/holidays/customised-tour-packages/[destination]/[pkgSlug]/[id]/page";
 import HelpfulResources from "@/components/custom/HelpfulResources";
+import AuthorSocialLinks, { AuthorSocialLink } from "@/components/custom/AuthorSocialLinks";
 import Link from "next/link";
 import WhyChooseUs from "@/components/custom/WhyChooseUS";
 import VisaAtAGlance from "@/components/custom/VisaAtAGlance";
@@ -588,6 +589,12 @@ export default function RentalPageClient({
                           <div className="flex flex-col gap-2 text-gray-600 text-sm md:text-base flex-1">
                             <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold text-gray-800">Written By:</span> {displayAuthor.name} {displayAuthor.role && <span className="text-gray-500 text-xs bg-white px-2 py-0.5 rounded-full border border-gray-100 shadow-sm">{displayAuthor.role}</span>}</p>
                             {displayAuthor.about && <p className="text-sm text-gray-600 leading-relaxed bg-white/50 p-3 rounded-lg border border-orange-50">{displayAuthor.about}</p>}
+                            {(vehicle as { author?: { socialLinks?: AuthorSocialLink[] } }).author && (
+                              <AuthorSocialLinks
+                                links={(vehicle as { author?: { socialLinks?: AuthorSocialLink[] } }).author?.socialLinks}
+                                authorName={displayAuthor.name}
+                              />
+                            )}
                             <p><span className="font-semibold text-gray-800">Last Updated:</span> {vehicle.updatedAt ? new Date(vehicle.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Regularly Updated Before Every Season"}</p>
                           </div>
                         </>
