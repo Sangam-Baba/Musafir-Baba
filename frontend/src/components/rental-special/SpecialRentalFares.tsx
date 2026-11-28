@@ -1,6 +1,7 @@
 "use client";
 
 import type { RideQuote } from "@/lib/rideApi";
+import { BlogContent } from "@/components/custom/BlogContent";
 
 // Price table of the special rental pages, from the same fare quote the
 // /mbgo search uses (POST /ride/quote) — shown here instead of navigating.
@@ -12,34 +13,51 @@ export default function SpecialRentalFares({
   isSearching,
   error,
   title,
+  intro,
 }: {
   quote: RideQuote | null;
   isSearching: boolean;
   error: string | null;
   title?: string;
+  intro?: string; // admin's rich HTML, shown under the heading, above the table
 }) {
   const offers = [...(quote?.offers ?? [])].sort((a, b) => a.baseFare - b.baseFare);
+  const heading = title?.trim() || "Prices for this route";
+  const introBlock = intro ? (
+    <div className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 mb-4">
+      <BlogContent html={intro} />
+    </div>
+  ) : null;
 
-  if (isSearching && !quote) {
-    return <p className="py-8 text-center text-sm text-gray-500">Checking prices…</p>;
-  }
-  if (error) {
-    return <p className="py-8 text-center text-sm text-gray-500">{error}</p>;
-  }
-  if (!quote) {
-    return <p className="py-8 text-center text-sm text-gray-500">Enter pickup and drop to see prices.</p>;
-  }
+  // No quote yet: just the status line, as before. With admin text, the
+  // heading and text show too, so they don't wait for (or depend on) prices.
+  const status = (message: string) => {
+    const line = <p className="py-8 text-center text-sm text-gray-500">{message}</p>;
+    if (!introBlock) return line;
+    return (
+      <div>
+        <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3">{heading}</h2>
+        {introBlock}
+        {line}
+      </div>
+    );
+  };
+
+  if (isSearching && !quote) return status("Checking prices…");
+  if (error) return status(error);
+  if (!quote) return status("Enter pickup and drop to see prices.");
 
   const roundTrip = quote.tripType === "ROUND_TRIP";
   return (
     <div className={isSearching ? "opacity-60 transition-opacity" : ""}>
       <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-        <h2 className="text-lg md:text-xl font-bold text-gray-900">{title?.trim() || "Prices for this route"}</h2>
+        <h2 className="text-lg md:text-xl font-bold text-gray-900">{heading}</h2>
         <p className="text-[13px] text-gray-500">
           {Math.round(quote.distanceKm)} km · about {Math.round(quote.durationMin / 60)} h ·{" "}
           {roundTrip ? `Round trip${quote.days ? `, ${quote.days} day${quote.days > 1 ? "s" : ""}` : ""}` : "One way"}
         </p>
       </div>
+      {introBlock}
       {/* Phones: one card per vehicle */}
       <ul className="space-y-2.5 sm:hidden">
         {offers.map((o) => (

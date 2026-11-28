@@ -32,6 +32,7 @@ const rentalSpecialPageSchema = new mongoose.Schema(
     overviewHeading: { type: String, trim: true }, // empty -> "Overview"
     overview: String, // rich HTML, shown above the price table
     pricesTitle: { type: String, trim: true }, // empty -> "Prices for this route"
+    pricesContent: String, // rich HTML, shown under the price heading, above the table
     searchFrom: { type: searchPointSchema, default: () => ({ address: "Delhi" }) },
     searchTo: { type: searchPointSchema, default: () => ({}) },
     metaTitle: String,

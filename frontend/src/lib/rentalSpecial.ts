@@ -30,6 +30,7 @@ export interface SpecialRentalPageData {
   overviewHeading?: string;
   overview?: string;
   pricesTitle?: string;
+  pricesContent?: string;
   searchFrom?: SpecialSearchPoint;
   searchTo?: SpecialSearchPoint;
   metaTitle?: string;
