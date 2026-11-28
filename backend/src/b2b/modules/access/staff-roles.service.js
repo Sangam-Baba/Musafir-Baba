@@ -2,7 +2,7 @@
 /**
  * Platform roles of MusafirBaba staff (plan Stage 01 §3.6, §4). Rules:
  * - only platform system roles (`platform.*`);
- * - at most 2 Super Admins (set → count → undo if more, safe under concurrent grants);
+ * - at most 3 Super Admins (set → count → undo if more, safe under concurrent grants; owner raised it from 2 on 2026-11-28);
  * - removing every role deletes the record (the staff member loses B2B admin access).
  */
 import { ConflictError, DomainError } from '../../core/errors.js';
@@ -10,6 +10,7 @@ import { resolveSystemRole, systemRole } from './domain/system-roles.js';
 import { StaffRoleRecord } from './models/staff-role.model.js';
 
 const SUPER_ADMIN = 'platform.superAdmin';
+const SUPER_ADMIN_MAX = 3;
 const STAFF_ID = /^[a-f0-9]{24}$/;
 
 /** @param {{ clock: import('../../core/clock.js').Clock, catalogue: readonly import('../../core/permissions.js').PermissionDef[] }} deps */
@@ -58,10 +59,10 @@ export function createStaffRolesService(deps) {
         { $set: { roles: unique, updatedBy }, $setOnInsert: { firstGrantedAt: now } },
         { upsert: true },
       );
-      if (unique.includes(SUPER_ADMIN) && (await StaffRoleRecord.countDocuments({ roles: SUPER_ADMIN })) > 2) {
+      if (unique.includes(SUPER_ADMIN) && (await StaffRoleRecord.countDocuments({ roles: SUPER_ADMIN })) > SUPER_ADMIN_MAX) {
         if (previous) await StaffRoleRecord.updateOne({ _id: staffId }, { $set: { roles: previous.roles, updatedBy: previous.updatedBy } });
         else await StaffRoleRecord.deleteOne({ _id: staffId });
-        throw new ConflictError('SUPER_ADMIN_LIMIT', { max: 2 });
+        throw new ConflictError('SUPER_ADMIN_LIMIT', { max: SUPER_ADMIN_MAX });
       }
       return { staffId, roles: unique };
     },

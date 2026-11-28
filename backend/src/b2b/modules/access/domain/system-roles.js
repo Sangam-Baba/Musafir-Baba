@@ -26,10 +26,10 @@ export const SYSTEM_ROLES = Object.freeze([
     key: 'platform.superAdmin',
     orgType: 'PLATFORM',
     name: 'Super Admin',
-    description: 'Everything (at most 2 people)',
+    description: 'Everything (at most 3 people)',
     patterns: ['**'],
     defaultScope: 'ORG',
-    maxHolders: 2,
+    maxHolders: 3, // owner decision 2026-11-28: 3 Super Admins (was 2)
   },
   {
     key: 'platform.operations',

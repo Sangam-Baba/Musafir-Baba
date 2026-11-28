@@ -42,6 +42,7 @@ const STAFF = {
   super1: '64b0000000000000000000a4',
   super2: '64b0000000000000000000a5',
   super3: '64b0000000000000000000a6',
+  super4: '64b0000000000000000000a7',
 };
 /** existing-app style admin token (staff.controller payload) @param {string} id */
 const existingToken = (id) =>
@@ -218,14 +219,15 @@ describe('managing organisations', () => {
 });
 
 describe('staff roles and users', () => {
-  it('a Super Admin gives staff roles; at most 2 Super Admins', async () => {
+  it('a Super Admin gives staff roles; at most 3 Super Admins', async () => {
     await staffRoles.setRoles(STAFF.super1, ['platform.superAdmin'], 'cli');
     const pass = await adminPass(STAFF.super1);
     expect((await srv.put(`/api/v1/admin/staff/${STAFF.super2}/roles`, { roles: ['platform.superAdmin'] }, auth(pass))).status).toBe(200);
-    expect((await srv.put(`/api/v1/admin/staff/${STAFF.super3}/roles`, { roles: ['platform.superAdmin'] }, auth(pass))).body.code).toBe(
+    expect((await srv.put(`/api/v1/admin/staff/${STAFF.super3}/roles`, { roles: ['platform.superAdmin'] }, auth(pass))).status).toBe(200);
+    expect((await srv.put(`/api/v1/admin/staff/${STAFF.super4}/roles`, { roles: ['platform.superAdmin'] }, auth(pass))).body.code).toBe(
       'SUPER_ADMIN_LIMIT',
     );
-    expect(await StaffRoleRecord.exists({ _id: STAFF.super3 })).toBeNull(); // undone
+    expect(await StaffRoleRecord.exists({ _id: STAFF.super4 })).toBeNull(); // undone
     expect((await srv.put(`/api/v1/admin/staff/${STAFF.ops}/roles`, { roles: ['client.owner'] }, auth(pass))).body.code).toBe(
       'ROLE_UNKNOWN',
     );
