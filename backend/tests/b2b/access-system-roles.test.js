@@ -226,8 +226,8 @@ describe('system roles (plan §4) — authorization matrix', () => {
     expect(grants('platform.hotels')).not.toContain('platform.org.manage');
   });
 
-  it('only Super Admin has a holder limit (2)', () => {
-    expect(SYSTEM_ROLES.filter((r) => r.maxHolders !== undefined).map((r) => [r.key, r.maxHolders])).toEqual([['platform.superAdmin', 2]]);
+  it('only Super Admin has a holder limit (3)', () => {
+    expect(SYSTEM_ROLES.filter((r) => r.maxHolders !== undefined).map((r) => [r.key, r.maxHolders])).toEqual([['platform.superAdmin', 3]]);
   });
 });
 
