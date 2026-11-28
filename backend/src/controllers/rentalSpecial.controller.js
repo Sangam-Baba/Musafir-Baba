@@ -117,7 +117,7 @@ const point = (p) => {
 // Only the fields admins edit -- never _id/timestamps from the client
 const pageFields = (body = {}) => {
   const fields = {};
-  for (const key of ["specialType", "title", "bannerImage", "content", "overviewHeading", "overview", "pricesTitle", "metaTitle", "metaDescription", "keywords", "faqs", "status"]) {
+  for (const key of ["specialType", "title", "bannerImage", "content", "overviewHeading", "overview", "pricesTitle", "pricesContent", "metaTitle", "metaDescription", "keywords", "faqs", "status"]) {
     if (body[key] !== undefined) fields[key] = body[key];
   }
   if (body.slug !== undefined) fields.slug = toSlug(body.slug);

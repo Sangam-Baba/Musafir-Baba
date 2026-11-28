@@ -151,7 +151,7 @@ export default function SpecialRentalBody({
               </section>
             )}
             <section className="mb-10">
-              <SpecialRentalFares quote={quote} isSearching={isSearching} error={error} title={page.pricesTitle} />
+              <SpecialRentalFares quote={quote} isSearching={isSearching} error={error} title={page.pricesTitle} intro={page.pricesContent} />
             </section>
             {page.content && (
               <section className="visa-prose prose prose-base max-w-none text-black leading-relaxed prose-ul:pl-5 prose-ol:pl-5 prose-li:my-0 prose-p:mb-4 mb-10">

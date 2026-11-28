@@ -13,7 +13,7 @@ import { Loader } from "@/components/custom/loader";
 import ImageUploader from "./ImageUploader";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { FleetPage } from "@/components/admin/fleet/FleetUI";
-import { AdminSaveBar, CompactBlogEditor } from "@/components/admin/AdminFormUI";
+import { AdminSaveBar, CollapsibleRichEditor, CompactBlogEditor } from "@/components/admin/AdminFormUI";
 import { dInput, dTextarea } from "@/components/admin/destination/FormBits";
 import {
   CityTypeTabPanel,
@@ -55,6 +55,7 @@ const schema = z.object({
   overviewHeading: z.string().optional(),
   overview: z.string().optional(),
   pricesTitle: z.string().optional(),
+  pricesContent: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   keywords: z.any().optional(), // array, or comma-separated string while typing
@@ -101,6 +102,7 @@ const EMPTY: FormData = {
   overviewHeading: "Overview",
   overview: "",
   pricesTitle: "",
+  pricesContent: "",
   metaTitle: "",
   metaDescription: "",
   keywords: [],
@@ -147,6 +149,7 @@ export const CreateEditRentalSpecialPage = ({ id, landingFor }: { id: string | n
         overviewHeading: pageData.overviewHeading || "Overview",
         overview: pageData.overview || "",
         pricesTitle: pageData.pricesTitle || "",
+        pricesContent: pageData.pricesContent || "",
         metaTitle: pageData.metaTitle || "",
         metaDescription: pageData.metaDescription || "",
         keywords: pageData.keywords || [],
@@ -374,7 +377,7 @@ export const CreateEditRentalSpecialPage = ({ id, landingFor }: { id: string | n
                         Shown above the price table. Leave empty to hide this section.
                       </p>
                       <FormControl>
-                        <CompactBlogEditor value={field.value || ""} onChange={field.onChange} />
+                        <CollapsibleRichEditor value={field.value || ""} onChange={field.onChange} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -390,6 +393,22 @@ export const CreateEditRentalSpecialPage = ({ id, landingFor }: { id: string | n
                         <input placeholder="Prices for this route" {...field} className={dInput} />
                       </FormControl>
                       <p className="text-[11px] text-slate-400">Leave empty to show &ldquo;Prices for this route&rdquo;.</p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="pricesContent"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className={rLabel}>Price table content</FormLabel>
+                      <p className="text-[11px] text-slate-400">
+                        Shown under the price table heading, just above the table. Leave empty to hide.
+                      </p>
+                      <FormControl>
+                        <CollapsibleRichEditor value={field.value || ""} onChange={field.onChange} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
