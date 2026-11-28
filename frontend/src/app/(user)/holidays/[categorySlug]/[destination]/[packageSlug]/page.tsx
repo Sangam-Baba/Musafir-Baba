@@ -1,4 +1,5 @@
 import React from "react";
+import type { PackageHotelCard } from "@/components/custom/PackageHotels";
 import SlugClients from "./SlugClients";
 import { Metadata } from "next";
 import { getPackageByCategorySlug } from "@/app/(user)/holidays/[categorySlug]/page";
@@ -83,6 +84,7 @@ export interface GroupPackageInterface {
   packageAtAGlance?: string;
   whyChooseThisPackage?: string;
   hotelsAndAccommodation?: string;
+  accommodationHotels?: PackageHotelCard[];
   cta?: string;
   banner_text?: string[];
   helpfulResources?: { title: string; url: string }[];

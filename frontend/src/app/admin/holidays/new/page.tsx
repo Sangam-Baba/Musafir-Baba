@@ -1,4 +1,5 @@
 "use client";
+import type { PackageHotel } from "@/components/admin/package/PackageHotelsEditor";
 import SubDestinationSelect from "@/components/admin/destination/SubDestinationSelect";
 import ExtraDestinationSelect from "@/components/admin/destination/ExtraDestinationSelect";
 import React, { useEffect, useState } from "react";
@@ -115,6 +116,7 @@ interface PackageFormValues {
   packageAtAGlance?: string;
   whyChooseThisPackage?: string;
   hotelsAndAccommodation?: string;
+  accommodationHotels?: PackageHotel[];
   helpfulResources?: { title: string; url: string }[];
   packagePercent: number;
   status: "draft" | "published";
@@ -298,6 +300,7 @@ export default function CreatePackagePage() {
     packageAtAGlance: "",
     whyChooseThisPackage: "",
     hotelsAndAccommodation: "",
+    accommodationHotels: [],
     helpfulResources: [],
     packagePercent: 0,
     social: { twitter: { inheritOpenGraph: true } }

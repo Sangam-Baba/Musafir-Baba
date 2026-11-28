@@ -157,6 +157,25 @@ const packageSchema = new mongoose.Schema(
     packageAtAGlance: { type: String },
     whyChooseThisPackage: { type: String },
     hotelsAndAccommodation: { type: String },
+    // Optional hotel cards for the "Hotels" section (shown after the
+    // hotelsAndAccommodation text). Never priced. Empty / missing on every
+    // package created before this field existed — the page then shows only
+    // the text, exactly as before.
+    accommodationHotels: [
+      {
+        name: { type: String, trim: true },
+        stars: { type: Number, min: 0, max: 5 },
+        location: { type: String, trim: true },
+        description: { type: String },
+        images: [
+          {
+            url: String,
+            public_id: String,
+            alt: String,
+          },
+        ],
+      },
+    ],
     cta: { type: String },
     banner_text: [String],
     helpfulResources: [
